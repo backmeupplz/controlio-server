@@ -45,5 +45,5 @@ plan.remote(function(remote) {
 
   remote.log('Reload application');
   remote.sudo('ln -snf ~/' + tmpDir + ' ~/'+appName, {user: username});
-  remote.exec('sudo restart node-app');
+  remote.exec('sudo restart controlio');
 });
