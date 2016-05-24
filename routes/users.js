@@ -12,22 +12,28 @@ router.get('/', function(req, res, next) {
   });
 });
 
-router.get('/addfakeuser', function(req, res, next) {
-  dbmanager.debug.createFakeUser(function(err, user) {
+router.post('/', function(req, res) {
+  dbmanager.addUser(req.body, function(err, user) {
     if (err) {
-      next(err);
+      res.send(err);
     } else {
       res.send(user);
     }
   });
 });
 
-router.use(function(err, req, res) {
-  res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: err
+// DEBUG
+
+router.get('/removeallusers', function(req, res, next) {
+  dbmanager.debug.removeAllUsers(function(err) {
+    if (err) {
+      next(err);
+    } else {
+      res.sendStatus(200);
+    }
   });
 });
+
+// Export
 
 module.exports = router;

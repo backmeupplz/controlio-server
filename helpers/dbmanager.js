@@ -9,28 +9,25 @@ var Post = mongoose.model('post');
 
 var getUsers = function(callback) {
   User.find(callback);
-}
+};
+
+var addUser = function(user, callback) {
+  var newUser = new User(user);
+  newUser.save(callback);
+};
 
 // DEBUG
 
-var createFakeUser = function(callback) {
-  var newUser = new User({
-    name: 'Debug User',
-    email: 'nikita@borodutch.com',
-    phone: '+1 778 288 1444',
-    isBusiness: true,
-    isCompleted: false,
-    isEmailVerified: true,
-    projects: []
-  });
-  newUser.save(callback);
+var removeAllUsers = function(callback) {
+  User.remove({}, callback);
 };
 
 // Export
 
 module.exports = {
   getUsers: getUsers,
+  addUser: addUser,
   debug: {
-    createFakeUser: createFakeUser
+    removeAllUsers: removeAllUsers
   }
 };
