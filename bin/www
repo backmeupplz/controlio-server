@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 
 /**
+ * New require function for non-modules
+ */
+
+global.rootRequire = function(name) {
+  return require('../' + name);
+};
+
+/**
  * Module dependencies.
  */
 

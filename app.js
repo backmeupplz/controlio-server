@@ -7,10 +7,19 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var fs = require('fs');
 
+var app = express();
+
+// setup mongoose and require all models
+mongoose.connect('mongodb://162.243.42.134:27017/controlio');
+fs.readdirSync(path.join(__dirname, '/models')).forEach(function(filename) {
+  if (~filename.indexOf('.js')) {
+    require(path.join(__dirname, '/models/', filename))
+  }
+});
+
+// require routes
 var base = require('./routes/base');
 var users = require('./routes/users');
-
-var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -22,14 +31,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// mongoose
-mongoose.connect('mongodb://162.243.42.134:27017/controlio');
-// load mongoose schemas
-fs.readdirSync(__dirname + '/models').forEach(function(filename) {
-  if (~filename.indexOf('.js')) require(__dirname + '/models/' + filename)
-});
-
 // redirect routes
+app.use('/users/', users);
 app.use('/', base);
 
 // catch 404 and forward to error handler
