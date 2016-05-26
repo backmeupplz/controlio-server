@@ -6,11 +6,12 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var fs = require('fs');
+var config = require('./config');
 
 var app = express();
 
 // setup mongoose and require all models
-mongoose.connect('mongodb://162.243.42.134:27017/controlio');
+mongoose.connect(config.database);
 fs.readdirSync(path.join(__dirname, '/models')).forEach(function(filename) {
   if (~filename.indexOf('.js')) {
     require(path.join(__dirname, '/models/', filename))

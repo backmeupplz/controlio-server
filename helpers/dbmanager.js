@@ -12,8 +12,29 @@ var getUsers = function(callback) {
 };
 
 var addUser = function(user, callback) {
-  var newUser = new User(user);
-  newUser.save(callback);
+  var findUserCallback = function(err, dbuser) {
+    if (err) {
+      callback(err);
+    } else {
+      if (dbuser) {
+        var err = new Error();
+        err.message = 'User already exists';
+        callback(err);
+      } else {
+        var newUser = new User(user);
+        newUser.save(callback);
+      }
+    }
+  };
+  User.findOne({email: user.email}, findUserCallback);
+};
+
+var getUser = function(options, callback, select) {
+  if (select) {
+    User.findOne(options).select(select).exec(callback);
+  } else {
+    User.findOne(options).exec(callback);
+  }
 };
 
 // DEBUG
@@ -27,6 +48,7 @@ var removeAllUsers = function(callback) {
 module.exports = {
   getUsers: getUsers,
   addUser: addUser,
+  getUser: getUser,
   debug: {
     removeAllUsers: removeAllUsers
   }

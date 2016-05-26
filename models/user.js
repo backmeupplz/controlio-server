@@ -2,23 +2,26 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
-  name: {
-    type: String,
-    required: false
-  },
   email: {
     type: String,
     required: true
   },
-  phone: {
+  password: {
     type: String,
-    required: false
+    required: true,
+    select: false
   },
-  photo: {
+  token: {
     type: String,
-    required: false
+    required: true,
+    select: false
   },
   isBusiness: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
+  admin: {
     type: Boolean,
     required: true,
     default: false
@@ -34,13 +37,39 @@ var userSchema = new Schema({
     default: false
   },
   projects: [
-      {
-        type: Schema.ObjectId,
-        ref: 'project',
-        required: true,
-        default: []
-      }
-    ]
+    {
+      type: Schema.ObjectId,
+      ref: 'project',
+      required: true,
+      default: []
+    }
+  ],
+  iosPushTokens: [
+    {
+      type: String,
+      required: true,
+      default: []
+    }
+  ],
+  androidPushTokens: [
+    {
+      type: String,
+      required: true,
+      default: []
+    }
+  ],
+  name: {
+    type: String,
+    required: false
+  },
+  phone: {
+    type: String,
+    required: false
+  },
+  photo: {
+    type: String,
+    required: false
+  }
 });
 
 mongoose.model('user', userSchema);
