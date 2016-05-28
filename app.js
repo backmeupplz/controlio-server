@@ -24,8 +24,10 @@ fs.readdirSync(path.join(__dirname, '/models')).forEach(function(filename) {
 });
 
 // require routes
-var base = require('./routes/base');
 var users = require('./routes/users');
+var projects = require('./routes/projects');
+var posts = require('./routes/posts');
+var base = require('./routes/base');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -41,7 +43,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(function(req, res, next) {
   var apiKey = req.get('x-access-apiKey');
-  console.log(apiKey);
   if (apiKey == config.apiKey) {
     next();
   } else {
@@ -51,6 +52,8 @@ app.use(function(req, res, next) {
 
 // redirect routes
 app.use('/users/', users);
+app.use('/projects', projects);
+app.use('/posts/', posts);
 app.use('/', base);
 
 // catch 404 and forward to error handler

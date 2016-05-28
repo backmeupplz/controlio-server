@@ -1,6 +1,9 @@
 var authNoEmail = function() {
   return error(501, 'No email provided');
 };
+var authNoUserId = function() {
+  return error(501, 'No user ID provided');
+};
 var authNoPassword = function() {
   return error(501, 'No password provided');
 };
@@ -21,7 +24,7 @@ var tokenFailed = function() {
 };
 var noApiKey = function() {
   return error(403, 'No API key provided');
-}
+};
 
 var error = function(status, msg) {
   var err = new Error();
@@ -32,6 +35,7 @@ var error = function(status, msg) {
 
 module.exports = {
   authNoEmail: authNoEmail,
+  authNoUserId: authNoUserId,
   authNoPassword: authNoPassword,
   authEmailNotRegistered: authEmailNotRegistered,
   authWrongPassword: authWrongPassword,

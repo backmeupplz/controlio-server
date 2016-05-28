@@ -37,6 +37,18 @@ var getUser = function(options, callback, select) {
   }
 };
 
+// Projects
+
+var getProjects = function(email, callback) {
+
+};
+
+// Posts
+
+var getPosts = function(email, callback) {
+  
+};
+
 // DEBUG
 
 var removeAllUsers = function(callback) {
@@ -49,6 +61,8 @@ module.exports = {
   getUsers: getUsers,
   addUser: addUser,
   getUser: getUser,
+  getProjects: getProjects,
+  getPosts: getPosts,
   debug: {
     removeAllUsers: removeAllUsers
   }
