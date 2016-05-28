@@ -7,11 +7,16 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var fs = require('fs');
 var config = require('./config');
+var errors = rootRequire('./helpers/errors');
 
 var app = express();
 
 // setup mongoose and require all models
-mongoose.connect(config.database);
+if (app.get('env') === 'development') {
+  mongoose.connect(config.devDatabase);
+} else {
+  mongoose.connect(config.database);
+}
 fs.readdirSync(path.join(__dirname, '/models')).forEach(function(filename) {
   if (~filename.indexOf('.js')) {
     require(path.join(__dirname, '/models/', filename))
@@ -31,6 +36,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// check api token
+
+app.use(function(req, res, next) {
+  var apiKey = req.get('x-access-apiKey');
+  console.log(apiKey);
+  if (apiKey == config.apiKey) {
+    next();
+  } else {
+    res.send(errors.noApiKey());
+  }
+});
 
 // redirect routes
 app.use('/users/', users);
