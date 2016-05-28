@@ -8,12 +8,14 @@ var auth = rootRequire('helpers/auth');
 router.use(auth.checkToken);
 
 router.post('/getprojects', function(req, res) {
-  var email = req.body.email;
-  dbmanager.getPosts(email, function(err, posts) {
+  var userId = req.body.userId;
+  var skip = req.body.skip || 0;
+  var limit = req.body.limit || 20;
+  dbmanager.getProjects(userId, skip, limit, function(err, projects) {
     if (err) {
       res.send(err);
     } else {
-      res.send(posts);
+      res.send(projects);
     }
   });
 });

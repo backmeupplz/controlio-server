@@ -39,8 +39,21 @@ var getUser = function(options, callback, select) {
 
 // Projects
 
-var getProjects = function(email, callback) {
-
+var getProjects = function(userId, skip, limit, callback) {
+  getUser({_id: userId}, function(err, user) {
+    if (err) {
+      callback(err);
+    } else if (user) {
+      Project.find({
+        $or: [
+          { managers: user },
+          { clients: user}
+        ]
+      }).skip(skip).limit(limit).exec(callback);
+    } else {
+      callback(new Error(500));
+    }
+  });
 };
 
 // Posts
