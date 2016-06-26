@@ -3,13 +3,18 @@ var Schema = mongoose.Schema;
 
 var projectSchema = new Schema({
   dateCreated: {
-    type: Date
+    type: Date,
+    default: Date.now
   },
   title: String,
   image: String,
   status: String,
   description: String,
-  completed: Boolean,
+  completed: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
   owner: {
     type: Schema.ObjectId,
     ref: 'user',

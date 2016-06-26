@@ -28,6 +28,9 @@ var noApiKey = function() {
 var notFound = function() {
   return error(404, 'Not found');
 };
+var fieldNotFound = function(field) {
+  return error(501, 'No ' + field + ' provided');
+};
 
 var error = function(status, msg) {
   var err = new Error();
@@ -46,5 +49,6 @@ module.exports = {
   noTokenProvided: noTokenProvided,
   tokenFailed: tokenFailed,
   noApiKey: noApiKey,
-  notFound: notFound
+  notFound: notFound,
+  fieldNotFound: fieldNotFound
 };
