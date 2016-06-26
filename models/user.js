@@ -1,10 +1,19 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var validate = require('mongoose-validator');
+
+var emailValidator = [
+  validate({
+    validator: 'isEmail',
+    message: 'Wrong email format'
+  })
+];
 
 var userSchema = new Schema({
   email: {
     type: String,
-    required: true
+    required: true,
+    validate: emailValidator
   },
   password: {
     type: String,
@@ -21,7 +30,7 @@ var userSchema = new Schema({
     required: true,
     default: false
   },
-  admin: {
+  isAdmin: {
     type: Boolean,
     required: true,
     default: false
@@ -32,6 +41,16 @@ var userSchema = new Schema({
     default: false
   },
   isEmailVerified: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
+  addedAsClient: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
+  addedAsManager: {
     type: Boolean,
     required: true,
     default: false

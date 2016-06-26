@@ -7,13 +7,17 @@ var auth = rootRequire('helpers/auth');
 
 router.use(auth.checkToken);
 
-router.post('/getprojects', function(req, res) {
-  var userId = req.body.userId;
+router.post('/', function(req, res, next) {
+  
+});
+
+router.post('/getprojects', function(req, res, next) {
+  var userId = req.get('x-access-user-id');
   var skip = req.body.skip || 0;
   var limit = req.body.limit || 20;
   dbmanager.getProjects(userId, skip, limit, function(err, projects) {
     if (err) {
-      res.send(err);
+      next(err);
     } else {
       res.send(projects);
     }

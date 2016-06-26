@@ -7,21 +7,18 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var fs = require('fs');
 var config = require('./config');
-var errors = rootRequire('./helpers/errors');
-
+var errors = require('./helpers/errors');
 var app = express();
 
-// setup mongoose and require all models
-if (app.get('env') === 'development') {
-  mongoose.connect(config.devDatabase);
-} else {
-  mongoose.connect(config.database);
-}
+// setup mongoose and load all models
+mongoose.connect(config.database);
 fs.readdirSync(path.join(__dirname, '/models')).forEach(function(filename) {
   if (~filename.indexOf('.js')) {
     require(path.join(__dirname, '/models/', filename))
   }
 });
+
+var auth = require('./helpers/auth');
 
 // require routes
 var users = require('./routes/users');
@@ -44,14 +41,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // check api token
 
-app.use(function(req, res, next) {
-  var apiKey = req.get('x-access-apiKey');
-  if (apiKey == config.apiKey) {
-    next();
-  } else {
-    res.send(errors.noApiKey());
-  }
-});
+app.use(auth.checkApiKey);
 
 // redirect routes
 app.use('/users/', users);
@@ -61,34 +51,13 @@ app.use('/', base);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+  next(errors.notFound());
 });
 
-// error handlers
-
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-  app.use(function(err, req, res) {
-    res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
-  });
-}
-
-// production error handler
-// no stacktraces leaked to user
-app.use(function(err, req, res) {
+// error handler
+app.use(function(err, req, res, next) {
   res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: {}
-  });
+  res.send(err);
 });
-
 
 module.exports = app;

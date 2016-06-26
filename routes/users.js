@@ -9,41 +9,41 @@ var auth = rootRequire('helpers/auth');
 
 // Public API
 
-router.post('/login', function(req, res) {
+router.post('/login', function(req, res, next) {
   var email = req.body.email;
   var rawPassword = req.body.password;
 
   var getUserCallback = function(err, user) {
     if (err) {
-      res.send(err);
+      next(err);
     } else if (user) {
       if (hash.checkPassword(user.password, rawPassword)) {
         user.password = undefined;
         res.send(user);
       } else {
-        res.send(errors.authWrongPassword());
+        next(errors.authWrongPassword());
       }
     } else {
-      res.send(errors.authEmailNotRegistered());
+      next(errors.authEmailNotRegistered());
     }
   };
   
   if (!email) {
-    res.send(errors.authNoEmail());
+    next(errors.authNoEmail());
   } else if (!rawPassword) {
-    res.send(errors.authNoPassword());
+    next(errors.authNoPassword());
   } else {
     dbmanager.getUser({email: email}, getUserCallback, '+password +token');
   }
 });
 
-router.post('/', function(req, res) {
+router.post('/', function(req, res, next) {
   var email = req.body.email;
   var rawPassword = req.body.password;
 
   var addUserCallback = function(err, user) {
     if (err) {
-      res.send(err);
+      next(err);
     } else {
       user.password = undefined;
       res.send(user);
@@ -51,9 +51,9 @@ router.post('/', function(req, res) {
   };
 
   if (!email) {
-    res.send(errors.authNoEmail());
+    next(errors.authNoEmail());
   } else if (!rawPassword) {
-    res.send(errors.authNoPassword());
+    next(errors.authNoPassword());
   } else {
     var hashPass = hash.hashPassword(rawPassword);
 
@@ -66,12 +66,12 @@ router.post('/', function(req, res) {
 
       dbmanager.addUser(user, addUserCallback);
     } else {
-      res.send(errors.authHashError());
+      next(errors.authHashError());
     }
   }
 });
 
-router.post('/recoverPassword', function(req, res) {
+router.post('/recoverPassword', function(req, res, next) {
   res.sendStatus(501);
 });
 

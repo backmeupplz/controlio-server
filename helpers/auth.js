@@ -5,30 +5,30 @@ var config = rootRequire('config');
 
 var checkToken = function(req, res, next) {
   var token = req.get('x-access-token');
-  var userId = req.body.userId;
-
+  var userId = req.get('x-access-user-id');
+  
   var getUserCallback = function(err, user, token) {
     if (err) {
-      res.send(err);
+      next(err);
     } else if (user) {
       if (user.token == token) {
         next();
       } else {
-        res.send(errors.tokenFailed());
+        next(errors.tokenFailed());
       }
     } else {
-      res.send(errors.authEmailNotRegistered());
+      next(errors.authEmailNotRegistered());
     }
   };
 
   if (!userId) {
-    res.send(errors.authNoUserId());
+    next(errors.authNoUserId());
   } else if (!token) {
-    res.send(errors.noTokenProvided());
+    next(errors.noTokenProvided());
   } else {
     jwt.verify(token, config.jwtSecret, function(err) {
       if (err) {
-        res.send(errors.tokenFailed());
+        next(errors.tokenFailed());
       } else {
         dbmanager.getUser({_id: userId}, function(err, user) {
           getUserCallback(err, user, token);
@@ -38,4 +38,16 @@ var checkToken = function(req, res, next) {
   }
 };
 
-module.exports.checkToken = checkToken;
+var checkApiKey = function(req, res, next) {
+  var apiKey = req.get('x-access-apiKey');
+  if (apiKey == config.apiKey) {
+    next();
+  } else {
+    next(errors.noApiKey());
+  }
+};
+
+module.exports = {
+  checkToken: checkToken,
+  checkApiKey: checkApiKey
+};

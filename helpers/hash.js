@@ -6,8 +6,6 @@ var hashPassword = function(password) {
 };
 
 var checkPassword = function(hash, password) {
-  console.log(hash);
-  console.log(password);
   return scrypt.verifyKdfSync(new Buffer(hash, 'base64'), new Buffer(password));
 };
 

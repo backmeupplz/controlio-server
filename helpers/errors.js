@@ -25,6 +25,9 @@ var tokenFailed = function() {
 var noApiKey = function() {
   return error(403, 'No API key provided');
 };
+var notFound = function() {
+  return error(404, 'Not found');
+};
 
 var error = function(status, msg) {
   var err = new Error();
@@ -42,5 +45,6 @@ module.exports = {
   authHashError: authHashError,
   noTokenProvided: noTokenProvided,
   tokenFailed: tokenFailed,
-  noApiKey: noApiKey
+  noApiKey: noApiKey,
+  notFound: notFound
 };
