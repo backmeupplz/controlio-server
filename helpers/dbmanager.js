@@ -19,7 +19,15 @@ var addUsersByEmails = function(emails, callback) {
 
       var user = {
         email: email,
-        addedAsClient: true
+        isBusiness: false,
+        isAdmin: false,
+        isCompleted: false,
+        isEmailVerified: false,
+        addedAsClient: true,
+        addedAsManager: false,
+        projects: [],
+        iosPushTokens: [],
+        androidPushTokens: []
       };
 
       usersToAdd.push(user)

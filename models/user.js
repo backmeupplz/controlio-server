@@ -22,7 +22,7 @@ var userSchema = new Schema({
   },
   token: {
     type: String,
-    required: true,
+    required: false,
     select: false
   },
   isBusiness: {
