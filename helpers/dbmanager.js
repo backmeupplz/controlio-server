@@ -126,7 +126,7 @@ var getProjects = function(userId, skip, limit, callback) {
           { managers: user },
           { clients: user}
         ]
-      }).skip(skip).limit(limit).exec(callback);
+      }).skip(skip).limit(limit).populate(['owner', 'manager', 'clients']).exec(callback);
     } else {
       callback(new Error(500));
     }

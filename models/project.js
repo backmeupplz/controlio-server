@@ -40,11 +40,7 @@ var projectSchema = new Schema({
       required: true,
       default: []
     }
-  ],
-  lastPost: {
-    type: Schema.ObjectId,
-    ref: 'post'
-  }
+  ]
 });
 
 mongoose.model('project', projectSchema);
