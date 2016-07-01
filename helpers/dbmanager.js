@@ -135,8 +135,35 @@ var getProjects = function(userId, skip, limit, callback) {
 
 // Posts
 
-var getPosts = function(email, callback) {
-  
+var addPost = function(projectId, text, attachments, callback) {
+  Project.findOne({_id: projectId}, function(err, project) {
+    if (err) {
+      callback(err);
+    } else {
+      var newPost = {
+        text: text,
+        manager: project.manager,
+        project: project,
+        attachments: attachments
+      };
+      var post = new Post(newPost);
+      post.save(callback);
+    }
+  });
+};
+
+var getPosts = function(projectId, skip, limit, callback) {
+  Project.findOne({_id: projectId}, function(err, project) {
+    if (err) {
+      callback(err);
+    } else {
+      Post.find({project: project})
+        .skip(skip)
+        .limit(limit)
+        .populate('manager')
+        .exec(callback);
+    }
+  });
 };
 
 // DEBUG
@@ -155,6 +182,7 @@ module.exports = {
   getClients: getClients,
   addProject: addProject,
   getProjects: getProjects,
+  addPost: addPost,
   getPosts: getPosts,
   debug: {
     removeAllUsers: removeAllUsers

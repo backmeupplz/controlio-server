@@ -7,16 +7,42 @@ var auth = rootRequire('helpers/auth');
 
 router.use(auth.checkToken);
 
-router.post('/getposts', function(req, res) {
-  res.sendStatus(501);
-  // var email = req.body.email;
-  // dbmanager.getPosts(email, function(err, posts) {
-  //   if (err) {
-  //     res.send(err);
-  //   } else {
-  //     res.send(posts);
-  //   }
-  // });
+router.post('/', function(req, res, next) {
+  var projectId = req.body.projectId;
+  var text = req.body.text;
+  var attachments = req.body.attachments;
+  
+  if (!(projectId && text && attachments)) {
+    next(new Error(500));
+    return;
+  }
+  
+  dbmanager.addPost(projectId, text, attachments, function(err) {
+    if (err) {
+      next(err);
+    } else {
+      res.sendStatus(200);
+    }
+  })
+});
+
+router.get('/', function(req, res) {
+  var projectId = req.query.projectId;
+  var skip = req.query.skip || 0;
+  var limit = req.query.limit || 20;
+
+  if (!projectId) {
+    next(new Error(500));
+    return;
+  }
+
+  dbmanager.getPosts(projectId, skip, limit, function(err, posts) {
+    if (err) {
+      next(err);
+    } else {
+      res.send(posts);
+    }
+  });
 });
 
 // DEBUG

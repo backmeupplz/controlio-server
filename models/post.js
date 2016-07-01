@@ -4,7 +4,8 @@ var Schema = mongoose.Schema;
 var postSchema = new Schema({
   text: String,
   dateCreated: {
-    type: Date
+    type: Date,
+    default: Date.now
   },
   manager: {
     type: Schema.ObjectId,
