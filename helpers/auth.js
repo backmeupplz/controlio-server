@@ -1,7 +1,7 @@
 var errors = require('./errors');
 var dbmanager = require('./dbmanager');
 var jwt = require('jsonwebtoken');
-var config = rootRequire('config');
+var config = require('../config');
 
 var checkToken = function(req, res, next) {
   var token = req.get('x-access-token');

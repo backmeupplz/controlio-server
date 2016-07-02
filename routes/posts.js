@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
-var dbmanager = rootRequire('helpers/dbmanager');
-var auth = rootRequire('helpers/auth');
+var dbmanager = require('../helpers/dbmanager');
+var auth = require('../helpers/auth');
 
 // Private API
 

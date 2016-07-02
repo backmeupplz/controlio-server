@@ -1,11 +1,11 @@
 var express = require('express');
 var router = express.Router();
-var dbmanager = rootRequire('helpers/dbmanager');
-var hash = rootRequire('helpers/hash');
+var dbmanager = require('../helpers/dbmanager');
+var hash = require('../helpers/hash');
 var jwt = require('jsonwebtoken');
-var config = rootRequire('config');
-var errors = rootRequire('helpers/errors');
-var auth = rootRequire('helpers/auth');
+var config = require('../config');
+var errors = require('../helpers/errors');
+var auth = require('../helpers/auth');
 
 // Public API
 
