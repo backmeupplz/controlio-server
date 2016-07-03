@@ -150,17 +150,12 @@ var addPost = function(projectId, text, attachments, callback) {
   });
 };
 
-// todo: refactor
 var getPosts = function(projectId, skip, limit, callback) {
-  Project.findOne({_id: projectId}, function(err, project) {
+  Project.findById(projectId, {posts:{$slice:[skip, limit]}}).populate('posts').exec(function(err, project) {
     if (err) {
       callback(err);
     } else {
-      Post.find({project: project})
-        .skip(skip)
-        .limit(limit)
-        .populate('manager')
-        .exec(callback);
+      callback(null, project.posts);
     }
   });
 };

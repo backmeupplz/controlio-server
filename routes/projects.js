@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 var dbmanager = require('../helpers/dbmanager');
 var auth = require('../helpers/auth');
-var errors = require('../helpers/errors');
 var requestValidator = require('../helpers/requestValidator');
 
 // Private API

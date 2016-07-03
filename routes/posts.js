@@ -3,6 +3,7 @@ var router = express.Router();
 var dbmanager = require('../helpers/dbmanager');
 var auth = require('../helpers/auth');
 var requestValidator = require('../helpers/requestValidator');
+var errors = require('../helpers/errors');
 
 // Private API
 
@@ -30,14 +31,13 @@ router.post('/', function(req, res, next) {
   })
 });
 
-// todo: refactor
 router.get('/', function(req, res) {
   var projectId = req.query.projectId;
   var skip = req.query.skip || 0;
   var limit = req.query.limit || 20;
 
   if (!projectId) {
-    next(new Error(500));
+    next(errors.fieldNotFound('project id', 500));
     return;
   }
 
