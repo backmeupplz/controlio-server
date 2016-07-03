@@ -25,8 +25,8 @@ var addUser = function(user, callback) {
   User.findOne({email: user.email}, findUserCallback);
 };
 
-var getUserById = function(id, callback, select) {
-  User.findById(id).select(select || '').exec(callback);
+var getUserById = function(id, callback, select, projection) {
+  User.findById(id, projection).select(select || '').exec(callback);
 };
 
 var getUser = function(options, callback, select) {
@@ -112,22 +112,16 @@ var addProject = function(req, callback) {
   getUserById(userId, getOwnerCallback);
 };
 
-// todo: refactor
 var getProjects = function(userId, skip, limit, callback) {
-  getUser({_id: userId}, function(err, user) {
+  getUserById(userId, function(err, user) {
     if (err) {
       callback(err);
     } else if (user) {
-      Project.find({
-        $or: [
-          { managers: user },
-          { clients: user}
-        ]
-      }).skip(skip).limit(limit).populate(['owner', 'manager', 'clients']).exec(callback);
+      callback(null, user.projects);
     } else {
-      callback(new Error(500));
+      callback(errors.error(500, 'No user found'));
     }
-  });
+  }, null, {projects:{$slice:[skip, limit]}});
 };
 
 // Posts

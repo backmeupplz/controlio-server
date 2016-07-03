@@ -30,8 +30,8 @@ router.post('/', function(req, res, next) {
 // todo: refactor
 router.get('/', function(req, res, next) {
   var userId = req.get('x-access-user-id');
-  var skip = req.body.skip || 0;
-  var limit = req.body.limit || 20;
+  var skip = parseInt(req.query.skip) || 0;
+  var limit = parseInt(req.query.limit) || 20;
   dbmanager.getProjects(userId, skip, limit, function(err, projects) {
     if (err) {
       next(err);
