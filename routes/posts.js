@@ -7,6 +7,7 @@ var auth = require('../helpers/auth');
 
 router.use(auth.checkToken);
 
+// todo: refactor
 router.post('/', function(req, res, next) {
   var projectId = req.body.projectId;
   var text = req.body.text;
@@ -19,6 +20,7 @@ router.post('/', function(req, res, next) {
   
   dbmanager.addPost(projectId, text, attachments, function(err) {
     if (err) {
+      console.log(err);
       next(err);
     } else {
       res.sendStatus(200);
@@ -26,6 +28,7 @@ router.post('/', function(req, res, next) {
   })
 });
 
+// todo: refactor
 router.get('/', function(req, res) {
   var projectId = req.query.projectId;
   var skip = req.query.skip || 0;
@@ -43,19 +46,6 @@ router.get('/', function(req, res) {
       res.send(posts);
     }
   });
-});
-
-// DEBUG
-
-router.get('/removeallposts', function(req, res, next) {
-  res.sendStatus(501);
-  // dbmanager.debug.removeAllUsers(function(err) {
-  //   if (err) {
-  //     next(err);
-  //   } else {
-  //     res.sendStatus(200);
-  //   }
-  // });
 });
 
 // Export

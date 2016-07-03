@@ -11,6 +11,7 @@
     "debug": "~2.2.0",
     "express": "~4.13.1",
     "jsonwebtoken": "^7.0.0",
+    "lodash": "^4.13.1",
     "mongoose": "^4.4.19",
     "mongoose-validator": "^1.2.5",
     "morgan": "~1.6.1",

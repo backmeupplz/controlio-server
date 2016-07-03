@@ -39,7 +39,7 @@ router.post('/login', function(req, res, next) {
   dbmanager.getUser({email: email}, getUserCallback, '+password +token');
 });
 
-router.post('/signup', function(req, res, next) {
+router.post('/signUp', function(req, res, next) {
   try {
     requestValidator.checkParams(['email', 'password'], req);
   } catch (paramsError) {
@@ -70,24 +70,12 @@ router.post('/signup', function(req, res, next) {
 
 // todo: add password recovery
 router.post('/recoverPassword', function(req, res, next) {
-  res.sendStatus(501);
+  next(errors.error(501));
 });
 
 // Private API
 
 router.use(auth.checkToken);
-
-// DEBUG
-
-router.get('/removeallusers', function(req, res, next) {
-  dbmanager.debug.removeAllUsers(function (err) {
-    if (err) {
-      next(err);
-    } else {
-      res.sendStatus(200);
-    }
-  });
-});
 
 // Export
 

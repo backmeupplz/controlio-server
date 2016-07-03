@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var errors = require('./errors.js');
+var _ = require('lodash');
 
 // Get schemas
 var User = mongoose.model('user');
@@ -7,34 +8,6 @@ var Project = mongoose.model('project');
 var Post = mongoose.model('post');
 
 // Users
-
-// todo: refactor
-var addUsersByEmails = function(emails, callback) {
-  if (emails.length > 0) {
-    var usersToAdd = [];
-    for (var i in emails) {
-      var email = emails[i];
-
-      var user = {
-        email: email,
-        isBusiness: false,
-        isAdmin: false,
-        isCompleted: false,
-        isEmailVerified: false,
-        addedAsClient: true,
-        addedAsManager: false,
-        projects: [],
-        iosPushTokens: [],
-        androidPushTokens: []
-      };
-
-      usersToAdd.push(user)
-    }
-    User.collection.insert(usersToAdd, callback)
-  } else {
-    callback(null, [])
-  }
-};
 
 var addUser = function(user, callback) {
   var findUserCallback = function(err, databaseUser) {
@@ -52,16 +25,6 @@ var addUser = function(user, callback) {
   User.findOne({email: user.email}, findUserCallback);
 };
 
-// todo: refactor
-var addUserByEmail = function(email, callback) {
-  var user = {
-    email: email,
-    addedAsClient: true
-  };
-  var newUser = new User(user);
-  newUser.save(callback)
-};
-
 var getUserById = function(id, callback, select) {
   User.findById(id).select(select || '').exec(callback);
 };
@@ -70,49 +33,83 @@ var getUser = function(options, callback, select) {
   User.findOne(options).select(select || '').exec(callback);
 };
 
-// todo: refactor
-var getClients = function(clientEmails, callback) {
-  User.find({'email': {$in: clientEmails} }, function(err, clientObjects) {
-    if (err) {
-      callback(err)
-    } else if (clientObjects) {
-      // CHeck what emails aren't created yet
-      var clientsEmailsToCreate = [];
-      for (var i in clientEmails) {
-        var clientEmail = clientEmails[i];
-        var shouldAddClientEmail = true;
-        for (var j in clientObjects) {
-          var clientObject = clientObjects[j];
-
-          if (clientObject.email == clientEmail) {
-            shouldAddClientEmail = false;
-          }
-        }
-        if (shouldAddClientEmail) {
-          clientsEmailsToCreate.push(clientEmail);
-        }
-      }
-      // Create missing users
-      addUsersByEmails(clientsEmailsToCreate, function (err, addedClientObjects) {
-        if (err) {
-          callback(err)
-        } else {
-          var allClientObjects = clientObjects.concat(addedClientObjects);
-          callback(err, allClientObjects)
-        }
-      })
-    } else {
-      callback(new Error(500))
-    }
-  });
-};
-
 // Projects
 
-// todo: refactor
-var addProject = function(project, callback) {
-  var newProject = new Project(project);
-  newProject.save(callback);
+var addProject = function(req, callback) {
+  var userId = req.get('x-access-user-id');
+  var title = req.body.title;
+  var image = req.body.image;
+  var status = req.body.status;
+  var description = req.body.description;
+  var manager = req.body.manager;
+  var clients = req.body.clients;
+
+  // Add project
+
+  var getClientsCallback = function(err, clientObjects, managerObject, ownerObject) {
+    if (err) {
+      callback(err);
+    } else if (clientObjects) {
+      var project = {
+        title: title,
+        image: image,
+        status: status,
+        description: description,
+        owner: ownerObject,
+        manager: managerObject,
+        clients: clientObjects
+      };
+      var newProject = new Project(project);
+      newProject.save(function(err, project) {
+        callback(err);
+
+        var allObjects = _.union([ownerObject], [managerObject]);
+        allObjects.forEach(function(object) {
+          console.log(object.email);
+          console.log('+');
+          object.projects.push(project);
+          object.save();
+          console.log('-');
+        });
+      });
+    } else {
+      callback(errors.error(500, 'No client objects created'));
+    }
+  };
+
+  var getManagerCallback = function(err, managerObject, ownerObject) {
+    if (err) {
+      callback(err);
+    } else if (managerObject) {
+      getClients(clients, function(err, clientObjects) {
+        getClientsCallback(err, clientObjects, managerObject, ownerObject);
+      });
+    } else {
+      var newManager = {
+        email: manager,
+        addedAsManager: true
+      };
+      addUser(newManager, function(err, newManagerObject) {
+        getClients(clients, function(err, clientObjects) {
+          getClientsCallback(err, clientObjects, newManagerObject, ownerObject);
+        });
+      });
+    }
+  };
+
+  var getOwnerCallback = function(err, ownerObject) {
+    if (err) {
+      callback(err);
+    } else if (!ownerObject) {
+      callback(errors.error(500, 'No owner found'));
+    } else {
+      getUser({email: manager}, function(err, managerObject) {
+        getManagerCallback(err, managerObject, ownerObject)
+      });
+    }
+  };
+
+  getUserById(userId, getOwnerCallback);
 };
 
 // todo: refactor
@@ -168,10 +165,57 @@ var getPosts = function(projectId, skip, limit, callback) {
   });
 };
 
-// DEBUG
+// Helpers
 
-var removeAllUsers = function(callback) {
-  User.remove({}, callback);
+var addUsersByEmails = function(emails, callback) {
+  if (emails.length > 0) {
+    var usersToAdd = emails.map(function(email) {
+      return userTemplate(email);
+    });
+    User.collection.insert(usersToAdd, callback)
+  } else {
+    callback(null, [])
+  }
+};
+
+var userTemplate = function(email) {
+  return {
+    email: email,
+    isBusiness: false,
+    isAdmin: false,
+    isCompleted: false,
+    isEmailVerified: false,
+    addedAsClient: true,
+    addedAsManager: false,
+    iosPushTokens: [],
+    androidPushTokens: []
+  };
+};
+
+var getClients = function(clientEmails, callback) {
+  User.find({'email': {$in: clientEmails} }, function(err, existingClientObjects) {
+    if (err) {
+      callback(err);
+    } else if (existingClientObjects) {
+      // Check what emails aren't created yet
+      var existingClientEmails = existingClientObjects.map(function(clientObject) {
+        return clientObject.email;
+      });
+      var clientsEmailsToCreate = _.difference(clientEmails, existingClientEmails);
+
+      // Create missing users
+      addUsersByEmails(clientsEmailsToCreate, function (err, addedClientObjects) {
+        if (err) {
+          callback(err)
+        } else {
+          var allClientObjects = existingClientObjects.concat(addedClientObjects);
+          callback(err, allClientObjects)
+        }
+      })
+    } else {
+      callback(errors.error(500, 'No client objects created'))
+    }
+  });
 };
 
 // Export
@@ -179,17 +223,12 @@ var removeAllUsers = function(callback) {
 module.exports = {
   // Users
   addUser: addUser,
-  addUserByEmail: addUserByEmail,
   getUserById: getUserById,
   getUser: getUser,
-  getClients: getClients,
   // Projects
   addProject: addProject,
   getProjects: getProjects,
   // Posts
   addPost: addPost,
-  getPosts: getPosts,
-  debug: {
-    removeAllUsers: removeAllUsers
-  }
+  getPosts: getPosts
 };

@@ -30,9 +30,9 @@ var checkToken = function(req, res, next) {
       if (err) {
         next(errors.authTokenFailed());
       } else {
-        dbmanager.getUserById(userId, '+token', function(err, user) {
+        dbmanager.getUserById(userId, function(err, user) {
           getUserCallback(err, user, token);
-        });
+        }, '+token');
       }
     });
   }
