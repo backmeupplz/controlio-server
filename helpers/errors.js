@@ -1,11 +1,5 @@
-var authNoEmail = function() {
-  return error(501, 'No email provided');
-};
-var authNoUserId = function() {
-  return error(501, 'No user ID provided');
-};
-var authNoPassword = function() {
-  return error(501, 'No password provided');
+var notFound = function() {
+  return error(404, 'Not found');
 };
 var authEmailNotRegistered = function() {
   return error(403, 'Email not registered');
@@ -16,20 +10,14 @@ var authWrongPassword = function() {
 var authHashError = function() {
   return error(500, 'Password could not be saved');
 };
-var noTokenProvided = function() {
-  return error(403, 'No token provided');
-};
 var tokenFailed = function() {
   return error(403, 'Failed to authenticate token');
 };
 var noApiKey = function() {
   return error(403, 'No API key provided');
 };
-var notFound = function() {
-  return error(404, 'Not found');
-};
-var fieldNotFound = function(field) {
-  return error(501, 'No ' + field + ' provided');
+var fieldNotFound = function(field, status) {
+  return error(status || 500, 'No ' + field + ' provided');
 };
 
 var error = function(status, msg) {
@@ -40,15 +28,11 @@ var error = function(status, msg) {
 };
 
 module.exports = {
-  authNoEmail: authNoEmail,
-  authNoUserId: authNoUserId,
-  authNoPassword: authNoPassword,
+  notFound: notFound,
   authEmailNotRegistered: authEmailNotRegistered,
   authWrongPassword: authWrongPassword,
   authHashError: authHashError,
-  noTokenProvided: noTokenProvided,
   tokenFailed: tokenFailed,
   noApiKey: noApiKey,
-  notFound: notFound,
   fieldNotFound: fieldNotFound
 };
