@@ -27,7 +27,6 @@ router.post('/', function(req, res, next) {
   });
 });
 
-// todo: refactor
 router.get('/', function(req, res, next) {
   var userId = req.get('x-access-user-id');
   var skip = parseInt(req.query.skip) || 0;

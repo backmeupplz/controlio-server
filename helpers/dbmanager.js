@@ -61,16 +61,16 @@ var addProject = function(req, callback) {
       };
       var newProject = new Project(project);
       newProject.save(function(err, project) {
-        callback(err);
-
-        var allObjects = _.union([ownerObject], [managerObject]);
-        allObjects.forEach(function(object) {
-          console.log(object.email);
-          console.log('+');
-          object.projects.push(project);
-          object.save();
-          console.log('-');
-        });
+        if (err) {
+          callback(err);
+        } else {
+          var allObjects = _.union([ownerObject], [managerObject], clientObjects);
+          allObjects.forEach(function (object) {
+            object.projects.push(project);
+            object.save();
+          });
+          callback(err);
+        }
       });
     } else {
       callback(errors.error(500, 'No client objects created'));
@@ -166,7 +166,7 @@ var addUsersByEmails = function(emails, callback) {
     var usersToAdd = emails.map(function(email) {
       return userTemplate(email);
     });
-    User.collection.insert(usersToAdd, callback)
+    User.create(usersToAdd, callback);
   } else {
     callback(null, [])
   }
@@ -174,15 +174,7 @@ var addUsersByEmails = function(emails, callback) {
 
 var userTemplate = function(email) {
   return {
-    email: email,
-    isBusiness: false,
-    isAdmin: false,
-    isCompleted: false,
-    isEmailVerified: false,
-    addedAsClient: true,
-    addedAsManager: false,
-    iosPushTokens: [],
-    androidPushTokens: []
+    email: email
   };
 };
 
