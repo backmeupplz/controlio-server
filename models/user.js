@@ -10,6 +10,10 @@ var emailValidator = [
 ];
 
 var userSchema = new Schema({
+  __v: {
+    type: Number,
+    select: false
+  },
   email: {
     type: String,
     required: true,
@@ -59,6 +63,7 @@ var userSchema = new Schema({
     {
       type: Schema.ObjectId,
       ref: 'project',
+      select: false,
       required: true,
       default: []
     }
@@ -67,6 +72,7 @@ var userSchema = new Schema({
     {
       type: String,
       required: true,
+      select: false,
       default: []
     }
   ],
@@ -74,6 +80,7 @@ var userSchema = new Schema({
     {
       type: String,
       required: true,
+      select: false,
       default: []
     }
   ],

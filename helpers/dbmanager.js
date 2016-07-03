@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var errors = require('./errors.js');
 
 // Get schemas
 var User = mongoose.model('user');
@@ -6,10 +7,6 @@ var Project = mongoose.model('project');
 var Post = mongoose.model('post');
 
 // Users
-
-var getUsers = function(callback) {
-  User.find(callback);
-};
 
 var addUsersByEmails = function(emails, callback) {
   if (emails.length > 0) {
@@ -44,9 +41,7 @@ var addUser = function(user, callback) {
       callback(err);
     } else {
       if (dbuser) {
-        var err = new Error();
-        err.message = 'User already exists';
-        callback(err);
+        callback(errors.error(500, 'User already exists'));
       } else {
         var newUser = new User(user);
         newUser.save(callback);
@@ -65,12 +60,12 @@ var addUserByEmail = function(email, callback) {
   newUser.save(callback)
 };
 
+var getUserById = function(id, callback, select) {
+  User.findById(id).select(select || '').exec(callback);
+};
+
 var getUser = function(options, callback, select) {
-  if (select) {
-    User.findOne(options).select(select).exec(callback);
-  } else {
-    User.findOne(options).exec(callback);
-  }
+  User.findOne(options).select(select || '').exec(callback);
 };
 
 var getClients = function(clientEmails, callback) {
@@ -175,13 +170,16 @@ var removeAllUsers = function(callback) {
 // Export
 
 module.exports = {
-  getUsers: getUsers,
+  // Users
   addUser: addUser,
   addUserByEmail: addUserByEmail,
+  getUserById: getUserById,
   getUser: getUser,
   getClients: getClients,
+  // Projects
   addProject: addProject,
   getProjects: getProjects,
+  // Posts
   addPost: addPost,
   getPosts: getPosts,
   debug: {

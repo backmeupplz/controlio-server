@@ -28,6 +28,7 @@ var error = function(status, msg) {
 };
 
 module.exports = {
+  error: error,
   notFound: notFound,
   authEmailNotRegistered: authEmailNotRegistered,
   authWrongPassword: authWrongPassword,
