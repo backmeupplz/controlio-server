@@ -21,7 +21,7 @@ router.post('/login', function(req, res, next) {
   var email = req.body.email;
   var rawPassword = req.body.password;
 
-  var getUserCallback = function(err, user) {
+  var getUserCallback = function (err, user) {
     if (err) {
       next(err);
     } else if (user) {
@@ -39,9 +39,14 @@ router.post('/login', function(req, res, next) {
   dbmanager.getUser({email: email}, getUserCallback, '+password +token');
 });
 
-
-
 router.post('/signup', function(req, res, next) {
+  try {
+    requestValidator.checkParams(['email', 'password'], req);
+  } catch (paramsError) {
+    next(paramsError);
+    return;
+  }
+
   var email = req.body.email;
   var rawPassword = req.body.password;
 
@@ -53,30 +58,18 @@ router.post('/signup', function(req, res, next) {
       res.send(user);
     }
   };
+  
+  var user = {
+    email: email,
+    password: hash.hashPassword(rawPassword),
+    token: jwt.sign(email, config.jwtSecret)
+  };
 
-  if (!email) {
-    next(errors.authNoEmail());
-  } else if (!rawPassword) {
-    next(errors.authNoPassword());
-  } else {
-    var hashPass = hash.hashPassword(rawPassword);
-
-    if (hashPass) {
-      var user = {
-        email: email,
-        password: hashPass,
-        token: jwt.sign(email, config.jwtSecret)
-      };
-
-      dbmanager.addUser(user, addUserCallback);
-    } else {
-      next(errors.authHashError());
-    }
-  }
+  dbmanager.addUser(user, addUserCallback);
 });
 
+// todo: add password recovery
 router.post('/recoverPassword', function(req, res, next) {
-  // TODO: Add password recovery
   res.sendStatus(501);
 });
 
@@ -87,7 +80,7 @@ router.use(auth.checkToken);
 // DEBUG
 
 router.get('/removeallusers', function(req, res, next) {
-  dbmanager.debug.removeAllUsers(function(err) {
+  dbmanager.debug.removeAllUsers(function (err) {
     if (err) {
       next(err);
     } else {

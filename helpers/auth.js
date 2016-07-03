@@ -14,7 +14,7 @@ var checkToken = function(req, res, next) {
       if (user.token == token) {
         next();
       } else {
-        next(errors.tokenFailed());
+        next(errors.authTokenFailed());
       }
     } else {
       next(errors.authEmailNotRegistered());
@@ -28,7 +28,7 @@ var checkToken = function(req, res, next) {
   } else {
     jwt.verify(token, config.jwtSecret, function(err) {
       if (err) {
-        next(errors.tokenFailed());
+        next(errors.authTokenFailed());
       } else {
         dbmanager.getUserById(userId, '+token', function(err, user) {
           getUserCallback(err, user, token);

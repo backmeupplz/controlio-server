@@ -60,4 +60,6 @@ app.use(function(err, req, res, next) {
   res.send(err);
 });
 
+console.log('Server is up and running!');
+
 module.exports = app;

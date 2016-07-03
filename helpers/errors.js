@@ -7,11 +7,11 @@ var authEmailNotRegistered = function() {
 var authWrongPassword = function() {
   return error(403, 'Wrong password');
 };
-var authHashError = function() {
-  return error(500, 'Password could not be saved');
-};
-var tokenFailed = function() {
+var authTokenFailed = function() {
   return error(403, 'Failed to authenticate token');
+};
+var authUserAlreadyExists = function() {
+  return error(403, 'User already exists');
 };
 var noApiKey = function() {
   return error(403, 'No API key provided');
@@ -32,8 +32,8 @@ module.exports = {
   notFound: notFound,
   authEmailNotRegistered: authEmailNotRegistered,
   authWrongPassword: authWrongPassword,
-  authHashError: authHashError,
-  tokenFailed: tokenFailed,
+  authTokenFailed: authTokenFailed,
+  authUserAlreadyExists: authUserAlreadyExists,
   noApiKey: noApiKey,
   fieldNotFound: fieldNotFound
 };

@@ -8,6 +8,7 @@ var Post = mongoose.model('post');
 
 // Users
 
+// todo: refactor
 var addUsersByEmails = function(emails, callback) {
   if (emails.length > 0) {
     var usersToAdd = [];
@@ -36,12 +37,12 @@ var addUsersByEmails = function(emails, callback) {
 };
 
 var addUser = function(user, callback) {
-  var findUserCallback = function(err, dbuser) {
+  var findUserCallback = function(err, databaseUser) {
     if (err) {
       callback(err);
     } else {
-      if (dbuser) {
-        callback(errors.error(500, 'User already exists'));
+      if (databaseUser) {
+        callback(errors.authUserAlreadyExists());
       } else {
         var newUser = new User(user);
         newUser.save(callback);
@@ -51,6 +52,7 @@ var addUser = function(user, callback) {
   User.findOne({email: user.email}, findUserCallback);
 };
 
+// todo: refactor
 var addUserByEmail = function(email, callback) {
   var user = {
     email: email,
@@ -68,6 +70,7 @@ var getUser = function(options, callback, select) {
   User.findOne(options).select(select || '').exec(callback);
 };
 
+// todo: refactor
 var getClients = function(clientEmails, callback) {
   User.find({'email': {$in: clientEmails} }, function(err, clientObjects) {
     if (err) {
@@ -106,11 +109,13 @@ var getClients = function(clientEmails, callback) {
 
 // Projects
 
+// todo: refactor
 var addProject = function(project, callback) {
   var newProject = new Project(project);
   newProject.save(callback);
 };
 
+// todo: refactor
 var getProjects = function(userId, skip, limit, callback) {
   getUser({_id: userId}, function(err, user) {
     if (err) {
@@ -130,6 +135,7 @@ var getProjects = function(userId, skip, limit, callback) {
 
 // Posts
 
+// todo: refactor
 var addPost = function(projectId, text, attachments, callback) {
   Project.findOne({_id: projectId}, function(err, project) {
     if (err) {
@@ -147,6 +153,7 @@ var addPost = function(projectId, text, attachments, callback) {
   });
 };
 
+// todo: refactor
 var getPosts = function(projectId, skip, limit, callback) {
   Project.findOne({_id: projectId}, function(err, project) {
     if (err) {

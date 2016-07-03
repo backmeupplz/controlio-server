@@ -71,16 +71,16 @@ var userSchema = new Schema({
   iosPushTokens: [
     {
       type: String,
-      required: true,
       select: false,
+      required: true,
       default: []
     }
   ],
   androidPushTokens: [
     {
       type: String,
-      required: true,
       select: false,
+      required: true,
       default: []
     }
   ],
