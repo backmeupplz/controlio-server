@@ -25,8 +25,8 @@ var addUser = function(user, callback) {
   User.findOne({email: user.email}, findUserCallback);
 };
 
-var getUserById = function(id, callback, select, projection) {
-  User.findById(id, projection).select(select || '').exec(callback);
+var getUserById = function(id, callback, select, projection, populate) {
+  User.findById(id, projection).select(select || '').populate(populate || '').exec(callback);
 };
 
 var getUser = function(options, callback, select) {
@@ -121,7 +121,7 @@ var getProjects = function(userId, skip, limit, callback) {
     } else {
       callback(errors.error(500, 'No user found'));
     }
-  }, null, {projects:{$slice:[skip, limit]}});
+  }, null, {projects:{$slice:[skip, limit]}}, 'projects');
 };
 
 // Posts
