@@ -2,25 +2,27 @@ var express = require('express');
 var router = express.Router();
 var dbmanager = require('../helpers/dbmanager');
 var auth = require('../helpers/auth');
+var requestValidator = require('../helpers/requestValidator');
 
 // Private API
 
 router.use(auth.checkToken);
 
-// todo: refactor
 router.post('/', function(req, res, next) {
+  var requiredFields = ['projectId', 'text', 'attachments'];
+  try {
+    requestValidator.checkParams(requiredFields, req);
+  } catch (paramsError) {
+    next(paramsError);
+    return;
+  }
+
   var projectId = req.body.projectId;
   var text = req.body.text;
   var attachments = req.body.attachments;
   
-  if (!(projectId && text && attachments)) {
-    next(new Error(500));
-    return;
-  }
-  
   dbmanager.addPost(projectId, text, attachments, function(err) {
     if (err) {
-      console.log(err);
       next(err);
     } else {
       res.sendStatus(200);

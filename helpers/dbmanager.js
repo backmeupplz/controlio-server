@@ -126,9 +126,8 @@ var getProjects = function(userId, skip, limit, callback) {
 
 // Posts
 
-// todo: refactor
 var addPost = function(projectId, text, attachments, callback) {
-  Project.findOne({_id: projectId}, function(err, project) {
+  Project.findById(projectId, function(err, project) {
     if (err) {
       callback(err);
     } else {
@@ -139,7 +138,14 @@ var addPost = function(projectId, text, attachments, callback) {
         attachments: attachments
       };
       var post = new Post(newPost);
-      post.save(callback);
+      post.save(function(err, post) {
+        if (err) {
+          callback(err);
+        } else {
+          project.posts.push(post);
+          project.save(callback);
+        }
+      });
     }
   });
 };
