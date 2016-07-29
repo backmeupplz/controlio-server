@@ -13,7 +13,7 @@ const app = express();
 // setup mongoose and load all models
 mongoose.connect(config.database);
 fs.readdirSync(path.join(__dirname, '/models')).forEach(filename => {
-    require(path.join(__dirname, '/models/', filename));
+	require(path.join(__dirname, '/models/', filename));
 });
 
 const auth = require('./helpers/auth');

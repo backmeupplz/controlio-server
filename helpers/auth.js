@@ -1,13 +1,13 @@
-var errors = require('./errors');
-var dbmanager = require('./dbmanager');
-var jwt = require('jsonwebtoken');
-var config = require('../config');
+const errors = require('./errors');
+const dbmanager = require('./dbmanager');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 
-var checkToken = function(req, res, next) {
-  var token = req.get('x-access-token');
-  var userId = req.get('x-access-user-id');
+function checkToken(req, res, next) {
+  const token = req.get('x-access-token');
+  const userId = req.get('x-access-user-id');
 
-  var getUserCallback = function(err, user, token) {
+  function getUserCallback(err, user, token) {
     if (err) {
       next(err);
     } else if (user) {
@@ -38,7 +38,7 @@ var checkToken = function(req, res, next) {
   }
 };
 
-var checkApiKey = function(req, res, next) {
+function checkApiKey(req, res, next) {
   var apiKey = req.get('x-access-apiKey');
   if (apiKey == config.apiKey) {
     next();
@@ -48,6 +48,6 @@ var checkApiKey = function(req, res, next) {
 };
 
 module.exports = {
-  checkToken: checkToken,
-  checkApiKey: checkApiKey
+  checkToken,
+  checkApiKey
 };
