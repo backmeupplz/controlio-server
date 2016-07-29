@@ -1,16 +1,16 @@
-var express = require('express');
-var router = express.Router();
-var dbmanager = require('../helpers/dbmanager');
-var hash = require('../helpers/hash');
-var jwt = require('jsonwebtoken');
-var config = require('../config');
-var errors = require('../helpers/errors');
-var auth = require('../helpers/auth');
-var requestValidator = require('../helpers/requestValidator');
+const express = require('express');
+const router = express.Router();
+const dbmanager = require('../helpers/dbmanager');
+const hash = require('../helpers/hash');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
+const errors = require('../helpers/errors');
+const auth = require('../helpers/auth');
+const requestValidator = require('../helpers/requestValidator');
 
 // Public API
 
-router.post('/login', function(req, res, next) {
+router.post('/login', (req, res, next) => {
   try {
     requestValidator.checkParams(['email', 'password'], req);
   } catch (paramsError) {
@@ -18,10 +18,10 @@ router.post('/login', function(req, res, next) {
     return;
   }
 
-  var email = req.body.email;
-  var rawPassword = req.body.password;
+  const email = req.body.email;
+  const rawPassword = req.body.password;
 
-  var getUserCallback = function (err, user) {
+  function getUserCallback(err, user) {
     if (err) {
       next(err);
     } else if (user) {
@@ -36,7 +36,7 @@ router.post('/login', function(req, res, next) {
     }
   };
 
-  dbmanager.getUser({email: email}, getUserCallback, '+password +token');
+  dbmanager.getUser({ email }, getUserCallback, '+password +token');
 });
 
 router.post('/signUp', function(req, res, next) {
@@ -47,10 +47,10 @@ router.post('/signUp', function(req, res, next) {
     return;
   }
 
-  var email = req.body.email;
-  var rawPassword = req.body.password;
+  const email = req.body.email;
+  const rawPassword = req.body.password;
 
-  var addUserCallback = function(err, user) {
+  function addUserCallback(err, user) {
     if (err) {
       next(err);
     } else {
@@ -58,24 +58,18 @@ router.post('/signUp', function(req, res, next) {
       res.send(user);
     }
   };
-  
-  var user = {
-    email: email,
+
+  dbmanager.addUser({
+    email,
     password: hash.hashPassword(rawPassword),
     token: jwt.sign(email, config.jwtSecret)
-  };
-
-  dbmanager.addUser(user, addUserCallback);
+  }, addUserCallback);
 });
 
 // todo: add password recovery
-router.post('/recoverPassword', function(req, res, next) {
+router.post('/recoverPassword', (req, res, next) => {
   next(errors.error(501));
 });
-
-// Private API
-
-router.use(auth.checkToken);
 
 // Export
 

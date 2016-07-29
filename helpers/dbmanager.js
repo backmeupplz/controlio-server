@@ -30,7 +30,9 @@ function getUserById(id, callback, select, projection, populate) {
 };
 
 function getUser(options, callback, select) {
-  User.findOne(options).select(select || '').exec(callback);
+  User.findOne(options)
+    .select(select || '')
+    .exec(callback);
 };
 
 // Projects
