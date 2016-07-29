@@ -1,15 +1,15 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var validate = require('mongoose-validator');
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const validate = require('mongoose-validator');
 
-var emailValidator = [
+const emailValidator = [
   validate({
     validator: 'isEmail',
     message: 'Wrong email format'
   })
 ];
 
-var userSchema = new Schema({
+const userSchema = new Schema({
   __v: {
     type: Number,
     select: false
@@ -21,12 +21,10 @@ var userSchema = new Schema({
   },
   password: {
     type: String,
-    required: false,
     select: false
   },
   token: {
     type: String,
-    required: false,
     select: false
   },
   isBusiness: {
@@ -59,31 +57,25 @@ var userSchema = new Schema({
     required: true,
     default: false
   },
-  projects: [
-    {
+  projects: [{
       type: Schema.ObjectId,
       ref: 'project',
       select: false,
       required: true,
       default: []
-    }
-  ],
-  iosPushTokens: [
-    {
+  }],
+  iosPushTokens: [{
       type: String,
       select: false,
       required: true,
       default: []
-    }
-  ],
-  androidPushTokens: [
-    {
+  }],
+  androidPushTokens: [{
       type: String,
       select: false,
       required: true,
       default: []
-    }
-  ],
+  }],
   name: {
     type: String,
     required: false

@@ -11,7 +11,7 @@ function checkToken(req, res, next) {
     if (err) {
       next(err);
     } else if (user) {
-      if (user.token == token) {
+      if (user.token === token) {
         next();
       } else {
         next(errors.authTokenFailed());
@@ -26,11 +26,11 @@ function checkToken(req, res, next) {
   } else if (!token) {
     next(errors.fieldNotFound('token', 403));
   } else {
-    jwt.verify(token, config.jwtSecret, function(err) {
+    jwt.verify(token, config.jwtSecret, err => {
       if (err) {
-        next(errors.authTokenFailed());
+        next(err);
       } else {
-        dbmanager.getUserById(userId, function(err, user) {
+        dbmanager.getUserById(userId, (err, user) => {
           getUserCallback(err, user, token);
         }, '+token');
       }
@@ -39,8 +39,8 @@ function checkToken(req, res, next) {
 };
 
 function checkApiKey(req, res, next) {
-  var apiKey = req.get('x-access-apiKey');
-  if (apiKey == config.apiKey) {
+  const apiKey = req.get('x-access-apiKey');
+  if (apiKey === config.apiKey) {
     next();
   } else {
     next(errors.noApiKey());
