@@ -17,7 +17,7 @@ router.post('/', (req, res, next) => {
     return;
   }
   
-  dbmanager.addProject(req, err => {
+  dbmanager.addProject(req, (err, project) => {
     if (err) {
       next(err);
     } else {

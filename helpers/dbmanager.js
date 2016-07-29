@@ -10,23 +10,27 @@ const Post = mongoose.model('post');
 // Users
 
 function addUser(user, callback) {
-  var findUserCallback = function(err, databaseUser) {
+  function findUserCallback(err, databaseUser) {
     if (err) {
       callback(err);
     } else {
       if (databaseUser) {
         callback(errors.authUserAlreadyExists());
       } else {
-        var newUser = new User(user);
+        const newUser = new User(user);
         newUser.save(callback);
       }
     }
   };
-  User.findOne({email: user.email}, findUserCallback);
+
+  User.findOne({ email: user.email }, findUserCallback);
 };
 
 function getUserById(id, callback, select, projection, populate) {
-  User.findById(id, projection).select(select || '').populate(populate || '').exec(callback);
+  User.findById(id, projection)
+    .select(select || '')
+    .populate(populate || '')
+    .exec(callback);
 };
 
 function getUser(options, callback, select) {
@@ -38,40 +42,36 @@ function getUser(options, callback, select) {
 // Projects
 
 function addProject(req, callback) {
-  var userId = req.get('x-access-user-id');
-  var title = req.body.title;
-  var image = req.body.image;
-  var status = req.body.status;
-  var description = req.body.description;
-  var manager = req.body.manager;
-  var clients = req.body.clients;
+  const userId = req.get('x-access-user-id');
+  const title = req.body.title;
+  const image = req.body.image;
+  const status = req.body.status;
+  const description = req.body.description;
+  const manager = req.body.manager;
+  const clients = req.body.clients;
 
   // Add project
 
-  var getClientsCallback = function(err, clientObjects, managerObject, ownerObject) {
+  function getClientsCallback(err, clientObjects, managerObject, ownerObject) {
     if (err) {
       callback(err);
     } else if (clientObjects) {
-      var project = {
-        title: title,
-        image: image,
-        status: status,
-        description: description,
+      const project = new Project({
+        title,
+        image,
+        status,
+        description,
         owner: ownerObject,
         manager: managerObject,
         clients: clientObjects
-      };
-      var newProject = new Project(project);
-      newProject.save(function(err, project) {
+      });
+      project.save((err, project) => {
         if (err) {
           callback(err);
         } else {
-          var allObjects = _.union([ownerObject], [managerObject], clientObjects);
-          allObjects.forEach(function (object) {
-            object.projects.push(project);
-            object.save();
-          });
-          callback(err);
+          const allObjects = _.union([ownerObject], [managerObject], clientObjects);
+          allObjects.forEach(object => { object.projects.push(project) });
+          User.update(allObjects, callback);
         }
       });
     } else {
@@ -79,34 +79,36 @@ function addProject(req, callback) {
     }
   };
 
-  var getManagerCallback = function(err, managerObject, ownerObject) {
-    if (err) {
-      callback(err);
-    } else if (managerObject) {
-      getClients(clients, function(err, clientObjects) {
+  function getManagerCallback(managerObject, ownerObject) {
+    if (managerObject) {
+      getClients(clients, (err, clientObjects) => {
         getClientsCallback(err, clientObjects, managerObject, ownerObject);
       });
     } else {
-      var newManager = {
+      const newManager = {
         email: manager,
         addedAsManager: true
       };
-      addUser(newManager, function(err, newManagerObject) {
-        getClients(clients, function(err, clientObjects) {
+      addUser(newManager, (err, newManagerObject) => {
+        getClients(clients, (err, clientObjects) => {
           getClientsCallback(err, clientObjects, newManagerObject, ownerObject);
         });
       });
     }
   };
 
-  var getOwnerCallback = function(err, ownerObject) {
+  function getOwnerCallback(err, ownerObject) {
     if (err) {
       callback(err);
     } else if (!ownerObject) {
       callback(errors.error(500, 'No owner found'));
     } else {
-      getUser({email: manager}, function(err, managerObject) {
-        getManagerCallback(err, managerObject, ownerObject)
+      getUser({ email: manager }, (err, managerObject) => {
+        if (err) {
+          callback(err);
+        } else {
+          getManagerCallback(managerObject, ownerObject);
+        }
       });
     }
   };
@@ -115,7 +117,7 @@ function addProject(req, callback) {
 };
 
 function getProjects(userId, skip, limit, callback) {
-  getUserById(userId, function(err, user) {
+  getUserById(userId, (err, user) => {
     if (err) {
       callback(err);
     } else if (user) {
@@ -123,13 +125,13 @@ function getProjects(userId, skip, limit, callback) {
     } else {
       callback(errors.error(500, 'No user found'));
     }
-  }, null, {projects:{$slice:[skip, limit]}}, 'projects');
+  }, null, { projects: { $slice: [skip, limit] } }, 'projects');
 };
 
 // Posts
 
 function addPost(projectId, text, attachments, callback) {
-  Project.findById(projectId, function(err, project) {
+  Project.findById(projectId, (err, project) => {
     if (err) {
       callback(err);
     } else {;
@@ -153,52 +155,43 @@ function addPost(projectId, text, attachments, callback) {
 
 function getPosts(projectId, skip, limit, callback) {
   Project.findById(projectId, { posts: { $slice: [skip, limit] } })
-  .populate('posts')
-  .exec((err, project) => {
-    if (err) {
-      callback(err);
-    } else {
-      callback(null, project.posts);
-    }
-  });
+    .populate('posts')
+    .exec((err, project) => {
+      if (err) {
+        callback(err);
+      } else {
+        callback(null, project.posts);
+      }
+    });
 };
 
 // Helpers
 
 function addUsersByEmails(emails, callback) {
   if (emails.length > 0) {
-    var usersToAdd = emails.map(function(email) {
-      return userTemplate(email);
-    });
+    const usersToAdd = emails.map(email => { email });
     User.create(usersToAdd, callback);
   } else {
-    callback(null, [])
+    callback(null, []);
   }
 };
 
-function userTemplate(email) {
-  return {
-    email: email
-  };
-};
-
 function getClients(clientEmails, callback) {
-  User.find({'email': {$in: clientEmails} }, function(err, existingClientObjects) {
+  User.find({ 'email': { $in: clientEmails } }, (err, existingClientObjects) => {
     if (err) {
       callback(err);
     } else if (existingClientObjects) {
       // Check what emails aren't created yet
-      var existingClientEmails = existingClientObjects.map(function(clientObject) {
-        return clientObject.email;
+      const existingClientEmails = existingClientObjects.map(clientObject => { clientObject.email
       });
-      var clientsEmailsToCreate = _.difference(clientEmails, existingClientEmails);
+      const clientsEmailsToCreate = _.difference(clientEmails, existingClientEmails);
 
       // Create missing users
-      addUsersByEmails(clientsEmailsToCreate, function (err, addedClientObjects) {
+      addUsersByEmails(clientsEmailsToCreate, (err, addedClientObjects) => {
         if (err) {
           callback(err)
         } else {
-          var allClientObjects = existingClientObjects.concat(addedClientObjects);
+          const allClientObjects = existingClientObjects.concat(addedClientObjects);
           callback(err, allClientObjects)
         }
       })
