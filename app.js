@@ -1,30 +1,28 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
-var fs = require('fs');
-var config = require('./config');
-var errors = require('./helpers/errors');
-var app = express();
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const fs = require('fs');
+const config = require('./config');
+const errors = require('./helpers/errors');
+const app = express();
 
 // setup mongoose and load all models
 mongoose.connect(config.database);
-fs.readdirSync(path.join(__dirname, '/models')).forEach(function(filename) {
-  if (~filename.indexOf('.js')) {
-    require(path.join(__dirname, '/models/', filename))
-  }
+fs.readdirSync(path.join(__dirname, '/models')).forEach(filename => {
+    require(path.join(__dirname, '/models/', filename));
 });
 
-var auth = require('./helpers/auth');
+const auth = require('./helpers/auth');
 
 // require routes
-var users = require('./routes/users');
-var projects = require('./routes/projects');
-var posts = require('./routes/posts');
-var base = require('./routes/base');
+const users = require('./routes/users');
+const projects = require('./routes/projects');
+const posts = require('./routes/posts');
+const base = require('./routes/base');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -40,7 +38,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // check api token
-
 app.use(auth.checkApiKey);
 
 // redirect routes
@@ -61,5 +58,4 @@ app.use(function(err, req, res, next) {
 });
 
 console.log('Server is up and running!');
-
 module.exports = app;
