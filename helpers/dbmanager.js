@@ -130,19 +130,18 @@ function addPost(projectId, text, attachments, callback) {
   Project.findById(projectId, function(err, project) {
     if (err) {
       callback(err);
-    } else {
-      var newPost = {
-        text: text,
+    } else {;
+      const post = new Post({
+        text,
+        project,
+        attachments,
         manager: project.manager,
-        project: project,
-        attachments: attachments
-      };
-      var post = new Post(newPost);
-      post.save(function(err, post) {
+      });
+      post.save((err, savedPost) => {
         if (err) {
           callback(err);
         } else {
-          project.posts.push(post);
+          project.posts.push(savedPost);
           project.save(callback);
         }
       });
@@ -151,7 +150,9 @@ function addPost(projectId, text, attachments, callback) {
 };
 
 function getPosts(projectId, skip, limit, callback) {
-  Project.findById(projectId, {posts:{$slice:[skip, limit]}}).populate('posts').exec(function(err, project) {
+  Project.findById(projectId, { posts: { $slice: [skip, limit] } })
+  .populate('posts')
+  .exec((err, project) => {
     if (err) {
       callback(err);
     } else {

@@ -58,23 +58,23 @@ const userSchema = new Schema({
     default: false
   },
   projects: [{
-      type: Schema.ObjectId,
-      ref: 'project',
-      select: false,
-      required: true,
-      default: []
+    type: Schema.ObjectId,
+    ref: 'project',
+    select: false,
+    required: true,
+    default: []
   }],
   iosPushTokens: [{
-      type: String,
-      select: false,
-      required: true,
-      default: []
+    type: String,
+    select: false,
+    required: true,
+    default: []
   }],
   androidPushTokens: [{
-      type: String,
-      select: false,
-      required: true,
-      default: []
+    type: String,
+    select: false,
+    required: true,
+    default: []
   }],
   name: {
     type: String,
