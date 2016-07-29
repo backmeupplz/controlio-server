@@ -1,14 +1,10 @@
-/**
- * Created by BackMeUpPlz on 02/07/16.
- */
+const errors = require('./errors');
 
-var errors = require('./errors');
+function checkParams(requiredParams, req) {
+  const params = Object.keys(req.body);
 
-var checkParams = function(requiredParams, req) {
-  var params = Object.keys(req.body);
-
-  var missedParamError;
-  requiredParams.every(function(requiredParam) {
+  let missedParamError;
+  requiredParams.every(requiredParam => {
     if (params.indexOf(requiredParam) > -1) {
       if (!req.body[requiredParam]) {
         missedParamError = errors.fieldNotFound(requiredParam, 403);
@@ -28,5 +24,5 @@ var checkParams = function(requiredParams, req) {
 };
 
 module.exports = {
-  checkParams: checkParams
+  checkParams
 };
