@@ -1,15 +1,15 @@
-var express = require('express');
-var router = express.Router();
-var dbmanager = require('../helpers/dbmanager');
-var auth = require('../helpers/auth');
-var requestValidator = require('../helpers/requestValidator');
+const express = require('express');
+const router = express.Router();
+const dbmanager = require('../helpers/dbmanager');
+const auth = require('../helpers/auth');
+const requestValidator = require('../helpers/requestValidator');
 
 // Private API
 
 router.use(auth.checkToken);
 
-router.post('/', function(req, res, next) {
-  var requiredFields = ['title', 'image', 'status', 'description', 'manager', 'clients'];
+router.post('/', (req, res, next) => {
+  const requiredFields = ['title', 'image', 'status', 'description', 'manager', 'clients'];
   try {
     requestValidator.checkParams(requiredFields, req);
   } catch (paramsError) {
@@ -17,7 +17,7 @@ router.post('/', function(req, res, next) {
     return;
   }
   
-  dbmanager.addProject(req, function(err) {
+  dbmanager.addProject(req, err => {
     if (err) {
       next(err);
     } else {
@@ -26,11 +26,11 @@ router.post('/', function(req, res, next) {
   });
 });
 
-router.get('/', function(req, res, next) {
-  var userId = req.get('x-access-user-id');
-  var skip = parseInt(req.query.skip) || 0;
-  var limit = parseInt(req.query.limit) || 20;
-  dbmanager.getProjects(userId, skip, limit, function(err, projects) {
+router.get('/', (req, res, next) => {
+  const userId = req.get('x-access-user-id');
+  const skip = parseInt(req.query.skip) || 0;
+  const limit = parseInt(req.query.limit) || 20;
+  dbmanager.getProjects(userId, skip, limit, (err, projects) => {
     if (err) {
       next(err);
     } else {
