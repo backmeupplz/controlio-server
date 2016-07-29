@@ -1,15 +1,15 @@
-var mongoose = require('mongoose');
-var errors = require('./errors.js');
-var _ = require('lodash');
+const mongoose = require('mongoose');
+const errors = require('./errors.js');
+const _ = require('lodash');
 
 // Get schemas
-var User = mongoose.model('user');
-var Project = mongoose.model('project');
-var Post = mongoose.model('post');
+const User = mongoose.model('user');
+const Project = mongoose.model('project');
+const Post = mongoose.model('post');
 
 // Users
 
-var addUser = function(user, callback) {
+function addUser(user, callback) {
   var findUserCallback = function(err, databaseUser) {
     if (err) {
       callback(err);
@@ -25,17 +25,17 @@ var addUser = function(user, callback) {
   User.findOne({email: user.email}, findUserCallback);
 };
 
-var getUserById = function(id, callback, select, projection, populate) {
+function getUserById(id, callback, select, projection, populate) {
   User.findById(id, projection).select(select || '').populate(populate || '').exec(callback);
 };
 
-var getUser = function(options, callback, select) {
+function getUser(options, callback, select) {
   User.findOne(options).select(select || '').exec(callback);
 };
 
 // Projects
 
-var addProject = function(req, callback) {
+function addProject(req, callback) {
   var userId = req.get('x-access-user-id');
   var title = req.body.title;
   var image = req.body.image;
@@ -112,7 +112,7 @@ var addProject = function(req, callback) {
   getUserById(userId, getOwnerCallback);
 };
 
-var getProjects = function(userId, skip, limit, callback) {
+function getProjects(userId, skip, limit, callback) {
   getUserById(userId, function(err, user) {
     if (err) {
       callback(err);
@@ -126,7 +126,7 @@ var getProjects = function(userId, skip, limit, callback) {
 
 // Posts
 
-var addPost = function(projectId, text, attachments, callback) {
+function addPost(projectId, text, attachments, callback) {
   Project.findById(projectId, function(err, project) {
     if (err) {
       callback(err);
@@ -150,7 +150,7 @@ var addPost = function(projectId, text, attachments, callback) {
   });
 };
 
-var getPosts = function(projectId, skip, limit, callback) {
+function getPosts(projectId, skip, limit, callback) {
   Project.findById(projectId, {posts:{$slice:[skip, limit]}}).populate('posts').exec(function(err, project) {
     if (err) {
       callback(err);
@@ -162,7 +162,7 @@ var getPosts = function(projectId, skip, limit, callback) {
 
 // Helpers
 
-var addUsersByEmails = function(emails, callback) {
+function addUsersByEmails(emails, callback) {
   if (emails.length > 0) {
     var usersToAdd = emails.map(function(email) {
       return userTemplate(email);
@@ -173,13 +173,13 @@ var addUsersByEmails = function(emails, callback) {
   }
 };
 
-var userTemplate = function(email) {
+function userTemplate(email) {
   return {
     email: email
   };
 };
 
-var getClients = function(clientEmails, callback) {
+function getClients(clientEmails, callback) {
   User.find({'email': {$in: clientEmails} }, function(err, existingClientObjects) {
     if (err) {
       callback(err);
@@ -209,13 +209,13 @@ var getClients = function(clientEmails, callback) {
 
 module.exports = {
   // Users
-  addUser: addUser,
-  getUserById: getUserById,
-  getUser: getUser,
+  addUser,
+  getUserById,
+  getUser,
   // Projects
-  addProject: addProject,
-  getProjects: getProjects,
+  addProject,
+  getProjects,
   // Posts
-  addPost: addPost,
-  getPosts: getPosts
+  addPost,
+  getPosts
 };

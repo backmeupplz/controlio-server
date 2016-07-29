@@ -1,39 +1,39 @@
-var notFound = function() {
+function notFound() {
   return error(404, 'Not found');
 };
-var authEmailNotRegistered = function() {
+function authEmailNotRegistered() {
   return error(403, 'Email not registered');
 };
-var authWrongPassword = function() {
+function authWrongPassword() {
   return error(403, 'Wrong password');
 };
-var authTokenFailed = function() {
+function authTokenFailed() {
   return error(403, 'Failed to authenticate token');
 };
-var authUserAlreadyExists = function() {
+function authUserAlreadyExists() {
   return error(403, 'User already exists');
 };
-var noApiKey = function() {
+function noApiKey() {
   return error(403, 'No API key provided');
 };
-var fieldNotFound = function(field, status) {
-  return error(status || 500, 'No ' + field + ' provided');
+function fieldNotFound(field, status) {
+  return error(status || 500, `No ${ field } provided`);
 };
 
-var error = function(status, msg) {
-  var err = new Error();
+function error(status, msg) {
+  const err = new Error();
   err.status = status;
   err.message = msg;
   return err;
 };
 
 module.exports = {
-  error: error,
-  notFound: notFound,
-  authEmailNotRegistered: authEmailNotRegistered,
-  authWrongPassword: authWrongPassword,
-  authTokenFailed: authTokenFailed,
-  authUserAlreadyExists: authUserAlreadyExists,
-  noApiKey: noApiKey,
-  fieldNotFound: fieldNotFound
+  error,
+  notFound,
+  authEmailNotRegistered,
+  authWrongPassword,
+  authTokenFailed,
+  authUserAlreadyExists,
+  noApiKey,
+  fieldNotFound
 };
