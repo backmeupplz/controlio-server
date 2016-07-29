@@ -1,7 +1,7 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-var projectSchema = new Schema({
+const projectSchema = new Schema({
   dateCreated: {
     type: Date,
     default: Date.now
@@ -25,22 +25,18 @@ var projectSchema = new Schema({
       ref: 'user',
       required: true
     },
-  clients: [
-    {
-      type: Schema.ObjectId,
-      ref: 'user',
-      required: true,
-      default: []
-    }
-  ],
-  posts: [
-    {
-      type: Schema.ObjectId,
-      ref: 'post',
-      required: true,
-      default: []
-    }
-  ]
+  clients: [{
+    type: Schema.ObjectId,
+    ref: 'user',
+    required: true,
+    default: []
+  }],
+  posts: [{
+    type: Schema.ObjectId,
+    ref: 'post',
+    required: true,
+    default: []
+  }]
 });
 
 mongoose.model('project', projectSchema);
