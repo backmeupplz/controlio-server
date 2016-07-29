@@ -1,9 +1,9 @@
-var plan = require('flightplan');
+const plan = require('flightplan');
 
-var appName = 'controlio';
-var username = 'deploy';
+const appName = 'controlio';
+const username = 'deploy';
 
-var tmpDir = appName+'-' + new Date().getTime();
+const tmpDir = `${ appName }-${ new Date().getTime() }`;
 
 // configuration
 plan.target('staging', [
@@ -22,28 +22,21 @@ plan.target('production', [
   }
 ]);
 
-// run commands on localhost
 plan.local(function(local) {
-  // uncomment these if you need to run a build on your machine first
-  // local.log('Run build');
-  // local.exec('gulp build');
-
   local.log('Copy files to remote hosts');
   var filesToCopy = local.exec('git ls-files', {silent: true});
-  // rsync files to all the destination's hosts
-  local.transfer(filesToCopy, '/tmp/' + tmpDir);
+  local.transfer(filesToCopy, `/tmp/${ tmpDir }`);
 });
 
-// run commands on remote hosts (destinations)
 plan.remote(function(remote) {
   remote.log('Move folder to root');
-  remote.sudo('cp -R /tmp/' + tmpDir + ' ~', {user: username});
-  remote.rm('-rf /tmp/' + tmpDir);
+  remote.sudo(`cp -R /tmp/${ tmpDir } ~`, {user: username});
+  remote.rm(`-rf /tmp/${ tmpDir }`);
 
   remote.log('Install dependencies');
-  remote.sudo('npm --production --prefix ~/' + tmpDir + ' install ~/' + tmpDir, {user: username});
+  remote.sudo(`npm --production --prefix ~/${ tmpDir } install ~/${ tmpDir }`, {user: username});
 
   remote.log('Reload application');
-  remote.sudo('ln -snf ~/' + tmpDir + ' ~/'+appName, {user: username});
+  remote.sudo(`ln -snf ~/${ tmpDir } ~/${ appName }`, {user: username});
   remote.exec('sudo restart controlio');
 });
