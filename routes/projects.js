@@ -9,11 +9,7 @@ const requestValidator = require('../helpers/requestValidator');
 router.use(auth.checkToken);
 
 router.post('/', (req, res, next) => {
-  const validateError = requestValidator.checkParams(['title', 'image', 'status', 'description', 'manager', 'clients'], req);
-  if (validateError) {
-    next(validateError);
-    return;
-  }
+  if (requestValidator.checkParams(['title', 'image', 'status', 'description', 'manager', 'clients'], req, next)) { return }
   
   dbmanager.addProject(req, (err, project) => {
     if (err) {

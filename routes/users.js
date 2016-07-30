@@ -11,11 +11,7 @@ const requestValidator = require('../helpers/requestValidator');
 // Public API
 
 router.post('/login', (req, res, next) => {
-  const validateError = requestValidator.checkParams(['email', 'password'], req);
-  if (validateError) {
-    next(validateError);
-    return;
-  }
+  if (requestValidator.checkParams(['email', 'password'], req, next)) { return }
 
   const email = req.body.email;
   const rawPassword = req.body.password;
@@ -39,11 +35,7 @@ router.post('/login', (req, res, next) => {
 });
 
 router.post('/signUp', (req, res, next) => {
-  const validateError = requestValidator.checkParams(['email', 'password'], req);
-  if (validateError) {
-    next(validateError);
-    return;
-  }
+  if (requestValidator.checkParams(['email', 'password'], req, next)) { return }
 
   const email = req.body.email;
   const rawPassword = req.body.password;
@@ -74,11 +66,13 @@ router.post('/recoverPassword', (req, res, next) => {
 router.use(auth.checkToken);
 
 router.post('/getUser', (req, res, next) => {
-  const validateError = requestValidator.checkParams(['name', 'email', 'photo', 'phone'], req);
-  if (validateError) {
-    next(validateError);
-    return;
-  }
+  if (requestValidator.checkParams(['email'], req, next)) { return }
+
+
+});
+
+router.post('addManager', (req, res, next) => {
+
 });
 
 // Export

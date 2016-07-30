@@ -10,11 +10,7 @@ const errors = require('../helpers/errors');
 router.use(auth.checkToken);
 
 router.post('/', (req, res, next) => {
-  const validateError = requestValidator.checkParams(['projectId', 'text', 'attachments'], req);
-  if (validateError) {
-    next(validateError);
-    return;
-  }
+  if (requestValidator.checkParams(['projectId', 'text', 'attachments'], req, next)) { return }
 
   const projectId = req.body.projectId;
   const text = req.body.text;

@@ -1,6 +1,6 @@
 const errors = require('./errors');
 
-function checkParams(requiredParams, req) {
+function checkParams(requiredParams, req, next) {
   const params = Object.keys(req.body);
 
   let missedParamError;
@@ -19,10 +19,9 @@ function checkParams(requiredParams, req) {
   });
 
   if (missedParamError) {
-    return missedParamError;
-  } else {
-    return null;
+    next(missedParamError);
   }
+  return !missedParamError;
 };
 
 module.exports = {
