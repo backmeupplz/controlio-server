@@ -64,6 +64,13 @@ const userSchema = new Schema({
     required: true,
     default: []
   }],
+  managers: [{
+    type: Schema.ObjectId,
+    ref: 'user',
+    select: false,
+    required: true,
+    default: []
+  }],
   iosPushTokens: [{
     type: String,
     select: false,

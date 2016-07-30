@@ -21,7 +21,7 @@ function checkParams(requiredParams, req, next) {
   if (missedParamError) {
     next(missedParamError);
   }
-  return !missedParamError;
+  return !!missedParamError;
 };
 
 module.exports = {

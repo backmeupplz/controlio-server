@@ -65,14 +65,88 @@ router.post('/recoverPassword', (req, res, next) => {
 
 router.use(auth.checkToken);
 
-router.post('/getUser', (req, res, next) => {
+router.post('/manager', (req, res, next) => {
   if (requestValidator.checkParams(['email'], req, next)) { return }
 
+  const managerEmail = req.body.email;
+  const userId = req.get('x-access-user-id');
 
+  function getManagerCallback(owner, manager) {
+    owner.managers.push(manager);
+    owner.save((err, newOwner) => {
+      if (err) {
+        next(err);
+      } else {
+        res.send(manager);
+        // TODO: notify manager about being added
+      }
+    });
+  };
+
+  function getOwnerCallback(owner) {
+    dbmanager.getUser({ email: managerEmail }, (err, user) => {
+      if (err) {
+        next(err);
+      } else if (user) {
+        getManagerCallback(owner, user);
+      } else {
+        dbmanager.addManager(managerEmail, (err, manager) => {
+          if (err) {
+            next(err);
+          } else {
+            getManagerCallback(owner, manager);
+          }
+        })
+      }
+    });
+  };
+
+  dbmanager.getUserById(userId, (err, user) => {
+    if (err) {
+      next(err);
+    } else if (user) {
+      getOwnerCallback(user);
+    }
+  });
 });
 
-router.post('addManager', (req, res, next) => {
+router.get('/manager', (req, res, next) => {
+  const userId = req.get('x-access-user-id');
 
+  dbmanager.getUserById(userId, (err, user) => {
+    if (err) {
+      next(err);
+    } else if (user) {
+      res.send(user.managers);
+    }
+  }, 'managers', null, 'managers');
+});
+
+router.delete('/manager', (req, res, next) => {
+  if (requestValidator.checkParams(['managerId'], req, next)) { return }
+
+  const managerId = req.body.managerId;
+  const userId = req.get('x-access-user-id');
+
+  dbmanager.getUserById(userId, (err, user) => {
+    if (err) {
+      next(err);
+    } else if (user) {
+      const index = user.managers.indexOf(managerId);
+      if (index > -1) { 
+        user.managers.splice(index, 1);
+        user.save((err, newUser) => {
+          if (err) {
+            next(err);
+          } else {
+            res.send(newUser);
+          }
+        })
+      } else {
+        next(errors.error(500, 'No manager found'));
+      }
+    }
+  }, 'managers', null);
 });
 
 // Export

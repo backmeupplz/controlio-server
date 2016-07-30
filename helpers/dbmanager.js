@@ -39,6 +39,14 @@ function getUser(options, callback, select) {
     .exec(callback);
 };
 
+function addManager(email, callback) {
+  const newUser = new User({
+    email,
+    addedAsManager: true
+  });
+  newUser.save(callback);
+};
+
 // Projects
 
 function addProject(req, callback) {
@@ -175,7 +183,7 @@ function getPosts(projectId, skip, limit, callback) {
 
 // Helpers
 
-function addUsersByEmails(emails, callback) {
+function addClientsByEmails(emails, callback) {
   if (emails.length > 0) {
     const usersToAdd = emails.map(email => { 
       return { 
@@ -199,7 +207,7 @@ function getClients(clientEmails, callback) {
       const clientsEmailsToCreate = _.difference(clientEmails, existingClientEmails);
 
       // Create missing users
-      addUsersByEmails(clientsEmailsToCreate, (err, addedClientObjects) => {
+      addClientsByEmails(clientsEmailsToCreate, (err, addedClientObjects) => {
         if (err) {
           callback(err)
         } else {
@@ -220,6 +228,7 @@ module.exports = {
   addUser,
   getUserById,
   getUser,
+  addManager,
   // Projects
   addProject,
   getProjects,
