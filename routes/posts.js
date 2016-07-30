@@ -10,11 +10,9 @@ const errors = require('../helpers/errors');
 router.use(auth.checkToken);
 
 router.post('/', (req, res, next) => {
-  const requiredFields = ['projectId', 'text', 'attachments'];
-  try {
-    requestValidator.checkParams(requiredFields, req);
-  } catch (paramsError) {
-    next(paramsError);
+  const validateError = requestValidator.checkParams(['projectId', 'text', 'attachments'], req);
+  if (validateError) {
+    next(validateError);
     return;
   }
 
@@ -31,7 +29,7 @@ router.post('/', (req, res, next) => {
   });
 });
 
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
   const projectId = req.query.projectId;
   const skip = req.query.skip || 0;
   const limit = req.query.limit || 20;

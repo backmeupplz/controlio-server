@@ -11,10 +11,9 @@ const requestValidator = require('../helpers/requestValidator');
 // Public API
 
 router.post('/login', (req, res, next) => {
-  try {
-    requestValidator.checkParams(['email', 'password'], req);
-  } catch (paramsError) {
-    next(paramsError);
+  const validateError = requestValidator.checkParams(['email', 'password'], req);
+  if (validateError) {
+    next(validateError);
     return;
   }
 
@@ -39,11 +38,10 @@ router.post('/login', (req, res, next) => {
   dbmanager.getUser({ email }, getUserCallback, '+password +token');
 });
 
-router.post('/signUp', function(req, res, next) {
-  try {
-    requestValidator.checkParams(['email', 'password'], req);
-  } catch (paramsError) {
-    next(paramsError);
+router.post('/signUp', (req, res, next) => {
+  const validateError = requestValidator.checkParams(['email', 'password'], req);
+  if (validateError) {
+    next(validateError);
     return;
   }
 
@@ -69,6 +67,18 @@ router.post('/signUp', function(req, res, next) {
 // todo: add password recovery
 router.post('/recoverPassword', (req, res, next) => {
   next(errors.error(501));
+});
+
+// Private API
+
+router.use(auth.checkToken);
+
+router.post('/getUser', (req, res, next) => {
+  const validateError = requestValidator.checkParams(['name', 'email', 'photo', 'phone'], req);
+  if (validateError) {
+    next(validateError);
+    return;
+  }
 });
 
 // Export

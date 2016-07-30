@@ -9,11 +9,9 @@ const requestValidator = require('../helpers/requestValidator');
 router.use(auth.checkToken);
 
 router.post('/', (req, res, next) => {
-  const requiredFields = ['title', 'image', 'status', 'description', 'manager', 'clients'];
-  try {
-    requestValidator.checkParams(requiredFields, req);
-  } catch (paramsError) {
-    next(paramsError);
+  const validateError = requestValidator.checkParams(['title', 'image', 'status', 'description', 'manager', 'clients'], req);
+  if (validateError) {
+    next(validateError);
     return;
   }
   

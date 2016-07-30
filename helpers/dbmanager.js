@@ -69,9 +69,14 @@ function addProject(req, callback) {
         if (err) {
           callback(err);
         } else {
-          const allObjects = _.union([ownerObject], [managerObject], clientObjects);
-          allObjects.forEach(object => { object.projects.push(project) });
-          User.update(allObjects, callback);
+          const managerObjectArray = ownerObject.email === managerObject.email ? [] : [managerObject];
+          const allObjects = _.union([ownerObject], managerObjectArray, clientObjects);
+          // TODO: send clients registration email and\or invite
+          allObjects.forEach(object => {
+            object.projects.push(project);
+            object.save();
+          });
+          callback(null, project);
         }
       });
     } else {
@@ -81,19 +86,12 @@ function addProject(req, callback) {
 
   function getManagerCallback(managerObject, ownerObject) {
     if (managerObject) {
+      // TODO: send manager a notice or request for approval
       getClients(clients, (err, clientObjects) => {
         getClientsCallback(err, clientObjects, managerObject, ownerObject);
       });
     } else {
-      const newManager = {
-        email: manager,
-        addedAsManager: true
-      };
-      addUser(newManager, (err, newManagerObject) => {
-        getClients(clients, (err, clientObjects) => {
-          getClientsCallback(err, clientObjects, newManagerObject, ownerObject);
-        });
-      });
+      callback(errors.erorr(500, 'No manager found'));
     }
   };
 
@@ -125,7 +123,15 @@ function getProjects(userId, skip, limit, callback) {
     } else {
       callback(errors.error(500, 'No user found'));
     }
-  }, null, { projects: { $slice: [skip, limit] } }, 'projects');
+  }, 
+  null, 
+  { projects: { $slice: [skip, limit] } }, 
+  { path: 'projects',
+    populate: {
+      path: 'manager',
+      model: 'user' 
+    } 
+  });
 };
 
 // Posts
@@ -159,6 +165,8 @@ function getPosts(projectId, skip, limit, callback) {
     .exec((err, project) => {
       if (err) {
         callback(err);
+      } else if (!project) {
+        callback(errors.error(500, 'No project found'));
       } else {
         callback(null, project.posts);
       }
@@ -169,7 +177,12 @@ function getPosts(projectId, skip, limit, callback) {
 
 function addUsersByEmails(emails, callback) {
   if (emails.length > 0) {
-    const usersToAdd = emails.map(email => { email });
+    const usersToAdd = emails.map(email => { 
+      return { 
+        email,
+        addedAsClient: true
+      } 
+    });
     User.create(usersToAdd, callback);
   } else {
     callback(null, []);
@@ -182,8 +195,7 @@ function getClients(clientEmails, callback) {
       callback(err);
     } else if (existingClientObjects) {
       // Check what emails aren't created yet
-      const existingClientEmails = existingClientObjects.map(clientObject => { clientObject.email
-      });
+      const existingClientEmails = existingClientObjects.map(clientObject => clientObject.email);
       const clientsEmailsToCreate = _.difference(clientEmails, existingClientEmails);
 
       // Create missing users

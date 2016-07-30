@@ -19,7 +19,9 @@ function checkParams(requiredParams, req) {
   });
 
   if (missedParamError) {
-    throw missedParamError;
+    return missedParamError;
+  } else {
+    return null;
   }
 };
 
