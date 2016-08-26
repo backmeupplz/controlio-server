@@ -25,11 +25,14 @@ function addUser(user) {
   });
 };
 
-function getUserById(id, callback, select, projection, populate) {
-  User.findById(id, projection)
-    .select(select || '')
-    .populate(populate || '')
-    .exec(callback);
+function getUserById(id, select, projection, populate) {
+  return new Promise((resolve, reject) => {
+    User.findById(id, projection)
+      .select(select || '')
+      .populate(populate || '')
+      .then(resolve)
+      .catch(reject);
+  });
 };
 
 function getUser(options, select) {
@@ -41,12 +44,16 @@ function getUser(options, select) {
   });
 };
 
-function addManager(email, callback) {
-  const newUser = new User({
-    email,
-    addedAsManager: true
+function addManager(email) {
+  return new Promise((resolve, reject) => {
+    const newUser = new User({
+      email,
+      addedAsManager: true
+    });
+    newUser.save()
+      .then(resolve)
+      .catch(reject);
   });
-  newUser.save(callback);
 };
 
 // Projects

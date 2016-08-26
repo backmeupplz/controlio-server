@@ -71,55 +71,44 @@ router.post('/manager', (req, res, next) => {
   const managerEmail = req.body.email;
   const userId = req.get('x-access-user-id');
 
-  function getManagerCallback(owner, manager) {
-    owner.managers.push(manager);
-    owner.save((err, newOwner) => {
-      if (err) {
-        next(err);
-      } else {
-        res.send(manager);
-        // TODO: notify manager about being added
-      }
-    });
-  };
-
-  function getOwnerCallback(owner) {
-    dbmanager.getUser({ email: managerEmail }, (err, user) => {
-      if (err) {
-        next(err);
-      } else if (user) {
-        getManagerCallback(owner, user);
-      } else {
-        dbmanager.addManager(managerEmail, (err, manager) => {
-          if (err) {
-            next(err);
+  dbmanager.getUserById(userId)
+    .then(owner => {
+      dbmanager.getUser({ email: managerEmail })
+        .then(manager => {
+          if (manager) {
+            owner.managers.push(manager);
+            owner.save()
+              .then(owner => {
+                res.send(manager);
+                // TODO: notify manager about being added
+              });
           } else {
-            getManagerCallback(owner, manager);
+            dbmanager.addManager(managerEmail)
+              .then(manager => {
+                  owner.save()
+                    .then(owner => {
+                      res.send(manager);
+                      // TODO: notify manager about being added
+                    });
+              })
           }
         })
-      }
-    });
-  };
-
-  dbmanager.getUserById(userId, (err, user) => {
-    if (err) {
+    })
+    .catch(err => {
       next(err);
-    } else if (user) {
-      getOwnerCallback(user);
-    }
-  });
+    });
 });
 
 router.get('/manager', (req, res, next) => {
   const userId = req.get('x-access-user-id');
 
-  dbmanager.getUserById(userId, (err, user) => {
-    if (err) {
-      next(err);
-    } else if (user) {
+  dbmanager.getUserById(userId, 'managers', null, 'managers')
+    .then(user => {
       res.send(user.managers);
-    }
-  }, 'managers', null, 'managers');
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 router.delete('/manager', (req, res, next) => {
@@ -128,25 +117,22 @@ router.delete('/manager', (req, res, next) => {
   const managerId = req.body.managerId;
   const userId = req.get('x-access-user-id');
 
-  dbmanager.getUserById(userId, (err, user) => {
-    if (err) {
-      next(err);
-    } else if (user) {
+  dbmanager.getUserById(userId, 'managers', null)
+    .then(user => {
       const index = user.managers.indexOf(managerId);
       if (index > -1) { 
         user.managers.splice(index, 1);
-        user.save((err, newUser) => {
-          if (err) {
-            next(err);
-          } else {
-            res.send(newUser);
-          }
-        })
+        user.save()
+          .then(user => {
+            res.send(user);
+          });
       } else {
         next(errors.error(500, 'No manager found'));
       }
-    }
-  }, 'managers', null);
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 // Export
