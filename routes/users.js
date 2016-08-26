@@ -10,9 +10,7 @@ const requestValidator = require('../helpers/requestValidator');
 
 // Public API
 
-router.post('/login', (req, res, next) => {
-  if (requestValidator.checkParams(['email', 'password'], req, next)) { return }
-
+router.post('/login', requestValidator.check(['email', 'password']), (req, res, next) => {
   const email = req.body.email;
   const rawPassword = req.body.password;
 
@@ -34,9 +32,7 @@ router.post('/login', (req, res, next) => {
     });
 });
 
-router.post('/signUp', (req, res, next) => {
-  if (requestValidator.checkParams(['email', 'password'], req, next)) { return }
-
+router.post('/signUp', requestValidator.check(['email', 'password']), (req, res, next) => {
   const email = req.body.email;
   const rawPassword = req.body.password;
 
@@ -65,9 +61,7 @@ router.post('/recoverPassword', (req, res, next) => {
 
 router.use(auth.checkToken);
 
-router.post('/manager', (req, res, next) => {
-  if (requestValidator.checkParams(['email'], req, next)) { return }
-
+router.post('/manager', requestValidator.check(['email']), (req, res, next) => {
   const managerEmail = req.body.email;
   const userId = req.get('x-access-user-id');
 
@@ -99,7 +93,7 @@ router.post('/manager', (req, res, next) => {
     });
 });
 
-router.get('/manager', (req, res, next) => {
+router.get('/managers', (req, res, next) => {
   const userId = req.get('x-access-user-id');
 
   dbmanager.getUserById(userId, 'managers', null, 'managers')
@@ -111,7 +105,7 @@ router.get('/manager', (req, res, next) => {
     });
 });
 
-router.delete('/manager', (req, res, next) => {
+router.delete('/manager', requestValidator.check(['managerId']), (req, res, next) => {
   if (requestValidator.checkParams(['managerId'], req, next)) { return }
 
   const managerId = req.body.managerId;
