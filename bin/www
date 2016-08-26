@@ -1,37 +1,31 @@
-#!/usr/bin/env node
+const app = require('../app');
+const debug = require('debug')('controlio:server');
+const http = require('http');
 
-var app = require('../app');
-var debug = require('debug')('controlio:server');
-var http = require('http');
-
-var port = 3000;
+const port = 3000;
 app.set('port', port);
 
-var server = http.createServer(app);
+const server = http.createServer(app);
 
 server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
-
-function onError(error) {
+server.on('error', error => {
   if (error.syscall !== 'listen') {
     throw error;
   }
-  
   switch (error.code) {
     case 'EACCES':
-      console.error('Port ' + port + ' requires elevated privileges');
+      console.error(`Port ${port} requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error('Port ' + port + ' is already in use');
+      console.error(`Port ${port} is already in use`);
       process.exit(1);
       break;
     default:
       throw error;
   }
-}
+});
 
-function onListening() {
-  debug('Listening on ' + 'port ' + server.address().port);
-}
+server.on('listening', () => {
+  debug(`Listening on port ${server.address().port}`);
+});

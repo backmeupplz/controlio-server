@@ -12,8 +12,9 @@ const app = express();
 
 // setup mongoose and load all models
 mongoose.connect(config.database);
+mongoose.Promise = global.Promise;
 fs.readdirSync(path.join(__dirname, '/models')).forEach(filename => {
-	require(path.join(__dirname, '/models/', filename));
+  require(path.join(__dirname, '/models/', filename));
 });
 
 const auth = require('./helpers/auth');
@@ -45,12 +46,12 @@ app.use('/projects', projects);
 app.use('/posts/', posts);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   next(errors.notFound());
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next) => {
   res.status(err.status || 500);
   res.send(err);
 });

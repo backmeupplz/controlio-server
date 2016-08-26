@@ -16,22 +16,22 @@ router.post('/login', (req, res, next) => {
   const email = req.body.email;
   const rawPassword = req.body.password;
 
-  function getUserCallback(err, user) {
-    if (err) {
-      next(err);
-    } else if (user) {
-      if (hash.checkPassword(user.password, rawPassword)) {
-        user.password = undefined;
-        res.send(user);
+  dbmanager.getUser({ email }, '+password +token')
+    .then(user => {
+      if (user) {
+        if (hash.checkPassword(user.password, rawPassword)) {
+          user.password = undefined;
+          res.send(user);
+        } else {
+          next(errors.authWrongPassword());
+        }
       } else {
-        next(errors.authWrongPassword());
+        next(errors.authEmailNotRegistered());
       }
-    } else {
-      next(errors.authEmailNotRegistered());
-    }
-  };
-
-  dbmanager.getUser({ email }, getUserCallback, '+password +token');
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 router.post('/signUp', (req, res, next) => {
@@ -40,20 +40,20 @@ router.post('/signUp', (req, res, next) => {
   const email = req.body.email;
   const rawPassword = req.body.password;
 
-  function addUserCallback(err, user) {
-    if (err) {
-      next(err);
-    } else {
-      user.password = undefined;
-      res.send(user);
-    }
-  };
-
-  dbmanager.addUser({
+  const user = {
     email,
     password: hash.hashPassword(rawPassword),
     token: jwt.sign(email, config.jwtSecret)
-  }, addUserCallback);
+  };
+
+  dbmanager.addUser(user)
+    .then(user => {
+      user.password = undefined;
+      res.send(user);
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 // todo: add password recovery

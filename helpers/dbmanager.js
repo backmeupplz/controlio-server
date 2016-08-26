@@ -9,21 +9,20 @@ const Post = mongoose.model('post');
 
 // Users
 
-function addUser(user, callback) {
-  function findUserCallback(err, databaseUser) {
-    if (err) {
-      callback(err);
-    } else {
-      if (databaseUser) {
-        callback(errors.authUserAlreadyExists());
-      } else {
-        const newUser = new User(user);
-        newUser.save(callback);
-      }
-    }
-  };
-
-  User.findOne({ email: user.email }, findUserCallback);
+function addUser(user) {
+  return new Promise((resolve, reject) => {
+    User.findOne({ email: user.email })
+      .then(databaseUser => {
+        if (databaseUser) {
+          reject(errors.authUserAlreadyExists());
+        } else {
+          const newUser = new User(user);
+          newUser.save()
+            .then(resolve)
+            .catch(reject);
+        }
+      });
+  });
 };
 
 function getUserById(id, callback, select, projection, populate) {
@@ -33,10 +32,13 @@ function getUserById(id, callback, select, projection, populate) {
     .exec(callback);
 };
 
-function getUser(options, callback, select) {
-  User.findOne(options)
-    .select(select || '')
-    .exec(callback);
+function getUser(options, select) {
+  return new Promise((resolve, reject) => {
+    User.findOne(options)
+      .select(select || '')
+      .then(resolve)
+      .catch(reject);
+  });
 };
 
 function addManager(email, callback) {
