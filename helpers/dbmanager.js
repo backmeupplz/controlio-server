@@ -153,41 +153,41 @@ function getProjects(userId, skip, limit, callback) {
 
 // Posts
 
-function addPost(projectId, text, attachments, callback) {
-  Project.findById(projectId, (err, project) => {
-    if (err) {
-      callback(err);
-    } else {;
-      const post = new Post({
-        text,
-        project,
-        attachments,
-        manager: project.manager,
-      });
-      post.save((err, savedPost) => {
-        if (err) {
-          callback(err);
-        } else {
-          project.posts.push(savedPost);
-          project.save(callback);
-        }
-      });
-    }
+function addPost(projectId, text, attachments) {
+  return new Promise((resolve, reject) => {
+    Project.findById(projectId)
+      .then(project => {
+        const post = new Post({
+          text,
+          project,
+          attachments,
+          manager: project.manager,
+        });
+        post.save()
+          .then(post => {
+              project.posts.push(post);
+              project.save()
+                .then(resolve);
+          });
+      })
+      .catch(reject);
   });
 };
 
-function getPosts(projectId, skip, limit, callback) {
-  Project.findById(projectId, { posts: { $slice: [skip, limit] } })
-    .populate('posts')
-    .exec((err, project) => {
-      if (err) {
-        callback(err);
-      } else if (!project) {
-        callback(errors.error(500, 'No project found'));
-      } else {
-        callback(null, project.posts);
-      }
-    });
+function getPosts(projectId, skip, limit) {
+  return new Promise((resolve, reject) => {
+    Project.findById(projectId, { posts: { $slice: [skip, limit] } })
+      .populate('posts')
+      .exec((err, project) => {
+        if (err) {
+          reject(err);
+        } else if (!project) {
+          reject(errors.error(500, 'No project found'));
+        } else {
+          resolve(null, project.posts);
+        }
+      });
+  });
 };
 
 // Helpers

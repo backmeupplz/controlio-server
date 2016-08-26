@@ -11,18 +11,18 @@ router.use(auth.checkToken);
 
 router.post('/', (req, res, next) => {
   if (requestValidator.checkParams(['projectId', 'text', 'attachments'], req, next)) { return }
-
+  
   const projectId = req.body.projectId;
   const text = req.body.text;
   const attachments = req.body.attachments;
   
-  dbmanager.addPost(projectId, text, attachments, (err, project) => {
-    if (err) {
-      next(err);
-    } else {
+  dbmanager.addPost(projectId, text, attachments)
+    .then(project => {
       res.sendStatus(200);
-    }
-  });
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 router.get('/', (req, res, next) => {
@@ -35,13 +35,13 @@ router.get('/', (req, res, next) => {
     return;
   }
 
-  dbmanager.getPosts(projectId, skip, limit, (err, posts) => {
-    if (err) {
-      next(err);
-    } else {
+  dbmanager.getPosts(projectId, skip, limit)
+    .then(posts => {
       res.send(posts);
-    }
-  });
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 // Export
