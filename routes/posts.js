@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const dbmanager = require('../helpers/dbmanager');
 const auth = require('../helpers/auth');
-const requestValidator = require('../helpers/requestValidator');
 const errors = require('../helpers/errors');
 
 // Private API
@@ -10,7 +9,7 @@ const errors = require('../helpers/errors');
 router.use(auth.checkToken);
 
 router.post('/', (req, res, next) => {
-  if (requestValidator.checkParams(['projectId', 'text', 'attachments'], req, next)) { return }
+  // if (requestValidator.checkParams(['projectId', 'text', 'attachments'], req, next)) { return }
   
   const projectId = req.body.projectId;
   const text = req.body.text;

@@ -17,9 +17,7 @@ function addUser(user) {
           reject(errors.authUserAlreadyExists());
         } else {
           const newUser = new User(user);
-          newUser.save()
-            .then(resolve)
-            .catch(reject);
+          return newUser.save();
         }
       });
   });
@@ -27,17 +25,15 @@ function addUser(user) {
 
 function getUserById(id, select, projection, populate) {
   return new Promise((resolve, reject) => {
-    User.findById(id, projection)
+    return User.findById(id, projection)
       .select(select || '')
-      .populate(populate || '')
-      .then(resolve)
-      .catch(reject);
+      .populate(populate || '');
   });
 };
 
 function getUser(options, select) {
   return new Promise((resolve, reject) => {
-    User.findOne(options)
+    return User.findOne(options)
       .select(select || '')
       .then(resolve)
       .catch(reject);
@@ -50,9 +46,7 @@ function addManager(email) {
       email,
       addedAsManager: true
     });
-    newUser.save()
-      .then(resolve)
-      .catch(reject);
+    return newUser.save();
   });
 };
 
@@ -131,23 +125,25 @@ function addProject(req, callback) {
   getUserById(userId, getOwnerCallback);
 };
 
-function getProjects(userId, skip, limit, callback) {
-  getUserById(userId, (err, user) => {
-    if (err) {
-      callback(err);
-    } else if (user) {
-      callback(null, user.projects);
-    } else {
-      callback(errors.error(500, 'No user found'));
-    }
-  }, 
-  null, 
-  { projects: { $slice: [skip, limit] } }, 
-  { path: 'projects',
-    populate: {
-      path: 'manager',
-      model: 'user' 
-    } 
+function getProjects(userId, skip, limit) {
+  return new Promise((resolve, reject) => {
+    getUserById(userId, 
+      null,
+      { projects: { $slice: [skip, limit] } }, 
+      { path: 'projects',
+        populate: {
+          path: 'manager',
+          model: 'user' 
+        } 
+      })
+      .then(user => {
+        if (user) {
+          resolve(user.projects);
+        } else {
+          reject(errors.error(500, 'No user found'));
+        }
+      })
+      .catch(err => reject(err));
   });
 };
 

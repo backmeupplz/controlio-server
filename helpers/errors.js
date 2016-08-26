@@ -13,11 +13,9 @@ function authTokenFailed() {
 function authUserAlreadyExists() {
   return error(403, 'User already exists');
 };
+
 function noApiKey() {
   return error(403, 'No API key provided');
-};
-function fieldNotFound(field, status) {
-  return error(status || 500, `No ${ field } provided`);
 };
 
 function error(status, msg) {
@@ -34,6 +32,5 @@ module.exports = {
   authWrongPassword,
   authTokenFailed,
   authUserAlreadyExists,
-  noApiKey,
-  fieldNotFound
+  noApiKey
 };

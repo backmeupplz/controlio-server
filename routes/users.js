@@ -6,33 +6,28 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const errors = require('../helpers/errors');
 const auth = require('../helpers/auth');
-const requestValidator = require('../helpers/requestValidator');
+const validate = require('express-validation');
+const validation = require('../validation/users');
 
 // Public API
 
-router.post('/login', requestValidator.check(['email', 'password']), (req, res, next) => {
+router.post('/login', validate(validation.login), (req, res, next) => {
   const email = req.body.email;
   const rawPassword = req.body.password;
-
   dbmanager.getUser({ email }, '+password +token')
     .then(user => {
-      if (user) {
-        if (hash.checkPassword(user.password, rawPassword)) {
-          user.password = undefined;
-          res.send(user);
-        } else {
-          next(errors.authWrongPassword());
-        }
-      } else {
-        next(errors.authEmailNotRegistered());
+      if (!user) {
+        return next(errors.authEmailNotRegistered());
+      } else if (!hash.checkPassword(user.password, rawPassword)) {
+        return next(errors.authWrongPassword());
       }
+      user.password = undefined;
+      res.send(user);
     })
-    .catch(err => {
-      next(err);
-    });
+    .catch(err => next(err));
 });
 
-router.post('/signUp', requestValidator.check(['email', 'password']), (req, res, next) => {
+router.post('/signUp', validate(validation.signup), (req, res, next) => {
   const email = req.body.email;
   const rawPassword = req.body.password;
 
@@ -47,9 +42,7 @@ router.post('/signUp', requestValidator.check(['email', 'password']), (req, res,
       user.password = undefined;
       res.send(user);
     })
-    .catch(err => {
-      next(err);
-    });
+    .catch(err => next(err));
 });
 
 // todo: add password recovery
@@ -61,36 +54,37 @@ router.post('/recoverPassword', (req, res, next) => {
 
 router.use(auth.checkToken);
 
-router.post('/manager', requestValidator.check(['email']), (req, res, next) => {
+router.post('/manager', validate(validation.addManager), (req, res, next) => {
   const managerEmail = req.body.email;
   const userId = req.get('x-access-user-id');
 
-  dbmanager.getUserById(userId)
-    .then(owner => {
-      dbmanager.getUser({ email: managerEmail })
-        .then(manager => {
-          if (manager) {
-            owner.managers.push(manager);
-            owner.save()
-              .then(owner => {
-                res.send(manager);
-                // TODO: notify manager about being added
-              });
-          } else {
-            dbmanager.addManager(managerEmail)
-              .then(manager => {
-                  owner.save()
-                    .then(owner => {
-                      res.send(manager);
-                      // TODO: notify manager about being added
-                    });
-              })
-          }
-        })
+  Promise.all([
+      function() {
+        return dbmanager.getUserById(userId);
+      },
+      function() {
+        return dbmanager.getUser({ email: managerEmail })
+          .then(manager => {
+            if (manager) {
+              return manager;
+            } else {
+              return dbmanager.addManager(managerEmail)
+                .then(manager => {
+                    return manager;
+                })
+            }
+          });
+      }
+  ])
+    .spread((owner, manager) => {
+      owner.managers.push(manager);
+      return owner.save()
+        .then(owner => {
+          res.send(manager);
+          // TODO: notify manager about being added
+        });
     })
-    .catch(err => {
-      next(err);
-    });
+    .catch(err => next(err));
 });
 
 router.get('/managers', (req, res, next) => {
@@ -100,14 +94,10 @@ router.get('/managers', (req, res, next) => {
     .then(user => {
       res.send(user.managers);
     })
-    .catch(err => {
-      next(err);
-    });
+    .catch(err => next(err));
 });
 
-router.delete('/manager', requestValidator.check(['managerId']), (req, res, next) => {
-  if (requestValidator.checkParams(['managerId'], req, next)) { return }
-
+router.delete('/manager', validate(validation.deleteManager), (req, res, next) => {
   const managerId = req.body.managerId;
   const userId = req.get('x-access-user-id');
 
@@ -124,9 +114,7 @@ router.delete('/manager', requestValidator.check(['managerId']), (req, res, next
         next(errors.error(500, 'No manager found'));
       }
     })
-    .catch(err => {
-      next(err);
-    });
+    .catch(err => next(err));
 });
 
 // Export

@@ -2,45 +2,40 @@ const errors = require('./errors');
 const dbmanager = require('./dbmanager');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const validate = require('express-validation');
+const validation = require('../validation/auth');
 
 function checkToken(req, res, next) {
-  const token = req.get('x-access-token');
-  const userId = req.get('x-access-user-id');
+  validate(validation.token)(req, res, err => {
+    if (err) return next(err);
+  });
 
-  function getUserCallback(err, user, token) {
+  const token = req.get('token');
+  const userId = req.get('userId');
+
+  jwt.verify(token, config.jwtSecret, err => {
     if (err) {
-      next(err);
-    } else if (user) {
-      if (user.token === token) {
-        next();
-      } else {
-        next(errors.authTokenFailed());
-      }
-    } else {
-      next(errors.authEmailNotRegistered());
+      return next(err);
     }
-  };
-
-  if (!userId) {
-    next(errors.fieldNotFound('user id', 403));
-  } else if (!token) {
-    next(errors.fieldNotFound('token', 403));
-  } else {
-    jwt.verify(token, config.jwtSecret, err => {
-      if (err) {
-        next(err);
-      } else {
-        dbmanager.getUserById(userId, (err, user) => {
-          getUserCallback(err, user, token);
-        }, '+token');
-      }
-    });
-  }
+    dbmanager.getUserById(userId, '+token')
+      .then(user => {
+        if (!user) {
+          return next(errors.authEmailNotRegistered());
+        } else if (user.token !== token) {
+          return next(errors.authTokenFailed());
+        }
+        next();
+      })
+      .catch(err => next(err));
+  });
 };
 
 function checkApiKey(req, res, next) {
-  const apiKey = req.get('x-access-apiKey');
-  if (apiKey === config.apiKey) {
+  validate(validation.apiKey)(req, res, err => {
+    if (err) return next(err);
+  });
+  const apiKey = req.get('apiKey');
+  if (apiKey == config.apiKey) {
     next();
   } else {
     next(errors.noApiKey());

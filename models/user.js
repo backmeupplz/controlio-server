@@ -10,10 +10,6 @@ const emailValidator = [
 ];
 
 const userSchema = new Schema({
-  __v: {
-    type: Number,
-    select: false
-  },
   email: {
     type: String,
     required: true,
