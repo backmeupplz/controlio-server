@@ -52,77 +52,55 @@ function addManager(email) {
 
 // Projects
 
-function addProject(req, callback) {
-  const userId = req.get('x-access-user-id');
-  const title = req.body.title;
-  const image = req.body.image;
-  const status = req.body.status;
-  const description = req.body.description;
-  const manager = req.body.manager;
-  const clients = req.body.clients;
-
-  // Add project
-
-  function getClientsCallback(err, clientObjects, managerObject, ownerObject) {
-    if (err) {
-      callback(err);
-    } else if (clientObjects) {
-      const project = new Project({
-        title,
-        image,
-        status,
-        description,
-        owner: ownerObject,
-        manager: managerObject,
-        clients: clientObjects
-      });
-      project.save((err, project) => {
-        if (err) {
-          callback(err);
+function addProject(userId, title, image, status, description, manager, clients) {
+  return new Promise((resolve, reject) => {
+    return getUserById(userId)
+      .then(ownerObject => {
+        if (!ownerObject) {
+          reject(errors.error(500, 'No owner found'));
         } else {
-          const managerObjectArray = ownerObject.email === managerObject.email ? [] : [managerObject];
-          const allObjects = _.union([ownerObject], managerObjectArray, clientObjects);
-          // TODO: send clients registration email and\or invite
-          allObjects.forEach(object => {
-            object.projects.push(project);
-            object.save();
+          return ownerObject;
+        }
+      })
+      .then(ownerObject => {
+        getUser({ email: manager })
+          .then(managerObject => {
+            if (managerObject) {
+              // TODO: send manager a notice or request for approval
+              return { ownerObject, managerObject };
+            } else {
+              reject(errors.erorr(500, 'No manager found'));
+            }
           });
-          callback(null, project);
-        }
-      });
-    } else {
-      callback(errors.error(500, 'No client objects created'));
-    }
-  };
-
-  function getManagerCallback(managerObject, ownerObject) {
-    if (managerObject) {
-      // TODO: send manager a notice or request for approval
-      getClients(clients, (err, clientObjects) => {
-        getClientsCallback(err, clientObjects, managerObject, ownerObject);
-      });
-    } else {
-      callback(errors.erorr(500, 'No manager found'));
-    }
-  };
-
-  function getOwnerCallback(err, ownerObject) {
-    if (err) {
-      callback(err);
-    } else if (!ownerObject) {
-      callback(errors.error(500, 'No owner found'));
-    } else {
-      getUser({ email: manager }, (err, managerObject) => {
-        if (err) {
-          callback(err);
-        } else {
-          getManagerCallback(managerObject, ownerObject);
-        }
-      });
-    }
-  };
-
-  getUserById(userId, getOwnerCallback);
+      })
+      .then(({ ownerObject, managerObject }) => {
+        getClients(clients)
+          .then(clientObjects => {
+            if (clientObjects) {
+              return { ownerObject, managerObject, clientObjects};
+            } else {
+              reject(errors.error(500, 'No client objects created'));
+            }
+          });
+      })
+      .then(({ ownerObject, managerObject, clientObjects }) => {
+        const project = new Project({ title, image, status, description, owner: ownerObject, manager: managerObject, clients: clientObjects });
+        project.save()
+          .then(project => {
+            return { ownerObject, managerObject, clientObjects, project };
+          });
+      })
+      .then(({ ownerObject, managerObject, clientObjects, project }) => {
+        const managerObjectArray = ownerObject.email === managerObject.email ? [] : [managerObject];
+        const allObjects = _.union([ownerObject], managerObjectArray, clientObjects);
+        // TODO: send clients registration email and\or invite
+        allObjects.forEach(object => {
+          object.projects.push(project);
+          object.save();
+        });
+        resolve(project);
+      })
+  });
 };
 
 function getProjects(userId, skip, limit) {
