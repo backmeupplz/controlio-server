@@ -1,36 +1,50 @@
+function error(status, message) {
+  const err = new Error();
+  err.message = message;
+  err.status = status;
+  return err;
+}
+
 function notFound() {
   return error(404, 'Not found');
-};
+}
 function authEmailNotRegistered() {
   return error(403, 'Email not registered');
-};
+}
 function authWrongPassword() {
   return error(403, 'Wrong password');
-};
+}
 function authTokenFailed() {
   return error(403, 'Failed to authenticate token');
-};
+}
 function authUserAlreadyExists() {
   return error(403, 'User already exists');
-};
-
+}
 function noApiKey() {
   return error(403, 'No API key provided');
-};
-
-function error(status, msg) {
-  const err = new Error();
-  err.status = status;
-  err.message = msg;
-  return err;
-};
+}
+function noUserFound() {
+  return error(500, 'No user found');
+}
+function noOwnerFound() {
+  return error(500, 'No owner found');
+}
+function noManagerFound() {
+  return error(500, 'No manager found');
+}
+function noClientObjectsCreated() {
+  return error(500, 'No client objects created');
+}
 
 module.exports = {
-  error,
   notFound,
   authEmailNotRegistered,
   authWrongPassword,
   authTokenFailed,
   authUserAlreadyExists,
-  noApiKey
+  noApiKey,
+  noUserFound,
+  noOwnerFound,
+  noManagerFound,
+  noClientObjectsCreated,
 };
