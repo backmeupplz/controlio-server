@@ -32,13 +32,9 @@ function getUserById(id, select, projection, populate) {
 };
 
 function getUser(options, select) {
-  return new Promise((resolve, reject) => {
-    return User.findOne(options)
-      .select(select || '')
-      .then(resolve)
-      .catch(reject);
-  });
-};
+  return User.findOne(options)
+    .select(select || '')
+}
 
 function addManager(email) {
   return new Promise((resolve, reject) => {

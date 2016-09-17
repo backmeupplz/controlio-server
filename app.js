@@ -8,13 +8,14 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const config = require('./config');
 const errors = require('./helpers/errors');
+
 const app = express();
 
 // setup mongoose and load all models
 mongoose.connect(config.database);
 mongoose.Promise = global.Promise;
-fs.readdirSync(path.join(__dirname, '/models')).forEach(filename => {
-  require(path.join(__dirname, '/models/', filename));
+fs.readdirSync(path.join(__dirname, '/models')).forEach((filename) => {
+  require(path.join(__dirname, '/models/', filename)); // eslint-disable-line global-require
 });
 
 const auth = require('./helpers/auth');
@@ -29,7 +30,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('common', {
-  stream: fs.createWriteStream('./access.log', {flags: 'a'})
+  stream: fs.createWriteStream('./access.log', { flags: 'a' }),
 }));
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -51,10 +52,10 @@ app.use((req, res, next) => {
 });
 
 // error handler
-app.use((err, req, res, next) => {
+app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   res.status(err.status || 500);
   res.send(err);
 });
 
-console.log('Server is up and running!');
+console.log('Server is up and running!'); // eslint-disable-line no-console
 module.exports = app;

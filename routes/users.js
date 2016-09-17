@@ -1,5 +1,3 @@
-const express = require('express');
-const router = express.Router();
 const dbmanager = require('../helpers/dbmanager');
 const hash = require('../helpers/hash');
 const jwt = require('jsonwebtoken');
@@ -8,6 +6,7 @@ const errors = require('../helpers/errors');
 const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/users');
+const router = require('express').Router(); // eslint-disable-line new-cap
 
 // Public API
 
@@ -15,14 +14,20 @@ router.post('/login', validate(validation.login), (req, res, next) => {
   const email = req.body.email;
   const rawPassword = req.body.password;
   dbmanager.getUser({ email }, '+password +token')
-    .then(user => {
+    .then((user) => {
       if (!user) {
-        return next(errors.authEmailNotRegistered());
-      } else if (!hash.checkPassword(user.password, rawPassword)) {
-        return next(errors.authWrongPassword());
+        next(errors.authEmailNotRegistered());
+      } else {
+        hash.checkPassword(user.password, rawPassword)
+          .then((result) => {
+            if (!result) {
+              next(errors.authWrongPassword());
+            } else {
+              user.password = undefined; // eslint-disable-line no-param-reassign
+              res.send(user);
+            }
+          });
       }
-      user.password = undefined;
-      res.send(user);
     })
     .catch(err => next(err));
 });
@@ -34,7 +39,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
   const user = {
     email,
     password: hash.hashPassword(rawPassword),
-    token: jwt.sign(email, config.jwtSecret)
+    token: jwt.sign(email, config.jwtSecret),
   };
 
   dbmanager.addUser(user)

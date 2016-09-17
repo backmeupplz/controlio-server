@@ -1,15 +1,18 @@
-const scrypt = require("scrypt");
-const scryptParameters = scrypt.paramsSync(0.1);
+const scrypt = require('scrypt');
 
 function hashPassword(password) {
-  return scrypt.kdfSync(new Buffer(password), scryptParameters).toString('base64');
-};
+  return new Promise((resolve, reject) => {
+    scrypt.kdf(password, { N: 1, r: 1, p: 1 })
+      .then(result => resolve(result.toString('base64')))
+      .catch(reject);
+  });
+}
 
 function checkPassword(hash, password) {
-  return scrypt.verifyKdfSync(new Buffer(hash, 'base64'), new Buffer(password));
-};
+  return scrypt.verifyKdf(new Buffer(hash, 'base64'), new Buffer(password));
+}
 
 module.exports = {
   hashPassword,
-  checkPassword
+  checkPassword,
 };
