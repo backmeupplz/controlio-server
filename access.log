@@ -200,3 +200,10 @@
 ::1 - - [24/Sep/2016:03:32:18 +0000] "GET /users/managers HTTP/1.1" 304 -
 ::1 - - [24/Sep/2016:03:32:19 +0000] "GET /users/managers HTTP/1.1" 304 -
 ::1 - - [24/Sep/2016:03:32:23 +0000] "GET /users/managers HTTP/1.1" 304 -
+::1 - - [24/Sep/2016:03:34:53 +0000] "GET /users/managers HTTP/1.1" 304 -
+::1 - - [24/Sep/2016:03:35:00 +0000] "GET /users/managers HTTP/1.1" 304 -
+::1 - - [24/Sep/2016:03:47:08 +0000] "GET /users/managers HTTP/1.1" 304 -
+::1 - - [24/Sep/2016:03:47:11 +0000] "GET /users/managers HTTP/1.1" 304 -
+::1 - - [24/Sep/2016:04:06:38 +0000] "GET /users/profile HTTP/1.1" 200 430
+::1 - - [24/Sep/2016:04:06:55 +0000] "GET /users/profile HTTP/1.1" 500 181
+::1 - - [24/Sep/2016:04:07:08 +0000] "GET /users/profile HTTP/1.1" 200 430

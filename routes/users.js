@@ -65,6 +65,14 @@ router.post('/recoverPassword', (req, res, next) => {
 
 router.use(auth.checkToken);
 
+router.get('/profile', (req, res, next) => {
+  const userId = req.get('userId');
+
+  dbmanager.getUserById(userId)
+    .then(user => res.send(user))
+    .catch(err => next(err));
+});
+
 router.post('/manager', validate(validation.addManager), (req, res, next) => {
   const managerEmail = req.body.email;
   const userId = req.get('userId');
