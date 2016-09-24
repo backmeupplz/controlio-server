@@ -118,21 +118,15 @@ router.get('/managers', (req, res, next) => {
 });
 
 router.delete('/manager', validate(validation.deleteManager), (req, res, next) => {
-  const managerId = req.body.managerId;
-  const userId = req.get('x-access-user-id');
+  const managerId = req.body.id;
+  const userId = req.get('userId');
 
-  dbmanager.getUserById(userId, 'managers', null)
-    .then((user) => {
-      const index = user.managers.indexOf(managerId);
-      if (index > -1) {
-        user.managers.splice(index, 1);
-        user.save()
-          .then(newUser => res.send(newUser))
-          .catch(err => next(err));
-      } else {
-        next(errors.noManagerFound());
-      }
-    })
+  dbmanager.getUserById(userId, 'managers projects', null, 'projects')
+    .then(user =>
+      dbmanager.getUserById(managerId)
+        .then(manager => dbmanager.removeManagerFromOwner(manager, user))
+    )
+    .then(user => res.send(user))
     .catch(err => next(err));
 });
 

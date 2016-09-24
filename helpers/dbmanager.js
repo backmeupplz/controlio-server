@@ -42,6 +42,20 @@ function addManager(email) {
   return newUser.save();
 }
 
+function removeManagerFromOwner(manager, owner) {
+  owner.projects.forEach((project) => {
+    if (String(project.manager) === String(manager._id)) {
+      project.manager = owner;
+      project.save();
+    }
+  });
+
+  const index = owner.managers.map(v => String(v)).indexOf(String(manager._id));
+  owner.managers.splice(index, 1);
+
+  return owner.save();
+}
+
 // Projects
 
 function addProject(userId, title, image, status, description, manager, clients) {
@@ -212,6 +226,7 @@ module.exports = {
   getUserById,
   getUser,
   addManager,
+  removeManagerFromOwner,
   // Projects
   addProject,
   getProjects,

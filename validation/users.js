@@ -20,7 +20,7 @@ module.exports = {
   },
   deleteManager: {
     body: {
-      email: Joi.string().email().required(),
+      id: Joi.string().required(),
     },
   },
 };

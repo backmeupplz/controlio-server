@@ -14,5 +14,6 @@ module.exports = {
     'promise/no-native': 0,
     'consistent-return': 0,
     'no-use-before-define': 0,
+    'no-underscore-dangle': 0,
   },
 };
