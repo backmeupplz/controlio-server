@@ -35,6 +35,12 @@ function noManagerFound() {
 function noClientObjectsCreated() {
   return error(500, 'No client objects created');
 }
+function addSelfAsManager() {
+  return error(400, 'You cannot add yourself as a manager');
+}
+function alreadyManager() {
+  return error(400, 'This user is already a manager');
+}
 
 module.exports = {
   notFound,
@@ -47,4 +53,6 @@ module.exports = {
   noOwnerFound,
   noManagerFound,
   noClientObjectsCreated,
+  addSelfAsManager,
+  alreadyManager,
 };

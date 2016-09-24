@@ -67,31 +67,53 @@ router.use(auth.checkToken);
 
 router.post('/manager', validate(validation.addManager), (req, res, next) => {
   const managerEmail = req.body.email;
-  const userId = req.get('x-access-user-id');
+  const userId = req.get('userId');
 
   dbmanager.getUserById(userId)
-    .then((owner) => {
+    .then(owner =>
       dbmanager.getUser({ email: managerEmail })
         .then(manager => ({ owner, manager }))
-        .catch(err => next(err));
-    })
+    )
     .then(({ owner, manager }) => {
-      owner.managers.push(manager);
-      owner.save()
-        .then(() => {
-          res.send(manager);
-          // TODO: notify manager about being added
-        })
-        .catch(err => next(err));
+      if (manager) {
+        if (manager.email === owner.email) {
+          next(errors.addSelfAsManager());
+        } else if (owner.managers.map(v => String(v)).includes(String(manager._id))) {
+          next(errors.alreadyManager());
+        } else {
+          owner.managers.push(manager);
+          owner.save()
+            .then(() => {
+              res.send(manager);
+              // TODO: notify manager about being added
+            })
+            .catch(err => next(err));
+        }
+      } else {
+        dbmanager.addManager(managerEmail)
+          .then((newManager) => {
+            owner.managers.push(newManager);
+            owner.save()
+              .then(() => {
+                res.send(newManager);
+                // TODO: notify manager about being added and registered to the system
+              })
+              .catch(err => next(err));
+          })
+          .catch(err => next(err));
+      }
     })
     .catch(err => next(err));
 });
 
 router.get('/managers', (req, res, next) => {
-  const userId = req.get('x-access-user-id');
+  const userId = req.get('userId');
 
-  dbmanager.getUserById(userId, 'managers', null, 'managers')
-    .then(user => res.send(user.managers))
+  dbmanager.getUserById(userId, 'managers email', null, 'managers')
+    .then((user) => {
+      user.managers.unshift(user);
+      res.send(user.managers);
+    })
     .catch(err => next(err));
 });
 
