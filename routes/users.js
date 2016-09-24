@@ -73,6 +73,24 @@ router.get('/profile', (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.post('/profile', (req, res, next) => {
+  const userId = req.get('userId');
+
+  const name = req.body.name;
+  const phone = req.body.phone;
+  const photo = req.body.photo;
+
+  dbmanager.getUserById(userId)
+    .then((user) => {
+      user.name = name || user.name;
+      user.phone = phone || user.phone;
+      user.photo = photo || user.photo;
+      return user.save()
+        .then(newUser => res.send(newUser));
+    })
+    .catch(err => next(err));
+});
+
 router.post('/manager', validate(validation.addManager), (req, res, next) => {
   const managerEmail = req.body.email;
   const userId = req.get('userId');
