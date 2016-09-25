@@ -82,9 +82,9 @@ router.post('/profile', (req, res, next) => {
 
   dbmanager.getUserById(userId)
     .then((user) => {
-      user.name = name || user.name;
-      user.phone = phone || user.phone;
-      user.photo = photo || user.photo;
+      user.name = name;
+      user.phone = phone;
+      user.photo = photo;
       return user.save()
         .then(newUser => res.send(newUser));
     })
