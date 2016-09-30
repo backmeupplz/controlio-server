@@ -80,7 +80,7 @@ router.post('/profile', (req, res, next) => {
   const phone = req.body.phone;
   const photo = req.body.photo;
 
-  dbmanager.getUserById(userId)
+  dbmanager.getUserById(userId, '+token')
     .then((user) => {
       user.name = name;
       user.phone = phone;
@@ -135,7 +135,7 @@ router.post('/manager', validate(validation.addManager), (req, res, next) => {
 router.get('/managers', (req, res, next) => {
   const userId = req.get('userId');
 
-  dbmanager.getUserById(userId, 'managers email', null, 'managers')
+  dbmanager.getUserById(userId, null, null, 'managers')
     .then((user) => {
       user.managers.unshift(user);
       res.send(user.managers);

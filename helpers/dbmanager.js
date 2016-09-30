@@ -68,8 +68,8 @@ function addProject(userId, title, image, status, description, manager, clients)
           return ownerObject;
         }
       })
-      .then((ownerObject) => {
-        getUser({ email: manager })
+      .then(ownerObject =>
+        getUserById(manager)
           .then((managerObject) => {
             if (!managerObject) {
               reject(errors.noManagerFound());
@@ -78,9 +78,8 @@ function addProject(userId, title, image, status, description, manager, clients)
               return { ownerObject, managerObject };
             }
           })
-          .catch(reject);
-      })
-      .then(({ ownerObject, managerObject }) => {
+      )
+      .then(({ ownerObject, managerObject }) =>
         getClients(clients)
           .then((clientObjects) => {
             if (!clientObjects) {
@@ -89,8 +88,7 @@ function addProject(userId, title, image, status, description, manager, clients)
               return { ownerObject, managerObject, clientObjects };
             }
           })
-          .catch(reject);
-      })
+      )
       .then(({ ownerObject, managerObject, clientObjects }) => {
         const project = new Project({
           title,
@@ -101,25 +99,24 @@ function addProject(userId, title, image, status, description, manager, clients)
           manager: managerObject,
           clients: clientObjects,
         });
-        project.save()
-          .then(newProject => ({ ownerObject, managerObject, clientObjects, newProject }))
-          .catch(reject);
+        return project.save()
+          .then(newProject => ({ ownerObject, managerObject, clientObjects, newProject }));
       })
-      .then(({ ownerObject, managerObject, clientObjects, project }) => {
+      .then(({ ownerObject, managerObject, clientObjects, newProject }) => {
         const managerObjectArray = ownerObject.email === managerObject.email ? [] : [managerObject];
         const allObjects = _.union([ownerObject], managerObjectArray, clientObjects);
         // TODO: send clients registration email and\or invite
         allObjects.forEach((object) => {
-          object.projects.push(project);
+          object.projects.push(newProject);
           object.save();
         });
-        resolve(project);
+        resolve(newProject);
       })
   );
 }
 
 function getProjects(userId, skip, limit) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) =>
     getUserById(userId, null,
       { projects: { $slice: [skip, limit] } },
       { path: 'projects',
@@ -135,8 +132,7 @@ function getProjects(userId, skip, limit) {
           reject(errors.noUserFound());
         }
       })
-      .catch(reject);
-  });
+  );
 }
 
 // Posts

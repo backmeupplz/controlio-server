@@ -9,6 +9,6 @@ module.exports = {
       description: Joi.string().required(),
       manager: Joi.string().required(),
       clients: Joi.required(),
-    }
-  }
+    },
+  },
 };
