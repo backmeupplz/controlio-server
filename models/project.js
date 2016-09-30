@@ -1,11 +1,8 @@
 const mongoose = require('mongoose');
+
 const Schema = mongoose.Schema;
 
 const projectSchema = new Schema({
-  dateCreated: {
-    type: Date,
-    default: Date.now
-  },
   title: String,
   image: String,
   status: String,
@@ -13,30 +10,30 @@ const projectSchema = new Schema({
   completed: {
     type: Boolean,
     required: true,
-    default: false
+    default: false,
   },
   owner: {
     type: Schema.ObjectId,
     ref: 'user',
-    required: true
+    required: true,
   },
   manager: {
-      type: Schema.ObjectId,
-      ref: 'user',
-      required: true
-    },
+    type: Schema.ObjectId,
+    ref: 'user',
+    required: true,
+  },
   clients: [{
     type: Schema.ObjectId,
     ref: 'user',
     required: true,
-    default: []
+    default: [],
   }],
   posts: [{
     type: Schema.ObjectId,
     ref: 'post',
     required: true,
-    default: []
-  }]
-});
+    default: [],
+  }],
+}, { timestamps: true });
 
 mongoose.model('project', projectSchema);
