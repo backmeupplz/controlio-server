@@ -144,7 +144,7 @@ function getProjects(userId, skip, limit) {
 // Posts
 
 function addPost(projectId, text, attachments) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) =>
     Project.findById(projectId)
       .then((project) => {
         const post = new Post({
@@ -153,15 +153,18 @@ function addPost(projectId, text, attachments) {
           attachments,
           manager: project.manager,
         });
-        return post.save()
+        post.save()
           .then((dbpost) => {
             project.posts.push(dbpost);
-            return project.save()
-              .then(resolve);
-          });
+            project.lastPost = dbpost._id;
+            project.save()
+              .then(resolve)
+              .catch(reject);
+          })
+          .catch(reject);
       })
-      .catch(reject);
-  });
+      .catch(reject)
+  );
 }
 
 function getPosts(projectId, skip, limit) {

@@ -1,27 +1,24 @@
 const express = require('express');
-const router = express.Router();
 const dbmanager = require('../helpers/dbmanager');
 const auth = require('../helpers/auth');
 const errors = require('../helpers/errors');
+const validate = require('express-validation');
+const validation = require('../validation/posts');
+
+const router = express.Router();
 
 // Private API
 
 router.use(auth.checkToken);
 
-router.post('/', (req, res, next) => {
-  // if (requestValidator.checkParams(['projectId', 'text', 'attachments'], req, next)) { return }
-  
-  const projectId = req.body.projectId;
+router.post('/', validate(validation.post), (req, res, next) => {
+  const projectId = req.body.projectid;
   const text = req.body.text;
   const attachments = req.body.attachments;
-  
+
   dbmanager.addPost(projectId, text, attachments)
-    .then(project => {
-      res.sendStatus(200);
-    })
-    .catch(err => {
-      next(err);
-    });
+    .then(project => res.send(project))
+    .catch(err => next(err));
 });
 
 router.get('/', (req, res, next) => {
