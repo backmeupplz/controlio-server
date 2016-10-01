@@ -26,8 +26,10 @@ router.post('/', validate(validation.post), (req, res, next) => {
 
 router.get('/', (req, res, next) => {
   const userId = req.get('userId');
-  const skip = req.query.skip || 0;
-  const limit = req.query.limit || 20;
+  let skip = req.query.skip || 0;
+  let limit = req.query.limit || 20;
+  skip = parseInt(skip, 10);
+  limit = parseInt(limit, 10);
   dbmanager.getProjects(userId, skip, limit)
     .then(projects => res.send(projects))
     .catch(err => next(err));

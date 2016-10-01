@@ -28,12 +28,21 @@ const projectSchema = new Schema({
     required: true,
     default: [],
   }],
+  lastPost: {
+    type: Schema.ObjectId,
+    ref: 'post',
+  },
   posts: [{
     type: Schema.ObjectId,
     ref: 'post',
     required: true,
     default: [],
   }],
+  canEdit: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 }, { timestamps: true });
 
 mongoose.model('project', projectSchema);

@@ -116,7 +116,7 @@ function addProject(userId, title, image, status, description, manager, clients)
 }
 
 function getProjects(userId, skip, limit) {
-  return new Promise((resolve, reject) =>
+  return new Promise((resolve, reject) => {
     getUserById(userId, null,
       { projects: { $slice: [skip, limit] } },
       { path: 'projects',
@@ -126,12 +126,18 @@ function getProjects(userId, skip, limit) {
         },
       })
       .then((user) => {
+        user.projects.forEach(project =>
+          project.canEdit = String(project.manager._id) === String(user._id) ||
+            String(project.owner) === String(user._id)
+        );
         if (user) {
           resolve(user.projects);
         } else {
           reject(errors.noUserFound());
         }
       })
+      .catch(err => reject(err));
+  }
   );
 }
 
