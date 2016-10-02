@@ -127,6 +127,12 @@ function getProjects(userId, skip, limit) {
       },
       { path: 'projects',
         populate: {
+          path: 'clients',
+          model: 'user',
+        },
+      },
+      { path: 'projects',
+        populate: {
           path: 'lastPost',
           model: 'post',
         },
@@ -154,6 +160,50 @@ function changeStatus(projectId, status) {
         project.status = status;
         project.save()
           .then(resolve)
+          .catch(reject);
+      })
+      .catch(reject);
+  });
+}
+
+function changeClients(projectId, clients) {
+  return new Promise((resolve, reject) => {
+    Project.findById(projectId)
+      .populate('clients')
+      .then((project) => {
+        const existingClientEmails = project.clients.map(client => client.email);
+        const clientsEmailsToRemove = _.difference(existingClientEmails, clients);
+
+        // Add project to new clients and new clients to project,
+        // remove unnecessary clients from project
+        getClients(clients)
+          .then((clientObjects) => {
+            clientObjects.forEach((clientObject) => {
+              if (!clientObject.projects.map(p => String(p)).includes(String(project._id))) {
+                clientObject.projects.push(project._id);
+                clientObject.save();
+              }
+            });
+            project.clients = clientObjects;
+            project.save()
+              .then(resolve)
+              .catch(reject);
+          })
+          .catch(reject);
+
+        // Remove project from unnecessary clients
+        getClients(clientsEmailsToRemove)
+          .then((clientObjects) => {
+            clientObjects.forEach((clientObject) => {
+              const index = clientObject.projects.map(p =>
+                String(p)).indexOf(String(project._id)
+              );
+              if (index > -1) {
+                clientObject.projects.splice(index, 1);
+                clientObject.save();
+              }
+            });
+          })
           .catch(reject);
       })
       .catch(reject);
@@ -241,6 +291,10 @@ function getClients(clientEmails) {
   });
 }
 
+function removeProjectFromUser(project, user) {
+
+}
+
 // Export
 
 module.exports = {
@@ -254,6 +308,7 @@ module.exports = {
   addProject,
   getProjects,
   changeStatus,
+  changeClients,
   // Posts
   addPost,
   getPosts,

@@ -44,6 +44,15 @@ router.post('/status', validate(validation.postStatus), (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.post('/clients', validate(validation.postClients), (req, res, next) => {
+  const projectId = req.body.projectid;
+  const clients = req.body.clients;
+
+  dbmanager.changeClients(projectId, clients)
+    .then(project => res.send(project))
+    .catch(err => next(err));
+});
+
 // Export
 
 module.exports = router;

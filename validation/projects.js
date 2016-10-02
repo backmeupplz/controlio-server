@@ -17,4 +17,10 @@ module.exports = {
       status: Joi.string().required(),
     },
   },
+  postClients: {
+    body: {
+      projectid: Joi.string().required(),
+      clients: Joi.required(),
+    },
+  },
 };
