@@ -9,7 +9,6 @@ module.exports = {
   put: {
     body: {
       postid: Joi.string().required(),
-      text: Joi.string().required(),
     },
   },
   delete: {
