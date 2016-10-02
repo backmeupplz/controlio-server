@@ -48,7 +48,7 @@ router.delete('/', validate(validation.delete), (req, res, next) => {
   const postId = req.body.postid;
 
   dbmanager.deletePost(userId, postId)
-    .then(() => res.send(200))
+    .then(() => res.send({}))
     .catch(err => next(err));
 });
 

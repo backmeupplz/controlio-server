@@ -313,14 +313,13 @@ function deletePost(userId, postId) {
               post.project.posts.splice(index, 1);
             }
             post.project.save();
-            post.remove()
-              .exec((err) => {
-                if (err) {
-                  reject(err);
-                } else {
-                  resolve();
-                }
-              });
+            post.remove((err) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
           })
           .catch(reject);
       })
