@@ -43,6 +43,15 @@ router.put('/', validate(validation.put), (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.delete('/', validate(validation.delete), (req, res, next) => {
+  const userId = req.get('userId');
+  const postId = req.body.postid;
+
+  dbmanager.deletePost(userId, postId)
+    .then(() => res.send(200))
+    .catch(err => next(err));
+});
+
 // Export
 
 module.exports = router;

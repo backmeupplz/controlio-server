@@ -262,18 +262,14 @@ function addPost(projectId, text, attachments) {
 }
 
 function getPosts(projectId, skip, limit) {
-  return new Promise((resolve, reject) =>
-    Project.findById(projectId, { posts: { $slice: [skip, limit] } })
-      .populate('posts')
-      .then((project) => {
-        if (!project) {
-          reject(errors.noProjectFound());
-        } else {
-          resolve(project.posts);
-        }
-      })
-      .catch(reject)
-  );
+  return new Promise((resolve, reject) => {
+    Post.find({ project: mongoose.Types.ObjectId(projectId) })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .then(resolve)
+      .catch(reject);
+  });
 }
 
 function editPost(userId, postId, text, attachments) {
@@ -293,6 +289,38 @@ function editPost(userId, postId, text, attachments) {
             post.save()
               .then(resolve)
               .catch(reject);
+          })
+          .catch(reject);
+      })
+      .catch(reject);
+  });
+}
+
+function deletePost(userId, postId) {
+  return new Promise((resolve, reject) => {
+    getUserById(userId)
+      .then((user) => {
+        Post.findById(postId)
+          .populate('project')
+          .then((post) => {
+            if (String(post.project.owner) !== String(user._id) &&
+                String(post.project.manager) !== String(user._id)) {
+              reject(errors.notAuthorized());
+              return;
+            }
+            const index = post.project.posts.map(v => String(v)).indexOf(String(post._id));
+            if (index > -1) {
+              post.project.posts.splice(index, 1);
+            }
+            post.project.save();
+            post.remove()
+              .exec((err) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve();
+                }
+              });
           })
           .catch(reject);
       })
@@ -359,4 +387,5 @@ module.exports = {
   addPost,
   getPosts,
   editPost,
+  deletePost,
 };

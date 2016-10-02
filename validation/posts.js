@@ -12,4 +12,9 @@ module.exports = {
       text: Joi.string().required(),
     },
   },
+  delete: {
+    body: {
+      postid: Joi.string().required(),
+    },
+  },
 };
