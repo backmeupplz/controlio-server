@@ -340,10 +340,6 @@ function getClients(clientEmails) {
   });
 }
 
-function removeProjectFromUser(project, user) {
-
-}
-
 // Export
 
 module.exports = {

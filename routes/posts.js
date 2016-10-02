@@ -33,11 +33,12 @@ router.get('/', (req, res, next) => {
 });
 
 router.put('/', validate(validation.put), (req, res, next) => {
+  const userId = req.get('userId');
   const postId = req.body.postid;
   const text = req.body.text;
   const attachments = req.body.attachments;
 
-  dbmanager.editPost(postId, text, attachments)
+  dbmanager.editPost(userId, postId, text, attachments)
     .then(post => res.send(post))
     .catch(err => next(err));
 });
