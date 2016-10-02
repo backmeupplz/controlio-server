@@ -35,6 +35,15 @@ router.get('/', (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.post('/status', validate(validation.postStatus), (req, res, next) => {
+  const projectId = req.body.projectid;
+  const status = req.body.status;
+
+  dbmanager.changeStatus(projectId, status)
+    .then(project => res.send(project))
+    .catch(err => next(err));
+});
+
 // Export
 
 module.exports = router;

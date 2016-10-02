@@ -119,12 +119,18 @@ function getProjects(userId, skip, limit) {
   return new Promise((resolve, reject) => {
     getUserById(userId, null,
       { projects: { $slice: [skip, limit] } },
-      { path: 'projects',
+      [{ path: 'projects',
         populate: {
           path: 'manager',
           model: 'user',
         },
-      })
+      },
+      { path: 'projects',
+        populate: {
+          path: 'lastPost',
+          model: 'post',
+        },
+      }])
       .then((user) => {
         user.projects.forEach(project =>
           project.canEdit = String(project.manager._id) === String(user._id) ||
@@ -139,6 +145,19 @@ function getProjects(userId, skip, limit) {
       .catch(err => reject(err));
   }
   );
+}
+
+function changeStatus(projectId, status) {
+  return new Promise((resolve, reject) => {
+    Project.findById(projectId)
+      .then((project) => {
+        project.status = status;
+        project.save()
+          .then(resolve)
+          .catch(reject);
+      })
+      .catch(reject);
+  });
 }
 
 // Posts
@@ -168,19 +187,18 @@ function addPost(projectId, text, attachments) {
 }
 
 function getPosts(projectId, skip, limit) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) =>
     Project.findById(projectId, { posts: { $slice: [skip, limit] } })
       .populate('posts')
-      .exec((err, project) => {
-        if (err) {
-          reject(err);
-        } else if (!project) {
-          reject(errors.error(500, 'No project found'));
+      .then((project) => {
+        if (!project) {
+          reject(errors.noProjectFound());
         } else {
-          resolve(null, project.posts);
+          resolve(project.posts);
         }
-      });
-  });
+      })
+      .catch(reject)
+  );
 }
 
 // Helpers
@@ -235,6 +253,7 @@ module.exports = {
   // Projects
   addProject,
   getProjects,
+  changeStatus,
   // Posts
   addPost,
   getPosts,

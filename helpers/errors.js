@@ -41,6 +41,9 @@ function addSelfAsManager() {
 function alreadyManager() {
   return error(400, 'This user is already a manager');
 }
+function noProjectFound() {
+  return error(400, 'No project found');
+}
 
 module.exports = {
   notFound,
@@ -55,4 +58,5 @@ module.exports = {
   noClientObjectsCreated,
   addSelfAsManager,
   alreadyManager,
+  noProjectFound,
 };
