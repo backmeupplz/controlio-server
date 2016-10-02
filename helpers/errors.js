@@ -44,6 +44,9 @@ function alreadyManager() {
 function noProjectFound() {
   return error(400, 'No project found');
 }
+function notAuthorized() {
+  return error(403, 'Not authorized');
+}
 
 module.exports = {
   notFound,
@@ -59,4 +62,5 @@ module.exports = {
   addSelfAsManager,
   alreadyManager,
   noProjectFound,
+  notAuthorized,
 };

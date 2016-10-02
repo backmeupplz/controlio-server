@@ -53,6 +53,18 @@ router.post('/clients', validate(validation.postClients), (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.put('/', validate(validation.put), (req, res, next) => {
+  const userId = req.get('userId');
+  const projectId = req.body.projectid;
+  const title = req.body.title;
+  const description = req.body.description;
+  const image = req.body.image;
+
+  dbmanager.editProject(userId, projectId, title, description, image)
+    .then(project => res.send(project))
+    .catch(err => next(err));
+});
+
 // Export
 
 module.exports = router;

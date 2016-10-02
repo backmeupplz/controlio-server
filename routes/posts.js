@@ -32,6 +32,16 @@ router.get('/', (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.put('/', validate(validation.put), (req, res, next) => {
+  const postId = req.body.postid;
+  const text = req.body.text;
+  const attachments = req.body.attachments;
+
+  dbmanager.editPost(postId, text, attachments)
+    .then(post => res.send(post))
+    .catch(err => next(err));
+});
+
 // Export
 
 module.exports = router;

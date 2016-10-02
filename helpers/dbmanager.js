@@ -210,6 +210,31 @@ function changeClients(projectId, clients) {
   });
 }
 
+function editProject(userId, projectId, title, description, image) {
+  return new Promise((resolve, reject) => {
+    getUserById(userId)
+      .then((user) => {
+        Project.findById(projectId)
+          .then((project) => {
+            if (String(project.owner) !== String(user._id) &&
+                String(project.manager) !== String(user._id)) {
+              reject(errors.notAuthorized());
+              return;
+            }
+
+            project.title = title;
+            project.description = description;
+            project.image = image;
+            project.save()
+              .then(resolve)
+              .catch(reject);
+          })
+          .catch(reject);
+      })
+      .catch(reject);
+  });
+}
+
 // Posts
 
 function addPost(projectId, text, attachments) {
@@ -249,6 +274,30 @@ function getPosts(projectId, skip, limit) {
       })
       .catch(reject)
   );
+}
+
+function editPost(userId, postId, text, attachments) {
+  return new Promise((resolve, reject) => {
+    getUserById(userId)
+      .then((user) => {
+        Post.findById(postId)
+          .populate('project')
+          .then((post) => {
+            if (String(post.project.owner) !== String(user._id) &&
+                String(post.project.manager) !== String(user._id)) {
+              reject(errors.notAuthorized());
+              return;
+            }
+            post.text = text;
+            post.attachments = attachments;
+            post.save()
+              .then(resolve)
+              .catch(reject);
+          })
+          .catch(reject);
+      })
+      .catch(reject);
+  });
 }
 
 // Helpers
@@ -309,7 +358,9 @@ module.exports = {
   getProjects,
   changeStatus,
   changeClients,
+  editProject,
   // Posts
   addPost,
   getPosts,
+  editPost,
 };

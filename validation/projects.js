@@ -11,6 +11,14 @@ module.exports = {
       clients: Joi.required(),
     },
   },
+  put: {
+    body: {
+      projectid: Joi.string().required(),
+      title: Joi.string().required(),
+      description: Joi.string().required(),
+      image: Joi.string().required(),
+    },
+  },
   postStatus: {
     body: {
       projectid: Joi.string().required(),
