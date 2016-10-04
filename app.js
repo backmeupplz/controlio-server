@@ -19,6 +19,8 @@ fs.readdirSync(path.join(__dirname, '/models')).forEach((filename) => {
 });
 
 global.pushNotifications = require('./helpers/pushNotifications');
+global.emailSender = require('./helpers/emailSender');
+
 const auth = require('./helpers/auth');
 
 // require routes
@@ -40,7 +42,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // check api token
-app.use(auth.checkApiKey);
+// DEBUG
+// app.use(auth.checkApiKey);
 
 // redirect routes
 app.use('/users/', users);
