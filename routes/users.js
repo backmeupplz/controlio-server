@@ -7,6 +7,7 @@ const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/users');
 const router = require('express').Router(); // eslint-disable-line new-cap
+const randomToken = require('random-token').create(config.randomTokenSalt);
 
 // Public API
 
@@ -65,9 +66,23 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
     .catch(err => next(err));
 });
 
-// todo: add password recovery
-router.post('/recoverPassword', (req, res, next) => {
-  next(new Error());
+router.post('/recoverPassword', validate(validation.resetPassword), (req, res, next) => {
+  const email = req.body.email;
+
+  dbmanager.getUser({ email })
+    .then((user) => {
+      if (!user) {
+        next(errors.authEmailNotRegistered());
+      } else {
+        const token = randomToken(24);
+        user.tokenForPasswordReset = token;
+        user.tokenForPasswordResetIsFresh = true;
+        user.save()
+          .then(() => res.sendStatus(200))
+          .catch(err => next(err));
+      }
+    })
+    .catch(err => next(err));
 });
 
 // Private API

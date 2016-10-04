@@ -92,6 +92,12 @@ const userSchema = new Schema({
     type: String,
     required: false,
   },
+  tokenForPasswordReset: String,
+  tokenForPasswordResetIsFresh: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 });
 
 mongoose.model('user', userSchema);

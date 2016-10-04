@@ -20,6 +20,7 @@
     "mongoose-validator": "^1.2.5",
     "morgan": "~1.6.1",
     "pug": "^2.0.0-alpha8",
+    "random-token": "0.0.8",
     "scrypt": "^6.0.3",
     "sendgrid": "^4.4.0",
     "serve-favicon": "~2.3.0"

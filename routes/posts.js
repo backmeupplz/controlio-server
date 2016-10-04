@@ -6,16 +6,6 @@ const validation = require('../validation/posts');
 
 const router = express.Router();
 
-// DEBUG
-const hogan = require('hogan.js');
-const path = require('path');
-const fs = require('fs');
-const emailRawHtml = fs.readFileSync(path.join(__dirname, '../views/email-magic-link.hjs'), 'utf8');
-const emailTemplate = hogan.compile(emailRawHtml);
-router.get('/preview', (req, res) => {
-  res.send(emailTemplate.render({ name: 'nikita' }));
-});
-
 // Private API
 
 router.use(auth.checkToken);

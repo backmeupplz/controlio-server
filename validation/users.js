@@ -23,4 +23,9 @@ module.exports = {
       id: Joi.string().required(),
     },
   },
+  resetPassword: {
+    body: {
+      email: Joi.string().email().required(),
+    },
+  },
 };

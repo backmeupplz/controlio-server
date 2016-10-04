@@ -27,6 +27,7 @@ const auth = require('./helpers/auth');
 const users = require('./routes/users');
 const projects = require('./routes/projects');
 const posts = require('./routes/posts');
+const public = require('./routes/public');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -41,9 +42,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// redirect public routes
+app.use('/public/', public);
+
 // check api token
-// DEBUG
-// app.use(auth.checkApiKey);
+app.use(auth.checkApiKey);
 
 // redirect routes
 app.use('/users/', users);
