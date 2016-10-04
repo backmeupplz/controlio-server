@@ -11,12 +11,16 @@ const router = express.Router();
 router.use(auth.checkToken);
 
 router.post('/', validate(validation.post), (req, res, next) => {
+  const userId = req.get('userId');
   const projectId = req.body.projectid;
   const text = req.body.text;
   const attachments = req.body.attachments;
 
-  dbmanager.addPost(projectId, text, attachments)
-    .then(project => res.send(project))
+  dbmanager.addPost(userId, projectId, text, attachments)
+    .then(({ dbpost, clients, sender }) => {
+      global.pushNotifications.sendNotification(`${sender.name || sender.email}: ${text}`, clients);
+      res.send(dbpost);
+    })
     .catch(err => next(err));
 });
 

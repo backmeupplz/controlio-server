@@ -18,6 +18,7 @@ fs.readdirSync(path.join(__dirname, '/models')).forEach((filename) => {
   require(path.join(__dirname, '/models/', filename)); // eslint-disable-line global-require
 });
 
+global.pushNotifications = require('./helpers/pushNotifications');
 const auth = require('./helpers/auth');
 
 // require routes

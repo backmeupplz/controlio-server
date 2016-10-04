@@ -237,10 +237,20 @@ function editProject(userId, projectId, title, description, image) {
 
 // Posts
 
-function addPost(projectId, text, attachments) {
+function addPost(userId, projectId, text, attachments) {
   return new Promise((resolve, reject) =>
-    Project.findById(projectId)
-      .then((project) => {
+    getUserById(userId)
+      .then(user =>
+        Project.findById(projectId)
+          .populate('clients')
+          .then(project => ({ user, project }))
+      )
+      .then(({ user, project }) => {
+        if (String(project.owner) !== String(user._id) &&
+                String(project.manager) !== String(user._id)) {
+          reject(errors.notAuthorized());
+          return;
+        }
         const post = new Post({
           text,
           project,
@@ -251,8 +261,9 @@ function addPost(projectId, text, attachments) {
           .then((dbpost) => {
             project.posts.push(dbpost);
             project.lastPost = dbpost._id;
+            const clients = project.clients;
             project.save()
-              .then(resolve)
+              .then(() => resolve({ dbpost, clients, sender: user }))
               .catch(reject);
           })
           .catch(reject);
@@ -367,6 +378,21 @@ function getClients(clientEmails) {
   });
 }
 
+// Push notifications
+
+function removeTokens(tokens) {
+  tokens.forEach((token) => {
+    User.find({ iosPushTokens: token })
+      .then((users) => {
+        users.forEach((user) => {
+          user.iosPushTokens.splice(user.iosPushTokens.indexOf(token), 1);
+          user.save();
+        });
+      })
+      .catch(err => console.error(err));
+  });
+}
+
 // Export
 
 module.exports = {
@@ -387,4 +413,6 @@ module.exports = {
   getPosts,
   editPost,
   deletePost,
+  // Notifications
+  removeTokens,
 };

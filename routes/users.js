@@ -13,6 +13,8 @@ const router = require('express').Router(); // eslint-disable-line new-cap
 router.post('/login', validate(validation.login), (req, res, next) => {
   const email = req.body.email;
   const rawPassword = req.body.password;
+  const iosPushToken = req.body.iosPushToken;
+
   dbmanager.getUser({ email }, '+password +token')
     .then((user) => {
       if (!user) {
@@ -23,9 +25,12 @@ router.post('/login', validate(validation.login), (req, res, next) => {
             if (!result) {
               next(errors.authWrongPassword());
             } else {
-              const userWithoutPassword = user;
-              userWithoutPassword.password = undefined;
-              res.send(userWithoutPassword);
+              if (iosPushToken) {
+                user.iosPushTokens.push(iosPushToken);
+                user.save();
+              }
+              user.password = undefined;
+              res.send(user);
             }
           })
           .catch(err => next(err));
@@ -37,6 +42,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
 router.post('/signUp', validate(validation.signup), (req, res, next) => {
   const email = req.body.email;
   const rawPassword = req.body.password;
+  const iosPushToken = req.body.iosPushToken;
 
   hash.hashPassword(rawPassword)
     .then((password) => {
@@ -45,6 +51,9 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
         password,
         token: jwt.sign(email, config.jwtSecret),
       };
+      if (iosPushToken) {
+        user.iosPushTokens = [iosPushToken];
+      }
       dbmanager.addUser(user)
         .then((dbuser) => {
           const userWithoutPassword = dbuser;
@@ -64,6 +73,20 @@ router.post('/recoverPassword', (req, res, next) => {
 // Private API
 
 router.use(auth.checkToken);
+
+router.post('/logout', (req, res, next) => {
+  const userId = req.get('userId');
+  const iosPushToken = req.body.iosPushToken;
+
+  dbmanager.getUserById(userId)
+    .then(user => {
+      user.iosPushTokens.splice(user.iosPushTokens.indexOf(iosPushToken), 1);
+      user.save()
+        .then(user => res.send(user))
+        .catch(err => next(err));
+    })
+    .catch(err => next(err));
+});
 
 router.get('/profile', (req, res, next) => {
   const userId = req.get('userId');
