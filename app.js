@@ -28,6 +28,7 @@ const users = require('./routes/users');
 const projects = require('./routes/projects');
 const posts = require('./routes/posts');
 const public = require('./routes/public');
+const apple = require('./routes/apple');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -44,6 +45,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // redirect public routes
 app.use('/public/', public);
+app.use('/', apple);
 
 // check api token
 app.use(auth.checkApiKey);
