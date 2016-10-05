@@ -47,6 +47,9 @@ function noProjectFound() {
 function notAuthorized() {
   return error(403, 'Not authorized');
 }
+function magicLinkOnlyOnce() {
+  return error(403, 'Magic link can be used only once');
+}
 
 module.exports = {
   notFound,
@@ -63,4 +66,5 @@ module.exports = {
   alreadyManager,
   noProjectFound,
   notAuthorized,
+  magicLinkOnlyOnce,
 };

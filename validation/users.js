@@ -28,4 +28,15 @@ module.exports = {
       email: Joi.string().email().required(),
     },
   },
+  magicLink: {
+    body: {
+      email: Joi.string().email().required(),
+    },
+  },
+  loginMagicLink: {
+    body: {
+      userid: Joi.string().required(),
+      token: Joi.string().required(),
+    },
+  },
 };

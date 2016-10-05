@@ -98,6 +98,7 @@ const userSchema = new Schema({
     required: true,
     default: false,
   },
+  magicToken: String,
 });
 
 mongoose.model('user', userSchema);

@@ -11,6 +11,46 @@ const randomToken = require('random-token').create(config.randomTokenSalt);
 
 // Public API
 
+router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next) => {
+  const email = req.body.email;
+  dbmanager.getUser({ email })
+    .then((user) => {
+      if (!user) {
+        next(errors.authEmailNotRegistered());
+      } else {
+        const token = randomToken(24);
+        user.magicToken = token;
+        global.emailSender.sendMagicLink(user, token);
+        user.save()
+          .then(() => res.sendStatus(200))
+          .catch(err => next(err));
+      }
+    })
+    .catch(err => next(err));
+});
+
+router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, next) => {
+  const userId = req.body.userid;
+  const token = req.body.token;
+
+  dbmanager.getUserById(userId, '+token')
+    .then((user) => {
+      if (!user) {
+        next(errors.noUserFound());
+      } else {
+        if (user.magicToken !== token) {
+          next(errors.magicLinkOnlyOnce());
+        } else {
+          user.magicToken = null;
+          user.save();
+          user.password = undefined;
+          res.send(user);
+        }
+      }
+    })
+    .catch(err => next(err));
+});
+
 router.post('/login', validate(validation.login), (req, res, next) => {
   const email = req.body.email;
   const rawPassword = req.body.password;
