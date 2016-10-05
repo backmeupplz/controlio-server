@@ -44,6 +44,7 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
 router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, next) => {
   const userId = req.body.userid;
   const token = req.body.token;
+  const iosPushToken = req.body.iosPushToken;
 
   dbmanager.getUserById(userId, '+token')
     .then((user) => {
@@ -53,6 +54,9 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
         if (user.magicToken !== token) {
           next(errors.magicLinkOnlyOnce());
         } else {
+          if (iosPushToken) {
+            user.iosPushTokens.push(iosPushToken);
+          }
           user.magicToken = null;
           user.save();
           user.password = undefined;
