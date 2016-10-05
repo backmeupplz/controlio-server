@@ -16,7 +16,19 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
   dbmanager.getUser({ email })
     .then((user) => {
       if (!user) {
-        next(errors.authEmailNotRegistered());
+        const user = {
+          email,
+        };
+        dbmanager.addUser(user)
+          .then((dbuser) => {
+            const token = randomToken(24);
+            dbuser.magicToken = token;
+            global.emailSender.sendMagicLink(dbuser, token);
+            dbuser.save()
+              .then(() => res.sendStatus(200))
+              .catch(err => next(err));
+          })
+          .catch(err => next(err));
       } else {
         const token = randomToken(24);
         user.magicToken = token;
