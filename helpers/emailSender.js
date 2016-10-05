@@ -14,7 +14,7 @@ function sendResetPassword(user, token) {
   const fromEmail = new helper.Email('noreply@controlio.co');
   const toEmail = new helper.Email(user.email);
   const subject = 'Controlio: reset your password';
-  const content = new helper.Content('text/html', emailResetPasswordTemplate.render({ token }));
+  const content = new helper.Content('text/html', emailResetPasswordTemplate.render({ userid: user._id, token }));
   const mail = new helper.Mail(fromEmail, subject, toEmail, content);
 
   const request = sg.emptyRequest({

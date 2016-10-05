@@ -26,12 +26,23 @@ router.post('/login', validate(validation.login), (req, res, next) => {
             if (!result) {
               next(errors.authWrongPassword());
             } else {
-              if (iosPushToken) {
-                user.iosPushTokens.push(iosPushToken);
-                user.save();
+              if (!user.token || iosPushToken) {
+                if (!user.token) {
+                  user.token = jwt.sign(email, config.jwtSecret);
+                }
+                if (iosPushToken) {
+                  user.iosPushTokens.push(iosPushToken);
+                }
+                user.save()
+                  .then((user) => {
+                    user.password = undefined;
+                    res.send(user);
+                  })
+                  .catch(err => ndext(err));
+              } else {
+                user.password = undefined;
+                res.send(user);
               }
-              user.password = undefined;
-              res.send(user);
             }
           })
           .catch(err => next(err));
@@ -77,6 +88,7 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
         const token = randomToken(24);
         user.tokenForPasswordReset = token;
         user.tokenForPasswordResetIsFresh = true;
+        global.emailSender.sendResetPassword(user, token);
         user.save()
           .then(() => res.sendStatus(200))
           .catch(err => next(err));
