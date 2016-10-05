@@ -16,6 +16,10 @@ router.get('/apple-app-site-association', (req, res) => {
   });
 });
 
+router.get('/magic', (req, res) => {
+  res.render('magic');
+});
+
 // Export
 
 module.exports = router;

@@ -65,13 +65,8 @@ router.post('/resetPassword', (req, res) => {
 });
 
 // DEBUG
-const hogan = require('hogan.js');
-const path = require('path');
-const fs = require('fs');
-const emailRawHtml = fs.readFileSync(path.join(__dirname, '../views/email-reset.hjs'), 'utf8');
-const emailTemplate = hogan.compile(emailRawHtml, { userid: '12', token: '11' });
 router.get('/preview', (req, res) => {
-  res.send(emailTemplate.render({ name: 'nikita' }));
+  res.render('magic');
 });
 
 // Export
