@@ -11,6 +11,7 @@ plan.target('staging', [
     host: '162.243.76.239',
     username,
     agent: process.env.SSH_AUTH_SOCK,
+    privateKey: '/Users/BackMeUpPlz/.ssh/id_rsa',
   },
 ]);
 
@@ -19,6 +20,7 @@ plan.target('production', [
     host: '162.243.76.239',
     username,
     agent: process.env.SSH_AUTH_SOCK,
+    privateKey: '/Users/BackMeUpPlz/.ssh/id_rsa',
   },
 ]);
 
