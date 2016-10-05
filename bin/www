@@ -1,9 +1,11 @@
 const app = require('../app');
 const debug = require('debug')('controlio:server');
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
-const privateKey  = fs.readFileSync('../certificates/ssl/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('../certificates/ssl/cert.pem', 'utf8');
+const privateKey  = fs.readFileSync(path.join(__dirname, '../certificates/ssl/privkey.pem'), 'utf8');
+const certificate = fs.readFileSync(path.join(__dirname, '../certificates/ssl/cert.pem'), 'utf8');
 
 var credentials = {key: privateKey, cert: certificate};
 
