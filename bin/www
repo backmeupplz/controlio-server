@@ -2,8 +2,6 @@ const app = require('../app');
 const debug = require('debug')('controlio:server');
 const http = require('http');
 
-var credentials = {key: privateKey, cert: certificate};
-
 const port = 8443;
 app.set('port', port);
 
@@ -31,4 +29,3 @@ server.on('error', error => {
 server.on('listening', () => {
   debug(`Listening on port ${server.address().port}`);
 });
-/etc/letsencrypt/live/api.controlio.co
