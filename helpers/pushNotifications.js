@@ -3,8 +3,8 @@ const path = require('path');
 // const dbmanager = require('./dbmanager');
 
 const provider = new apn.Provider({
-  key: path.join(__dirname, '../certificates/key.pem'),
-  cert: path.join(__dirname, '../certificates/cert.pem'),
+  key: path.join(__dirname, '../certificates/production_BorodutchStudio.Controlio.pkey'),
+  cert: path.join(__dirname, '../certificates/production_BorodutchStudio.Controlio.pem'),
   production: false,
 });
 
