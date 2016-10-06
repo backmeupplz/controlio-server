@@ -146,7 +146,7 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
         user.tokenForPasswordResetIsFresh = true;
         global.emailSender.sendResetPassword(user, token);
         user.save()
-          .then(() => res.sendStatus(200))
+          .then(() => res.send({}))
           .catch(err => next(err));
       }
     })
