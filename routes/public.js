@@ -64,11 +64,6 @@ router.post('/resetPassword', (req, res) => {
     .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
 });
 
-// DEBUG
-router.get('/preview', (req, res) => {
-  res.render('magic');
-});
-
 // Export
 
 module.exports = router;

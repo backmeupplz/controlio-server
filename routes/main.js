@@ -9,7 +9,7 @@ router.get('/apple-app-site-association', (req, res) => {
       details: [
         {
           appID: '9VUB6L23QH.BorodutchStudio.Controlio',
-          paths: ['*'],
+          paths: ['/magic'],
         },
       ],
     },
