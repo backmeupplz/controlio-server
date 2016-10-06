@@ -59,9 +59,12 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
             user.iosPushTokens.push(iosPushToken);
           }
           user.magicToken = null;
-          user.save();
-          user.password = undefined;
-          res.send(user);
+          user.save()
+            .then((savedUser) => {
+              user.password = undefined;
+              res.send(user);
+            })
+            .catch(err => next(err));
         }
       }
     })
