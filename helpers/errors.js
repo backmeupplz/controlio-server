@@ -38,6 +38,15 @@ function noClientObjectsCreated() {
 function addSelfAsManager() {
   return error(400, 'You cannot add yourself as a manager');
 }
+function addSelfAsClient() {
+  return error(400, 'You cannot add yourself as a client');
+}
+function addDemoAsManager() {
+  return error(400, 'You cannot add yourself as a manager');
+}
+function addDemoAsClient() {
+  return error(400, 'You cannot add yourself as a client');
+}
 function alreadyManager() {
   return error(400, 'This user is already a manager');
 }
@@ -63,6 +72,9 @@ module.exports = {
   noManagerFound,
   noClientObjectsCreated,
   addSelfAsManager,
+  addSelfAsClient,
+  addDemoAsManager,
+  addDemoAsClient,
   alreadyManager,
   noProjectFound,
   notAuthorized,
