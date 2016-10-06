@@ -18,6 +18,7 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
       if (!user) {
         const user = {
           email,
+          token: jwt.sign(email, config.jwtSecret),
         };
         dbmanager.addUser(user)
           .then((dbuser) => {
