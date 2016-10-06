@@ -25,7 +25,7 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
             dbuser.magicToken = token;
             global.emailSender.sendMagicLink(dbuser, token);
             dbuser.save()
-              .then(() => res.sendStatus(200))
+              .then(() => res.send({}))
               .catch(err => next(err));
           })
           .catch(err => next(err));
@@ -34,7 +34,7 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
         user.magicToken = token;
         global.emailSender.sendMagicLink(user, token);
         user.save()
-          .then(() => res.sendStatus(200))
+          .then(() => res.send({}))
           .catch(err => next(err));
       }
     })
