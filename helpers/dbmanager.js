@@ -36,7 +36,7 @@ function getUser(options, select) {
 
 function addManager(email) {
   const newUser = new User({
-    email: email.toLowerCase(),
+    email: email,
     addedAsManager: true,
   });
   return newUser.save();

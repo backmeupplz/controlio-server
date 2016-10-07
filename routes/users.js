@@ -12,7 +12,7 @@ const randomToken = require('random-token').create(config.randomTokenSalt);
 // Public API
 
 router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next) => {
-  const email = req.body.email;
+  const email = req.body.email.toLowercase();
 
   global.botReporter.reportMagicLinkRequest(email);
 
@@ -76,7 +76,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
 });
 
 router.post('/login', validate(validation.login), (req, res, next) => {
-  const email = req.body.email;
+  const email = req.body.email.toLowercase();
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
 
@@ -119,7 +119,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
 });
 
 router.post('/signUp', validate(validation.signup), (req, res, next) => {
-  const email = req.body.email;
+  const email = req.body.email.toLowercase();
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
 
@@ -148,7 +148,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
 });
 
 router.post('/recoverPassword', validate(validation.resetPassword), (req, res, next) => {
-  const email = req.body.email;
+  const email = req.body.email.toLowercase();
 
   global.botReporter.reportPasswordResetRequest(email);
 
@@ -225,7 +225,7 @@ router.post('/profile', (req, res, next) => {
 });
 
 router.post('/manager', validate(validation.addManager), (req, res, next) => {
-  const managerEmail = req.body.email;
+  const managerEmail = req.body.email.toLowercase();
   const userId = req.get('userId');
 
   dbmanager.getUserById(userId)
@@ -234,7 +234,6 @@ router.post('/manager', validate(validation.addManager), (req, res, next) => {
         .then(manager => ({ owner, manager }))
     )
     .then(({ owner, manager }) => {
-      console.log(manager);
       if (manager) {
         if (manager.email === owner.email) {
           next(errors.addSelfAsManager());

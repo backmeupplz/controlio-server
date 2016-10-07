@@ -16,11 +16,11 @@ router.post('/', validate(validation.post), (req, res, next) => {
   const image = req.body.image;
   const status = req.body.status;
   const description = req.body.description;
-  const managerEmail = req.body.manager;
-  const clients = req.body.clients;
+  const manager = req.body.manager;
+  const clients = req.body.clients.map(email => email.toLowercase());
 
   // botReporter works inside dbmanager
-  dbmanager.addProject(userId, title, image, status, description, managerEmail, clients)
+  dbmanager.addProject(userId, title, image, status, description, manager, clients)
     .then(project => res.send(project))
     .catch(err => next(err));
 });
