@@ -7,6 +7,7 @@ const jarvis = new TelegramBot('237463370:AAFI2qe2SEaTIb5kQ_Es5ny5vccdh84pwfQ', 
 // General
 
 function reportError(err, req) {
+  if (String(req.get('host')) === 'forum.khoapham.vn') { return; }
   const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
   sendMessage(`❗ *Error!*\n${'```'}json\n${fullUrl} – ${req.method}\nheaders: ${JSON.stringify(req.headers, null, 2)}\nbody: ${JSON.stringify(req.body, null, 2)}\n${JSON.stringify(err, null, 2)}${'```'}`);
 }
