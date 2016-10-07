@@ -234,6 +234,7 @@ router.post('/manager', validate(validation.addManager), (req, res, next) => {
         .then(manager => ({ owner, manager }))
     )
     .then(({ owner, manager }) => {
+      console.log(manager);
       if (manager) {
         if (manager.email === owner.email) {
           next(errors.addSelfAsManager());
