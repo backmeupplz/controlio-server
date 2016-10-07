@@ -80,8 +80,6 @@ router.post('/login', validate(validation.login), (req, res, next) => {
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
 
-  global.botReporter.reportLogin(email);
-
   dbmanager.getUser({ email }, '+password +token')
     .then((user) => {
       if (!user) {
@@ -102,6 +100,9 @@ router.post('/login', validate(validation.login), (req, res, next) => {
                 user.save()
                   .then((user) => {
                     user.password = undefined;
+
+                    global.botReporter.reportLogin(email);
+
                     res.send(user);
                   })
                   .catch(err => ndext(err));
@@ -122,8 +123,6 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
 
-  global.botReporter.reportSignUp(email);
-
   hash.hashPassword(rawPassword)
     .then((password) => {
       const user = {
@@ -138,6 +137,9 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
         .then((dbuser) => {
           const userWithoutPassword = dbuser;
           userWithoutPassword.password = undefined;
+
+          global.botReporter.reportSignUp(email);
+
           res.send(userWithoutPassword);
         })
         .catch(err => next(err));
