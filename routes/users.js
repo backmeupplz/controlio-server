@@ -293,7 +293,7 @@ router.delete('/manager', validate(validation.deleteManager), (req, res, next) =
           dbmanager.removeManagerFromOwner(manager, user);
         })
     )
-    .then(user => res.send(user))
+    .then(() => res.send({}))
     .catch(err => next(err));
 });
 

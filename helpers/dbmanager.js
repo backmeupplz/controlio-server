@@ -11,7 +11,7 @@ const Post = mongoose.model('post');
 
 function addUser(user) {
   return new Promise((resolve, reject) =>
-    User.findOne({ email: user.email })
+    User.findOne({ email: user.emai.toLowerCase() })
       .then((databaseUser) => {
         if (databaseUser) {
           reject(errors.authUserAlreadyExists());
@@ -36,7 +36,7 @@ function getUser(options, select) {
 
 function addManager(email) {
   const newUser = new User({
-    email,
+    email: email.toLowerCase(),
     addedAsManager: true,
   });
   return newUser.save();

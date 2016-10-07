@@ -117,23 +117,23 @@ module.exports = {
   // General
   reportError,
   // Users.js
-  reportMagicLinkRequest,
-  reportMagicLinkLogin,
-  reportLogin,
-  reportSignUp,
-  reportPasswordResetRequest,
-  reportLogout,
-  reportGetProfile,
-  reportEditProfile,
-  reportAddManager,
-  reportGetManagers,
+  reportMagicLinkRequest, //
+  reportMagicLinkLogin, //
+  reportLogin, //
+  reportSignUp, //
+  reportPasswordResetRequest, //
+  reportLogout, //
+  reportGetProfile, //
+  reportEditProfile, //
+  reportAddManager, 
+  reportGetManagers, //
   reportDeleteManager,
   // Public.js
-  reportGetResetPassword,
-  reportResetPassword,
+  reportGetResetPassword, //
+  reportResetPassword, //
   // Projects.js
   reportCreateProject,
-  reportGetProjects,
+  reportGetProjects, //
   reportChangeStatus,
   reportChangeClients,
   reportEditProject,
