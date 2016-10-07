@@ -46,7 +46,7 @@ function reportEditProfile(user) {
 }
 
 function reportAddManager(owner, manager) {
-  sendMessage(`👷 *${owner.email}* added *${manager.email} as a manager`);
+  sendMessage(`👷 *${owner.email}* added *${manager.email}* as a manager`);
 }
 
 function reportGetManagers(email) {
@@ -54,7 +54,7 @@ function reportGetManagers(email) {
 }
 
 function reportDeleteManager(owner, manager) {
-  sendMessage(`❌ *${owner.email}* deleted *${manager.email} as a manager`);
+  sendMessage(`❌ *${owner.email}* deleted *${manager.email}* as a manager`);
 }
 
 // Public.js

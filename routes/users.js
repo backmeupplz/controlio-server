@@ -241,11 +241,10 @@ router.post('/manager', validate(validation.addManager), (req, res, next) => {
           next(errors.alreadyManager());
         } else {
           owner.managers.push(manager);
-
-          global.botReporter.reportAddManager(owner, manager);
-
           owner.save()
             .then(() => {
+              global.botReporter.reportAddManager(owner, manager);
+
               res.send(manager);
               // TODO: notify manager about being added
             })
@@ -255,11 +254,10 @@ router.post('/manager', validate(validation.addManager), (req, res, next) => {
         dbmanager.addManager(managerEmail)
           .then((newManager) => {
             owner.managers.push(newManager);
-
-            global.botReporter.reportAddManager(owner, newManager);
-
             owner.save()
               .then(() => {
+                global.botReporter.reportAddManager(owner, newManager);
+
                 res.send(newManager);
                 // TODO: notify manager about being added and registered to the system
               })
@@ -288,11 +286,12 @@ router.delete('/manager', validate(validation.deleteManager), (req, res, next) =
   const managerId = req.body.id;
   const userId = req.get('userId');
 
-  dbmanager.getUserById(userId, 'managers projects', null, 'projects')
+  dbmanager.getUserById(userId, null, null, 'managers projects')
     .then(user =>
       dbmanager.getUserById(managerId)
         .then((manager) => {
           global.botReporter.reportDeleteManager(user, manager);
+
           dbmanager.removeManagerFromOwner(manager, user);
         })
     )
