@@ -241,6 +241,9 @@ router.post('/manager', validate(validation.addManager), (req, res, next) => {
           next(errors.alreadyManager());
         } else {
           owner.managers.push(manager);
+
+          global.botReporter.reportAddManager(owner, manager);
+
           owner.save()
             .then(() => {
               res.send(manager);
