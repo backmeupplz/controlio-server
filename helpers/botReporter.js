@@ -111,7 +111,7 @@ function reportDeletePost(user, post) {
 // General functions
 
 function sendMessage(msg) {
-  jarvis.sendMessage('-170407631', msg, { parse_mode: 'Markdown' });
+  jarvis.sendMessage('-1001074025264', msg, { parse_mode: 'Markdown' });
 }
 
 module.exports = {
