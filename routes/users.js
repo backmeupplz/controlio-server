@@ -80,7 +80,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
 
-  reportLogin(email);
+  global.botReporter.reportLogin(email);
 
   dbmanager.getUser({ email }, '+password +token')
     .then((user) => {
