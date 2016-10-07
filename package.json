@@ -19,6 +19,7 @@
     "mongoose": "^4.4.19",
     "mongoose-validator": "^1.2.5",
     "morgan": "~1.6.1",
+    "node-telegram-bot-api": "^0.23.3",
     "pug": "^2.0.0-alpha8",
     "random-token": "0.0.8",
     "scrypt": "^6.0.3",

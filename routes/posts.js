@@ -16,6 +16,7 @@ router.post('/', validate(validation.post), (req, res, next) => {
   const text = req.body.text;
   const attachments = req.body.attachments;
 
+  // botReporter works inside dbmanager
   dbmanager.addPost(userId, projectId, text, attachments)
     .then(({ dbpost, clients, sender }) => {
       global.pushNotifications.sendNotification(`${sender.name || sender.email}: ${text}`, clients);
@@ -31,6 +32,8 @@ router.get('/', (req, res, next) => {
   skip = parseInt(skip, 10);
   limit = parseInt(limit, 10);
 
+  global.botReporter.reportGetPosts(projectId, skip, limit);
+
   dbmanager.getPosts(projectId, skip, limit)
     .then(posts => res.send(posts))
     .catch(err => next(err));
@@ -42,6 +45,7 @@ router.put('/', validate(validation.put), (req, res, next) => {
   const text = req.body.text;
   const attachments = req.body.attachments;
 
+  // botReporter works inside dbmanager
   dbmanager.editPost(userId, postId, text, attachments)
     .then(post => res.send(post))
     .catch(err => next(err));
@@ -51,6 +55,7 @@ router.delete('/', validate(validation.delete), (req, res, next) => {
   const userId = req.get('userId');
   const postId = req.body.postid;
 
+  // botReporter works inside dbmanager
   dbmanager.deletePost(userId, postId)
     .then(() => res.send({}))
     .catch(err => next(err));

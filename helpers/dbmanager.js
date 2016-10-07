@@ -100,7 +100,10 @@ function addProject(userId, title, image, status, description, manager, clients)
           clients: clientObjects,
         });
         return project.save()
-          .then(newProject => ({ ownerObject, managerObject, clientObjects, newProject }));
+          .then((newProject) => {
+            global.botReporter.reportCreateProject(ownerObject, newProject);
+            return { ownerObject, managerObject, clientObjects, newProject };
+          });
       })
       .then(({ ownerObject, managerObject, clientObjects, newProject }) => {
         const managerObjectArray = ownerObject.email === managerObject.email ? [] : [managerObject];
@@ -143,6 +146,8 @@ function getProjects(userId, skip, limit) {
             String(project.owner) === String(user._id)
         );
         if (user) {
+          global.botReporter.reportGetProjects(user, skip, limit);
+          
           resolve(user.projects);
         } else {
           reject(errors.noUserFound());
@@ -158,6 +163,9 @@ function changeStatus(projectId, status) {
     Project.findById(projectId)
       .then((project) => {
         project.status = status;
+
+        global.botReporter.reportChangeStatus(project);
+
         project.save()
           .then(resolve)
           .catch(reject);
@@ -185,6 +193,9 @@ function changeClients(projectId, clients) {
               }
             });
             project.clients = clientObjects;
+
+            global.botReporter.reportChangeClients(project);
+
             project.save()
               .then(resolve)
               .catch(reject);
@@ -225,6 +236,9 @@ function editProject(userId, projectId, title, description, image) {
             project.title = title;
             project.description = description;
             project.image = image;
+
+            global.botReporter.reportEditProject(project);
+
             project.save()
               .then(resolve)
               .catch(reject);
@@ -262,6 +276,9 @@ function addPost(userId, projectId, text, attachments) {
             project.posts.push(dbpost);
             project.lastPost = dbpost._id;
             const clients = project.clients;
+
+            global.botReporter.reportAddPost(user, project, dbpost);
+
             project.save()
               .then(() => resolve({ dbpost, clients, sender: user }))
               .catch(reject);
@@ -297,6 +314,9 @@ function editPost(userId, postId, text, attachments) {
             }
             post.text = text;
             post.attachments = attachments;
+
+            global.botReporter.reportEditPost(user, post);
+
             post.save()
               .then(resolve)
               .catch(reject);
@@ -324,6 +344,9 @@ function deletePost(userId, postId) {
               post.project.posts.splice(index, 1);
             }
             post.project.save();
+
+            global.botReporter.reportDeletePost(user, post);
+            
             post.remove((err) => {
               if (err) {
                 reject(err);

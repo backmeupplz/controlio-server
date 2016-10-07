@@ -25,7 +25,10 @@ router.get('/resetPassword', (req, res) => {
           } else {
             user.tokenForPasswordResetIsFresh = false;
             user.save()
-              .then(() => res.render('reset-password', { userid: userId, token: token }))
+              .then(() => {
+                global.botReporter.reportGetResetPassword(user.email);
+                res.render('reset-password', { userid: userId, token: token });
+              })
               .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
           }
         }
@@ -53,6 +56,7 @@ router.post('/resetPassword', (req, res) => {
               user.password = result;
               user.save()
                 .then(() => {
+                  global.botReporter.reportResetPassword(user.email);
                   res.render('success', { message: 'Password was updated!' });
                 })
                 .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));

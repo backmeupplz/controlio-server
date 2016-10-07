@@ -20,6 +20,7 @@ fs.readdirSync(path.join(__dirname, '/models')).forEach((filename) => {
 
 global.pushNotifications = require('./helpers/pushNotifications');
 global.emailSender = require('./helpers/emailSender');
+global.botReporter = require('./helpers/botReporter');
 
 const auth = require('./helpers/auth');
 
@@ -57,11 +58,12 @@ app.use('/posts/', posts);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
-  next(errors.notFound());
+  next(err);
 });
 
 // error handler
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+  global.botReporter.reportError(err, req);
   res.status(err.status || 500);
   res.send(err);
 });
