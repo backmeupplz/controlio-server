@@ -12,7 +12,7 @@ const randomToken = require('random-token').create(config.randomTokenSalt);
 // Public API
 
 router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next) => {
-  const email = req.body.email.toLowercase();
+  const email = req.body.email.toLowerCase();
 
   global.botReporter.reportMagicLinkRequest(email);
 
@@ -76,7 +76,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
 });
 
 router.post('/login', validate(validation.login), (req, res, next) => {
-  const email = req.body.email.toLowercase();
+  const email = req.body.email.toLowerCase();
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
 
@@ -119,7 +119,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
 });
 
 router.post('/signUp', validate(validation.signup), (req, res, next) => {
-  const email = req.body.email.toLowercase();
+  const email = req.body.email.toLowerCase();
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
 
@@ -148,7 +148,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
 });
 
 router.post('/recoverPassword', validate(validation.resetPassword), (req, res, next) => {
-  const email = req.body.email.toLowercase();
+  const email = req.body.email.toLowerCase();
 
   global.botReporter.reportPasswordResetRequest(email);
 
@@ -225,9 +225,8 @@ router.post('/profile', (req, res, next) => {
 });
 
 router.post('/manager', validate(validation.addManager), (req, res, next) => {
-  const managerEmail = req.body.email.toLowercase();
+  const managerEmail = req.body.email.toLowerCase();
   const userId = req.get('userId');
-
   dbmanager.getUserById(userId)
     .then(owner =>
       dbmanager.getUser({ email: managerEmail })
@@ -257,7 +256,6 @@ router.post('/manager', validate(validation.addManager), (req, res, next) => {
             owner.save()
               .then(() => {
                 global.botReporter.reportAddManager(owner, newManager);
-
                 res.send(newManager);
                 // TODO: notify manager about being added and registered to the system
               })
