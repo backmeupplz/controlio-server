@@ -15,9 +15,10 @@ router.post('/', validate(validation.post), (req, res, next) => {
   const projectId = req.body.projectid;
   const text = req.body.text;
   const attachments = req.body.attachments;
+  const type = req.body.type || 'post';
 
   // botReporter works inside dbmanager
-  dbmanager.addPost(userId, projectId, text, attachments)
+  dbmanager.addPost(userId, projectId, text, attachments, type)
     .then(({ dbpost, clients, sender }) => {
       global.pushNotifications.sendNotification(`${sender.name || sender.email}: ${text}`, clients);
       res.send(dbpost);

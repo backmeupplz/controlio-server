@@ -93,17 +93,24 @@ function addProject(userId, title, image, status, description, manager, clients)
         const project = new Project({
           title,
           image,
-          status,
           description,
           owner: ownerObject,
           manager: managerObject,
           clients: clientObjects,
         });
-        return project.save()
-          .then((newProject) => {
-            global.botReporter.reportCreateProject(ownerObject, newProject);
-            return { ownerObject, managerObject, clientObjects, newProject };
-          });
+        const post = new Post({
+          text: status,
+          project,
+          type: 'status',
+          manager: project.manager,
+        });
+        project.lastStatus = post;
+        project.posts = [post];
+        return post.save()
+          .then(() =>
+            project.save()
+              .then(newProject => ({ ownerObject, managerObject, clientObjects, newProject }))
+          );
       })
       .then(({ ownerObject, managerObject, clientObjects, newProject }) => {
         const managerObjectArray = ownerObject.email === managerObject.email ? [] : [managerObject];
@@ -113,6 +120,7 @@ function addProject(userId, title, image, status, description, manager, clients)
           object.projects.push(newProject);
           object.save();
         });
+        global.botReporter.reportCreateProject(ownerObject, newProject);
         resolve(newProject);
       })
   );
@@ -156,22 +164,6 @@ function getProjects(userId, skip, limit) {
       .catch(err => reject(err));
   }
   );
-}
-
-function changeStatus(projectId, status) {
-  return new Promise((resolve, reject) => {
-    Project.findById(projectId)
-      .then((project) => {
-        project.status = status;
-
-        global.botReporter.reportChangeStatus(project);
-
-        project.save()
-          .then(resolve)
-          .catch(reject);
-      })
-      .catch(reject);
-  });
 }
 
 function changeClients(projectId, clients) {
@@ -251,8 +243,8 @@ function editProject(userId, projectId, title, description, image) {
 
 // Posts
 
-function addPost(userId, projectId, text, attachments) {
-  return new Promise((resolve, reject) =>
+function addPost(userId, projectId, text, attachments, type) {
+  return new Promise(resolve =>
     getUserById(userId)
       .then(user =>
         Project.findById(projectId)
@@ -262,36 +254,42 @@ function addPost(userId, projectId, text, attachments) {
       .then(({ user, project }) => {
         if (String(project.owner) !== String(user._id) &&
                 String(project.manager) !== String(user._id)) {
-          reject(errors.notAuthorized());
-          return;
+          throw errors.notAuthorized();
         }
+        return { user, project };
+      })
+      .then(({ user, project }) => {
         const post = new Post({
           text,
           project,
           attachments,
+          type,
           manager: project.manager,
         });
-        post.save()
-          .then((dbpost) => {
-            project.posts.push(dbpost);
-            project.lastPost = dbpost._id;
-            const clients = project.clients;
-
-            global.botReporter.reportAddPost(user, project, dbpost);
-
-            project.save()
-              .then(() => resolve({ dbpost, clients, sender: user }))
-              .catch(reject);
-          })
-          .catch(reject);
+        return post.save()
+          .then(dbpost => ({ user, project, dbpost }));
       })
-      .catch(reject)
+      .then(({ user, project, dbpost }) => {
+        const projectCopy = Object.create(project);
+
+        projectCopy.posts.push(dbpost);
+        if (dbpost.type === 'post') {
+          projectCopy.lastPost = dbpost._id;
+          global.botReporter.reportAddPost(user, projectCopy, dbpost);
+        } else {
+          projectCopy.lastStatus = dbpost._id;
+          global.botReporter.reportChangeStatus(user, projectCopy, dbpost);
+        }
+
+        return projectCopy.save()
+          .then(dbproject => resolve({ dbpost, clients: dbproject.clients, sender: user }));
+      })
   );
 }
 
 function getPosts(projectId, skip, limit) {
   return new Promise((resolve, reject) => {
-    Post.find({ project: mongoose.Types.ObjectId(projectId) })
+    Post.find({ project: new mongoose.Types.ObjectId(projectId) })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -428,7 +426,6 @@ module.exports = {
   // Projects
   addProject,
   getProjects,
-  changeStatus,
   changeClients,
   editProject,
   // Posts

@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 const projectSchema = new Schema({
   title: String,
   image: String,
-  status: String,
   description: String,
   completed: {
     type: Boolean,
@@ -28,6 +27,10 @@ const projectSchema = new Schema({
     required: true,
     default: [],
   }],
+  lastStatus: {
+    type: Schema.ObjectId,
+    ref: 'post',
+  },
   lastPost: {
     type: Schema.ObjectId,
     ref: 'post',
