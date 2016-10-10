@@ -18,22 +18,13 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
 
   dbmanager.getUser({ email })
     .then((user) => {
-      const userCopy = Object.create(user);
-      if (!userCopy) {
-        const newUser = {
+      if (!user) {
+        return dbmanager.addUser({
           email,
           token: jwt.sign(email, config.jwtSecret),
-        };
-        return dbmanager.addUser(newUser)
-          .then((dbuser) => {
-            const dbuserCopy = Object.create(dbuser);
-            dbuserCopy.magicToken = randomToken(24);
-            global.emailSender.sendMagicLink(dbuserCopy);
-            return dbuserCopy.save()
-              .then(() => res.send({ success: true }));
-          });
+        });
       }
-      return userCopy;
+      return user;
     })
     .then((user) => {
       const userCopy = Object.create(user);
