@@ -18,29 +18,29 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
 
   dbmanager.getUser({ email })
     .then((user) => {
-      if (!user) {
-        const user = {
+      const userCopy = Object.create(user);
+      if (!userCopy) {
+        const newUser = {
           email,
           token: jwt.sign(email, config.jwtSecret),
         };
-        dbmanager.addUser(user)
+        return dbmanager.addUser(newUser)
           .then((dbuser) => {
-            const token = randomToken(24);
-            dbuser.magicToken = token;
-            global.emailSender.sendMagicLink(dbuser, token);
-            dbuser.save()
-              .then(() => res.send({}))
-              .catch(err => next(err));
-          })
-          .catch(err => next(err));
-      } else {
-        const token = randomToken(24);
-        user.magicToken = token;
-        global.emailSender.sendMagicLink(user, token);
-        user.save()
-          .then(() => res.send({}))
-          .catch(err => next(err));
+            const dbuserCopy = Object.create(dbuser);
+            dbuserCopy.magicToken = randomToken(24);
+            global.emailSender.sendMagicLink(dbuserCopy);
+            return dbuserCopy.save()
+              .then(() => res.send({ success: true }));
+          });
       }
+      return userCopy;
+    })
+    .then((user) => {
+      const userCopy = Object.create(user);
+      userCopy.magicToken = randomToken(24);
+      global.emailSender.sendMagicLink(userCopy);
+      return userCopy.save()
+        .then(() => res.send({ success: true }));
     })
     .catch(err => next(err));
 });
@@ -55,22 +55,33 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
       if (!user) {
         next(errors.noUserFound());
       } else {
-        if (user.magicToken !== token) {
-          next(errors.magicLinkOnlyOnce());
-        } else {
-          if (iosPushToken) {
-            user.iosPushTokens.push(iosPushToken);
-          }
-          user.magicToken = null;
-          user.save()
-            .then((savedUser) => {
-              user.password = undefined;
-              global.botReporter.reportMagicLinkLogin(user.email);
-              res.send(user);
-            })
-            .catch(err => next(err));
-        }
+        return user;
       }
+    })
+    .then((user) => {
+      if (user.magicToken !== token) {
+        next(errors.magicLinkOnlyOnce());
+      } else {
+        return user;
+      }
+    })
+    .then((user) => {
+      const userCopy = Object.create(user);
+      if (!userCopy.token) {
+        userCopy.token = jwt.sign(userCopy.email, config.jwtSecret);
+      }
+      if (iosPushToken) {
+        userCopy.iosPushTokens.push(iosPushToken);
+      }
+      userCopy.magicToken = null;
+
+      return userCopy.save()
+        .then((savedUser) => {
+          const savedUserCopy = Object.create(savedUser);
+          savedUserCopy.password = undefined;
+          res.send(savedUserCopy);
+          global.botReporter.reportMagicLinkLogin(savedUserCopy.email);
+        });
     })
     .catch(err => next(err));
 });
@@ -85,35 +96,43 @@ router.post('/login', validate(validation.login), (req, res, next) => {
       if (!user) {
         next(errors.authEmailNotRegistered());
       } else {
-        hash.checkPassword(user.password, rawPassword)
-          .then((result) => {
-            if (!result) {
-              next(errors.authWrongPassword());
-            } else {
-              if (!user.token || iosPushToken) {
-                if (!user.token) {
-                  user.token = jwt.sign(email, config.jwtSecret);
-                }
-                if (iosPushToken) {
-                  user.iosPushTokens.push(iosPushToken);
-                }
-                user.save()
-                  .then((user) => {
-                    user.password = undefined;
-
-                    global.botReporter.reportLogin(email);
-
-                    res.send(user);
-                  })
-                  .catch(err => ndext(err));
-              } else {
-                user.password = undefined;
-                res.send(user);
-              }
-            }
-          })
-          .catch(err => next(err));
+        return user;
       }
+    })
+    .then(user =>
+      hash.checkPassword(user.password, rawPassword)
+        .then((result) => {
+          if (!result) {
+            next(errors.authWrongPassword());
+          } else {
+            return user;
+          }
+        })
+    )
+    .then((user) => {
+      const userCopy = Object.create(user);
+      if (userCopy.token && !iosPushToken) {
+        userCopy.password = undefined;
+        res.send(userCopy);
+      } else {
+        return userCopy;
+      }
+    })
+    .then((user) => {
+      const userCopy = Object.create(user);
+      if (!userCopy.token) {
+        userCopy.token = jwt.sign(email, config.jwtSecret);
+      }
+      if (iosPushToken) {
+        userCopy.iosPushTokens.push(iosPushToken);
+      }
+      return userCopy.save()
+        .then((savedUser) => {
+          const savedUserCopy = Object.create(savedUser);
+          savedUserCopy.password = undefined;
+          res.send(savedUserCopy);
+          global.botReporter.reportLogin(email);
+        });
     })
     .catch(err => next(err));
 });
@@ -133,16 +152,13 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
       if (iosPushToken) {
         user.iosPushTokens = [iosPushToken];
       }
-      dbmanager.addUser(user)
+      return dbmanager.addUser(user)
         .then((dbuser) => {
-          const userWithoutPassword = dbuser;
-          userWithoutPassword.password = undefined;
-
+          const dbuserCopy = Object.create(dbuser);
+          dbuserCopy.password = undefined;
+          res.send(dbuserCopy);
           global.botReporter.reportSignUp(email);
-
-          res.send(userWithoutPassword);
-        })
-        .catch(err => next(err));
+        });
     })
     .catch(err => next(err));
 });
@@ -157,14 +173,16 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
       if (!user) {
         next(errors.authEmailNotRegistered());
       } else {
-        const token = randomToken(24);
-        user.tokenForPasswordReset = token;
-        user.tokenForPasswordResetIsFresh = true;
-        global.emailSender.sendResetPassword(user, token);
-        user.save()
-          .then(() => res.send({}))
-          .catch(err => next(err));
+        return user;
       }
+    })
+    .then((user) => {
+      const userCopy = Object.create(user);
+      userCopy.tokenForPasswordReset = randomToken(24);
+      userCopy.tokenForPasswordResetIsFresh = true;
+      global.emailSender.sendResetPassword(userCopy);
+      return userCopy.save()
+        .then(() => res.send({ success: true }));
     })
     .catch(err => next(err));
 });

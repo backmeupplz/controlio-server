@@ -14,7 +14,7 @@ function sendResetPassword(user, token) {
   const fromEmail = new helper.Email('noreply@controlio.co');
   const toEmail = new helper.Email(user.email);
   const subject = 'Controlio: reset your password';
-  const content = new helper.Content('text/html', emailResetPasswordTemplate.render({ userid: user._id, token }));
+  const content = new helper.Content('text/html', emailResetPasswordTemplate.render({ userid: user._id, token: user.randomToken }));
   const mail = new helper.Mail(fromEmail, subject, toEmail, content);
 
   const request = sg.emptyRequest({
@@ -26,11 +26,11 @@ function sendResetPassword(user, token) {
   sg.API(request);
 }
 
-function sendMagicLink(user, token) {
+function sendMagicLink(user) {
   const fromEmail = new helper.Email('noreply@controlio.co');
   const toEmail = new helper.Email(user.email);
   const subject = 'Controlio: your magic link';
-  const content = new helper.Content('text/html', emailMagicLinkTemplate.render({ userid: user._id, token }));
+  const content = new helper.Content('text/html', emailMagicLinkTemplate.render({ userid: user._id, token: user.magicToken }));
   const mail = new helper.Mail(fromEmail, subject, toEmail, content);
 
   const request = sg.emptyRequest({
