@@ -44,14 +44,14 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
   dbmanager.getUserById(userId, '+token')
     .then((user) => {
       if (!user) {
-        next(errors.noUserFound());
+        throw errors.noUserFound();
       } else {
         return user;
       }
     })
     .then((user) => {
       if (user.magicToken !== token) {
-        next(errors.magicLinkOnlyOnce());
+        throw errors.magicLinkOnlyOnce();
       } else {
         return user;
       }
@@ -82,10 +82,10 @@ router.post('/login', validate(validation.login), (req, res, next) => {
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
 
-  dbmanager.getUser({ email }, '+password +token')
+  const p = dbmanager.getUser({ email }, '+password +token')
     .then((user) => {
       if (!user) {
-        next(errors.authEmailNotRegistered());
+        throw errors.authEmailNotRegistered();
       } else {
         return user;
       }
@@ -94,7 +94,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
       hash.checkPassword(user.password, rawPassword)
         .then((result) => {
           if (!result) {
-            next(errors.authWrongPassword());
+            throw errors.authWrongPassword();
           } else {
             return user;
           }
@@ -105,6 +105,8 @@ router.post('/login', validate(validation.login), (req, res, next) => {
       if (userCopy.token && !iosPushToken) {
         userCopy.password = undefined;
         res.send(userCopy);
+        global.botReporter.reportLogin(userCopy.email);
+        p.cancel();
       } else {
         return userCopy;
       }
@@ -122,7 +124,6 @@ router.post('/login', validate(validation.login), (req, res, next) => {
           const savedUserCopy = Object.create(savedUser);
           savedUserCopy.password = undefined;
           res.send(savedUserCopy);
-          global.botReporter.reportLogin(email);
         });
     })
     .catch(err => next(err));

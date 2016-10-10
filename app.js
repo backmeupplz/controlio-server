@@ -11,6 +11,10 @@ const errors = require('./helpers/errors');
 
 const app = express();
 
+// Setup Bluebird as the Promise library
+global.Promise = require("bluebird");
+Promise.config({ cancellation: true });
+
 // setup mongoose and load all models
 mongoose.connect(config.database);
 mongoose.Promise = global.Promise;
