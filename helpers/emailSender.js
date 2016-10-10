@@ -10,11 +10,11 @@ const emailResetPasswordTemplate = hogan.compile(emailResetRawHtml);
 const emailMagicRawHtml = fs.readFileSync(path.join(__dirname, '../views/email-magic-link.hjs'), 'utf8');
 const emailMagicLinkTemplate = hogan.compile(emailMagicRawHtml);
 
-function sendResetPassword(user, token) {
+function sendResetPassword(user) {
   const fromEmail = new helper.Email('noreply@controlio.co');
   const toEmail = new helper.Email(user.email);
   const subject = 'Controlio: reset your password';
-  const content = new helper.Content('text/html', emailResetPasswordTemplate.render({ userid: user._id, token: user.randomToken }));
+  const content = new helper.Content('text/html', emailResetPasswordTemplate.render({ userid: user._id, token: user.tokenForPasswordReset }));
   const mail = new helper.Mail(fromEmail, subject, toEmail, content);
 
   const request = sg.emptyRequest({
