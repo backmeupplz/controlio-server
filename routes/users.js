@@ -188,13 +188,14 @@ router.post('/logout', (req, res, next) => {
   const iosPushToken = req.body.iosPushToken;
 
   dbmanager.getUserById(userId)
-    .then(user => {
-      user.iosPushTokens.splice(user.iosPushTokens.indexOf(iosPushToken), 1);
+    .then((user) => {
+      const userCopy = Object.create(user);
+      userCopy.iosPushTokens.splice(userCopy.iosPushTokens.indexOf(iosPushToken), 1);
 
-      global.botReporter.reportLogout(user.email);
+      global.botReporter.reportLogout(userCopy.email);
 
-      user.save()
-        .then(user => res.send(user))
+      userCopy.save()
+        .then(dbuser => res.send(dbuser))
         .catch(err => next(err));
     })
     .catch(err => next(err));

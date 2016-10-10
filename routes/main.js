@@ -31,7 +31,9 @@ router.get('/apple-app-site-association', (req, res) => {
 });
 
 router.get('/magic', (req, res) => {
-  res.render('magic');
+  const userid = req.query.userid;
+  const token = req.query.token;
+  res.render('magic', { userid, token });
 });
 
 // Export

@@ -12,8 +12,11 @@ hr
           .panel-body
             .text-center
               h2.text-center Sorry!
-              p Magic links are only available on iOS for now.
-              p Maybe you need to install Controlio first?
+              p Magic links work properly only when opened in Safary on iOS so far.
+              p But you can try again or install Controlio first by clicking the buttons below.
+              br
+              a(href='https://api.controlio.co/magic?userid='+userid+'&token='+token)
+                center: img.img-responsive(src='http://controlio.co/images/magic.svg', width='80%')
               br
               a(href='https://itunes.apple.com/ca/app/controlio/id997857994?mt=8')
                 center: img.img-responsive(src='http://controlio.co/images/app-store.svg', width='80%')
