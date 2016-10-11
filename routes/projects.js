@@ -56,6 +56,7 @@ router.post('/status', validate(validation.postStatus), (req, res, next) => {
 });
 
 router.post('/clients', validate(validation.postClients), (req, res, next) => {
+  const userId = req.get('userId');
   const projectId = req.body.projectid;
   const clients = _.uniq(req.body.clients.map(email => email.toLowerCase()));
 
@@ -65,7 +66,7 @@ router.post('/clients', validate(validation.postClients), (req, res, next) => {
   }
 
   // botReporter works inside dbmanager
-  dbmanager.changeClients(projectId, clients)
+  dbmanager.changeClients(userId, projectId, clients)
     .then(project => res.send(project))
     .catch(err => next(err));
 });

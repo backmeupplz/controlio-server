@@ -73,8 +73,6 @@ module.exports = {
   noClientObjectsCreated,
   addSelfAsManager,
   addSelfAsClient,
-  addDemoAsManager,
-  addDemoAsClient,
   alreadyManager,
   noProjectFound,
   notAuthorized,

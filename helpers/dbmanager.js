@@ -64,6 +64,8 @@ function addProject(userId, title, image, status, description, manager, clients)
       .then((ownerObject) => {
         if (!ownerObject) {
           throw errors.noOwnerFound();
+        } else if (clients.includes(ownerObject.email)) {
+          throw errors.addSelfAsClient();
         } else {
           return ownerObject;
         }
@@ -165,10 +167,22 @@ function getProjects(userId, skip, limit) {
   );
 }
 
-function changeClients(projectId, clients) {
+function changeClients(userId, projectId, clients) {
   return new Promise((resolve, reject) => {
     Project.findById(projectId)
       .populate('clients')
+      .then(project =>
+        getUserById(userId)
+          .then((user) => {
+            if (String(project.owner) !== String(user._id) &&
+                String(project.manager) !== String(user._id)) {
+              throw errors.notAuthorized();
+            } else if (clients.includes(user.email)) {
+              throw errors.addSelfAsClient();
+            }
+            return project;
+          })
+      )
       .then((project) => {
         const existingClientEmails = project.clients.map(client => client.email);
         const clientsEmailsToRemove = _.difference(existingClientEmails, clients);
