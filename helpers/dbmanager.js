@@ -63,7 +63,7 @@ function addProject(userId, title, image, status, description, manager, clients)
     getUserById(userId)
       .then((ownerObject) => {
         if (!ownerObject) {
-          reject(errors.noOwnerFound());
+          throw errors.noOwnerFound();
         } else {
           return ownerObject;
         }
@@ -72,7 +72,7 @@ function addProject(userId, title, image, status, description, manager, clients)
         getUserById(manager)
           .then((managerObject) => {
             if (!managerObject) {
-              reject(errors.noManagerFound());
+              throw errors.noManagerFound();
             } else {
               // TODO: send manager a notice or request for approval
               return { ownerObject, managerObject };
@@ -83,7 +83,7 @@ function addProject(userId, title, image, status, description, manager, clients)
         getClients(clients)
           .then((clientObjects) => {
             if (!clientObjects) {
-              reject(errors.noClientObjectsCreated());
+              throw errors.noClientObjectsCreated();
             } else {
               return { ownerObject, managerObject, clientObjects };
             }
@@ -98,31 +98,24 @@ function addProject(userId, title, image, status, description, manager, clients)
           manager: managerObject,
           clients: clientObjects,
         });
-        const post = new Post({
-          text: status,
-          project,
-          type: 'status',
-          manager: project.manager,
-        });
-        project.lastStatus = post;
-        project.posts = [post];
-        return post.save()
-          .then(() =>
-            project.save()
-              .then(newProject => ({ ownerObject, managerObject, clientObjects, newProject }))
-          );
+        return project.save()
+          .then(newProject => ({ ownerObject, managerObject, clientObjects, newProject }));
       })
       .then(({ ownerObject, managerObject, clientObjects, newProject }) => {
         const managerObjectArray = ownerObject.email === managerObject.email ? [] : [managerObject];
         const allObjects = _.union([ownerObject], managerObjectArray, clientObjects);
+
         // TODO: send clients registration email and\or invite
         allObjects.forEach((object) => {
           object.projects.push(newProject);
           object.save();
         });
         global.botReporter.reportCreateProject(ownerObject, newProject);
-        resolve(newProject);
+        return newProject;
       })
+      .then(project => addPost(project.owner._id, project._id, status, [], 'status'))
+      .then(() => resolve({ success: true }))
+      .catch(reject)
   );
 }
 
@@ -145,6 +138,12 @@ function getProjects(userId, skip, limit) {
       { path: 'projects',
         populate: {
           path: 'lastPost',
+          model: 'post',
+        },
+      },
+      { path: 'projects',
+        populate: {
+          path: 'lastStatus',
           model: 'post',
         },
       }])
@@ -271,7 +270,6 @@ function addPost(userId, projectId, text, attachments, type) {
       })
       .then(({ user, project, dbpost }) => {
         const projectCopy = Object.create(project);
-
         projectCopy.posts.push(dbpost);
         if (dbpost.type === 'post') {
           projectCopy.lastPost = dbpost._id;
@@ -326,37 +324,37 @@ function editPost(userId, postId, text, attachments) {
 }
 
 function deletePost(userId, postId) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve =>
     getUserById(userId)
-      .then((user) => {
+      .then(user =>
         Post.findById(postId)
           .populate('project')
           .then((post) => {
             if (String(post.project.owner) !== String(user._id) &&
                 String(post.project.manager) !== String(user._id)) {
-              reject(errors.notAuthorized());
-              return;
+              throw errors.notAuthorized();
             }
-            const index = post.project.posts.map(v => String(v)).indexOf(String(post._id));
-            if (index > -1) {
-              post.project.posts.splice(index, 1);
-            }
-            post.project.save();
-
-            global.botReporter.reportDeletePost(user, post);
-            
-            post.remove((err) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve();
-              }
-            });
+            return { user, post };
           })
-          .catch(reject);
+      )
+      .then(({ user, post }) => {
+        const index = post.project.posts.map(v => String(v)).indexOf(String(post._id));
+        if (index > -1) {
+          post.project.posts.splice(index, 1);
+        }
+        post.project.save();
+
+        global.botReporter.reportDeletePost(user, post);
+
+        post.remove((err) => {
+          if (err) {
+            throw err;
+          } else {
+            resolve();
+          }
+        });
       })
-      .catch(reject);
-  });
+  );
 }
 
 // Helpers

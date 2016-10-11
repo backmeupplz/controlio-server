@@ -61,7 +61,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
       if (!userCopy.token) {
         userCopy.token = jwt.sign(userCopy.email, config.jwtSecret);
       }
-      if (iosPushToken) {
+      if (iosPushToken && !user.isDemo) {
         userCopy.iosPushTokens.push(iosPushToken);
       }
       userCopy.magicToken = null;
@@ -102,7 +102,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
     )
     .then((user) => {
       const userCopy = Object.create(user);
-      if (userCopy.token && !iosPushToken) {
+      if (userCopy.token && (!iosPushToken || user.isDemo)) {
         userCopy.password = undefined;
         res.send(userCopy);
         global.botReporter.reportLogin(userCopy.email);
@@ -116,7 +116,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
       if (!userCopy.token) {
         userCopy.token = jwt.sign(email, config.jwtSecret);
       }
-      if (iosPushToken) {
+      if (iosPushToken && !user.isDemo) {
         userCopy.iosPushTokens.push(iosPushToken);
       }
       return userCopy.save()
@@ -141,7 +141,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
         password,
         token: jwt.sign(email, config.jwtSecret),
       };
-      if (iosPushToken) {
+      if (iosPushToken && !user.isDemo) {
         user.iosPushTokens = [iosPushToken];
       }
       return dbmanager.addUser(user)
@@ -238,6 +238,12 @@ router.post('/profile', (req, res, next) => {
 router.post('/manager', validate(validation.addManager), (req, res, next) => {
   const managerEmail = req.body.email.toLowerCase();
   const userId = req.get('userId');
+
+  if (managerEmail === 'giraffe@controlio.co') {
+    next(errors.addDemoAsManager());
+    return;
+  }
+
   dbmanager.getUserById(userId)
     .then(owner =>
       dbmanager.getUser({ email: managerEmail })

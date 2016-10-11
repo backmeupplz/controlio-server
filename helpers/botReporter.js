@@ -71,15 +71,12 @@ function reportResetPassword(email) {
 // Projects.js
 
 function reportCreateProject(user, project) {
-  sendMessage(`📝 *${user.email}* created project:\n${'```'}json\n${JSON.stringify(project, null, 2)}${'```'}`);
+  const clientEmailsString = project.clients.map(client => client.email).join(', ');
+  sendMessage(`📝 *${user.email}* created project: *${project.title}* with clients:\n${clientEmailsString}`);
 }
 
 function reportGetProjects(user, skip, limit) {
   sendMessage(`📄 *${user.email}* requested a list of projects (${skip}, ${limit})`);
-}
-
-function reportChangeStatus(project) {
-  sendMessage(`✈️ Project status has changed:\n${'```'}json\n${JSON.stringify(project, null, 2)}${'```'}`);
 }
 
 function reportChangeClients(project) {
@@ -93,7 +90,12 @@ function reportEditProject(project) {
 // Posts.js
 
 function reportAddPost(user, project, post) {
-  sendMessage(`🙌 *${user.email}* added post to *${project.title}*:\n${'```'}json\n${JSON.stringify(post, null, 2)}${'```'}`);
+  const attachmentsString = post.attachments.join(', ');
+  sendMessage(`🙌 *${user.email}* added post to *${project.title}*:\n*${post.text}*\n${attachmentsString}`);
+}
+
+function reportChangeStatus(user, project, post) {
+  sendMessage(`✈️ *${user.email}* changed status of *${project.title}* to *${post.text}*`);
 }
 
 function reportGetPosts(projectid, skip, limit) {
@@ -105,7 +107,7 @@ function reportEditPost(user, post) {
 }
 
 function reportDeletePost(user, post) {
-  sendMessage(`👺 *${user.email}* delited post:\n${'```'}json\n${JSON.stringify(post, null, 2)}${'```'}`);
+  sendMessage(`👺 *${user.email}* deleted ${post.type} *${post.text}* from *${post.project.title}*`);
 }
 
 // General functions

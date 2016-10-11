@@ -41,12 +41,6 @@ function addSelfAsManager() {
 function addSelfAsClient() {
   return error(400, 'You cannot add yourself as a client');
 }
-function addDemoAsManager() {
-  return error(400, 'You cannot add yourself as a manager');
-}
-function addDemoAsClient() {
-  return error(400, 'You cannot add yourself as a client');
-}
 function alreadyManager() {
   return error(400, 'This user is already a manager');
 }
@@ -59,8 +53,11 @@ function notAuthorized() {
 function magicLinkOnlyOnce() {
   return error(403, 'Magic link can be used only once');
 }
-function noProjectFound() {
-  return error(403, 'Project not found');
+function addDemoAsClient() {
+  return error(403, 'You cannot add demo account as a client');
+}
+function addDemoAsManager() {
+  return error(403, 'You cannot add demo account as a manager');
 }
 
 module.exports = {
@@ -82,5 +79,6 @@ module.exports = {
   noProjectFound,
   notAuthorized,
   magicLinkOnlyOnce,
-  noProjectFound,
+  addDemoAsClient,
+  addDemoAsManager,
 };
