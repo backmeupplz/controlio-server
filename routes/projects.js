@@ -4,6 +4,7 @@ const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/projects');
 const errors = require('../helpers/errors');
+const _ = require('lodash');
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ router.post('/', validate(validation.post), (req, res, next) => {
   const status = req.body.status;
   const description = req.body.description;
   const manager = req.body.manager;
-  const clients = req.body.clients.map(email => email.toLowerCase());
+  const clients = _.uniq(req.body.clients.map(email => email.toLowerCase()));
 
   if (clients.includes('giraffe@controlio.co')) {
     next(errors.addDemoAsClient());
@@ -56,7 +57,7 @@ router.post('/status', validate(validation.postStatus), (req, res, next) => {
 
 router.post('/clients', validate(validation.postClients), (req, res, next) => {
   const projectId = req.body.projectid;
-  const clients = req.body.clients.map(email => email.toLowerCase());
+  const clients = _.uniq(req.body.clients.map(email => email.toLowerCase()));
 
   if (clients.includes('giraffe@controlio.co')) {
     next(errors.addDemoAsClient());
