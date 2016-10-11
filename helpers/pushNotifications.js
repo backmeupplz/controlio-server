@@ -1,24 +1,16 @@
 const apn = require('apn');
 const path = require('path');
-// const dbmanager = require('./dbmanager');
 
 const provider = new apn.Provider({
-  key: path.join(__dirname, '../certificates/production_BorodutchStudio.Controlio.pkey'),
+  key: path.join(__dirname, '../certificates/key.pem'),
   cert: path.join(__dirname, '../certificates/production_BorodutchStudio.Controlio.pem'),
-  production: false,
+  production: true,
 });
-
-// const options = {
-//   batchFeedback: true,
-//   interval: 300,
-// };
-
-// const feedback = new apn.Feedback(options);
-// feedback.on('feedback', dbmanager.removeTokens);
 
 function sendNotification(text, users) {
   const notification = new apn.Notification();
   notification.alert = text;
+  notification.topic = 'BorodutchStudio.Controlio';
   let resultTokens = [];
   users.forEach((user) => {
     resultTokens = resultTokens.concat(user.iosPushTokens);
@@ -26,10 +18,10 @@ function sendNotification(text, users) {
   provider.send(notification, resultTokens)
     .then((response) => {
       if (response.sent.length > 0) {
-        console.log(`Sent '${text}' to ${response.sent}`);
+        console.log(`Sent '${text}' to ${response.sent.map(v => JSON.stringify(v))}`);
       }
       if (response.failed.length > 0) {
-        console.log(`Failed sending '${text}' to ${response.sent}`);
+        console.log(`Failed sending to ${response.failed.map(fail => JSON.stringify(fail))}`);
       }
     })
     .catch(err => console.log(err));
