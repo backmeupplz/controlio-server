@@ -46,6 +46,11 @@ const projectSchema = new Schema({
     required: true,
     default: false,
   },
+  isArchived: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 }, { timestamps: true });
 
 mongoose.model('project', projectSchema);

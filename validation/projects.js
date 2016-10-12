@@ -31,4 +31,19 @@ module.exports = {
       clients: Joi.required(),
     },
   },
+  archive: {
+    body: {
+      projectid: Joi.string().required(),
+    },
+  },
+  unarchive: {
+    body: {
+      projectid: Joi.string().required(),
+    },
+  },
+  delete: {
+    body: {
+      projectid: Joi.string().required(),
+    },
+  },
 };

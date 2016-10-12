@@ -84,6 +84,36 @@ router.put('/', validate(validation.put), (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.delete('/', validate(validation.delete), (req, res, next) => {
+  const userId = req.get('userId');
+  const projectId = req.body.projectid;
+
+  // botReporter works inside dbmanager
+  dbmanager.deleteProject(userId, projectId)
+    .then(() => res.send({ success: true }))
+    .catch(err => next(err));
+});
+
+router.post('/archive', validate(validation.archive), (req, res, next) => {
+  const userId = req.get('userId');
+  const projectId = req.body.projectid;
+
+  // botReporter works inside dbmanager
+  dbmanager.archiveProject(userId, projectId, true)
+    .then(project => res.send(project))
+    .catch(err => next(err));
+});
+
+router.post('/unarchive', validate(validation.unarchive), (req, res, next) => {
+  const userId = req.get('userId');
+  const projectId = req.body.projectid;
+
+  // botReporter works inside dbmanager
+  dbmanager.archiveProject(userId, projectId, false)
+    .then(project => res.send(project))
+    .catch(err => next(err));
+});
+
 // Export
 
 module.exports = router;

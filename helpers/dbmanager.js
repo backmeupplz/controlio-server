@@ -254,6 +254,72 @@ function editProject(userId, projectId, title, description, image) {
   });
 }
 
+function archiveProject(userId, projectId, archive) {
+  return new Promise(() =>
+    getUserById(userId)
+      .then(user =>
+        Project.findById(projectId)
+          .then((project) => {
+            if (String(project.owner) !== String(user._id) &&
+                String(project.manager) !== String(user._id)) {
+              throw errors.notAuthorized();
+            }
+
+            const projectCopy = Object.create(project);
+            projectCopy.isArchived = archive;
+
+            global.botReporter.reportArchiveProject(user, projectCopy, archive);
+
+            return projectCopy.save();
+          })
+      )
+  );
+}
+
+function deleteProject(userId, projectId) {
+  return new Promise(resolve =>
+    getUserById(userId)
+      .then(user =>
+        Project.findById(projectId)
+          .populate('clients manager owner')
+          .then((project) => {
+            if (String(project.owner) !== String(user._id) &&
+                String(project.manager) !== String(user._id)) {
+              throw errors.notAuthorized();
+            }
+
+            project.clients.forEach((client) => {
+              const index = client.projects.map(v => String(v)).indexOf(String(project._id));
+              if (index > -1) {
+                client.projects.splice(index, 1);
+                client.save();
+              }
+            });
+
+            let index = project.manager.projects.map(v => String(v)).indexOf(String(project._id));
+            if (index > -1) {
+              project.manager.projects.splice(index, 1);
+              project.manager.save();
+            }
+
+            index = project.owner.projects.map(v => String(v)).indexOf(String(project._id));
+            if (index > -1) {
+              project.owner.projects.splice(index, 1);
+              project.owner.save();
+            }
+
+            project.remove((err) => {
+              if (err) {
+                throw err;
+              } else {
+                resolve();
+              }
+            });
+          })
+      )
+  );
+}
+
 // Posts
 
 function addPost(userId, projectId, text, attachments, type) {
@@ -440,6 +506,8 @@ module.exports = {
   getProjects,
   changeClients,
   editProject,
+  archiveProject,
+  deleteProject,
   // Posts
   addPost,
   getPosts,
