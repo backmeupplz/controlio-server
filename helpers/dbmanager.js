@@ -313,6 +313,8 @@ function deleteProject(userId, projectId) {
               }
             }
 
+            global.botReporter.reportDeleteProject(user, project);
+            
             project.remove((err) => {
               if (err) {
                 throw err;

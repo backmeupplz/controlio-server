@@ -95,6 +95,10 @@ function reportArchiveProject(user, project, archived) {
   }
 }
 
+function reportDeleteProject(user, project) {
+  sendMessage(`☠️ *${user.email}* deleted *${project.title}*`);
+}
+
 // Posts.js
 
 function reportAddPost(user, project, post) {
@@ -149,6 +153,7 @@ module.exports = {
   reportChangeClients,
   reportEditProject,
   reportArchiveProject,
+  reportDeleteProject,
   // Posts.js
   reportAddPost,
   reportGetPosts,
