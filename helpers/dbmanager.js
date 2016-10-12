@@ -281,14 +281,14 @@ function archiveProject(userId, projectId, archive) {
 }
 
 function deleteProject(userId, projectId) {
-  return new Promise(resolve =>
+  return new Promise((resolve, reject) =>
     getUserById(userId)
       .then(user =>
         Project.findById(projectId)
           .populate('clients manager owner')
           .then((project) => {
-            if (String(project.owner) !== String(user._id) &&
-                String(project.manager) !== String(user._id)) {
+            if (String(project.owner._id) !== String(user._id) &&
+                String(project.manager._id) !== String(user._id)) {
               throw errors.notAuthorized();
             }
 
@@ -305,11 +305,12 @@ function deleteProject(userId, projectId) {
               project.manager.projects.splice(index, 1);
               project.manager.save();
             }
-
-            index = project.owner.projects.map(v => String(v)).indexOf(String(project._id));
-            if (index > -1) {
-              project.owner.projects.splice(index, 1);
-              project.owner.save();
+            if (String(project.manager._id) !== String(project.owner._id)) {
+              index = project.owner.projects.map(v => String(v)).indexOf(String(project._id));
+              if (index > -1) {
+                project.owner.projects.splice(index, 1);
+                project.owner.save();
+              }
             }
 
             project.remove((err) => {
@@ -321,6 +322,8 @@ function deleteProject(userId, projectId) {
             });
           })
       )
+      .then(resolve)
+      .catch(reject)
   );
 }
 
