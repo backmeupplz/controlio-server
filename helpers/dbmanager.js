@@ -122,48 +122,32 @@ function addProject(userId, title, image, status, description, manager, clients)
 }
 
 function getProjects(userId, skip, limit) {
-  return new Promise((resolve, reject) => {
-    getUserById(userId, null,
-      { projects: { $slice: [skip, limit] } },
-      [{ path: 'projects',
-        populate: {
-          path: 'manager',
-          model: 'user',
-        },
-      },
-      { path: 'projects',
-        populate: {
-          path: 'clients',
-          model: 'user',
-        },
-      },
-      { path: 'projects',
-        populate: {
-          path: 'lastPost',
-          model: 'post',
-        },
-      },
-      { path: 'projects',
-        populate: {
-          path: 'lastStatus',
-          model: 'post',
-        },
-      }])
+  return new Promise((resolve, reject) =>
+    getUserById(userId)
       .then((user) => {
-        user.projects.forEach(project =>
-          project.canEdit = String(project.manager._id) === String(user._id) ||
-            String(project.owner) === String(user._id)
-        );
-        if (user) {
-          global.botReporter.reportGetProjects(user, skip, limit);
-          
-          resolve(user.projects);
-        } else {
-          reject(errors.noUserFound());
+        if (!user) {
+          throw errors.noUserFound();
         }
+        return user;
       })
-      .catch(err => reject(err));
-  }
+      .then(user =>
+        Project.find({ $or: [{ clients: user._id }, { owner: user._id }, { manager: user._id }] })
+          .sort({ isArchived: 1 })
+          .skip(skip)
+          .limit(limit)
+          .populate('clients owner manager')
+          .then(projects => ({ user, projects }))
+      )
+      .then(({ user, projects }) => {
+        projects.forEach((project) => {
+          project.canEdit = String(project.manager._id) === String(user._id) ||
+            String(project.owner) === String(user._id);
+        });
+
+        global.botReporter.reportGetProjects(user, skip, limit);
+        resolve(projects);
+      })
+      .catch(err => reject(err))
   );
 }
 
@@ -314,7 +298,7 @@ function deleteProject(userId, projectId) {
             }
 
             global.botReporter.reportDeleteProject(user, project);
-            
+
             project.remove((err) => {
               if (err) {
                 throw err;
