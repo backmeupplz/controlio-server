@@ -255,7 +255,7 @@ function editProject(userId, projectId, title, description, image) {
 }
 
 function archiveProject(userId, projectId, archive) {
-  return new Promise(() =>
+  return new Promise((resolve, reject) =>
     getUserById(userId)
       .then(user =>
         Project.findById(projectId)
@@ -264,15 +264,19 @@ function archiveProject(userId, projectId, archive) {
                 String(project.manager) !== String(user._id)) {
               throw errors.notAuthorized();
             }
-
-            const projectCopy = Object.create(project);
-            projectCopy.isArchived = archive;
-
-            global.botReporter.reportArchiveProject(user, projectCopy, archive);
-
-            return projectCopy.save();
+            return { user, project };
           })
       )
+      .then(({ user, project }) => {
+        const projectCopy = Object.create(project);
+        projectCopy.isArchived = archive;
+
+        global.botReporter.reportArchiveProject(user, projectCopy, archive);
+
+        projectCopy.save()
+          .then(resolve)
+          .catch(reject);
+      })
   );
 }
 
