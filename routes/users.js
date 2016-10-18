@@ -303,16 +303,21 @@ router.delete('/manager', validate(validation.deleteManager), (req, res, next) =
   const managerId = req.body.id;
   const userId = req.get('userId');
 
-  dbmanager.getUserById(userId, null, null, 'managers projects')
+  if (managerId === userId) {
+    next(errors.removeYourselfAsManager());
+    return;
+  }
+
+  dbmanager.getUserById(userId, null, null, 'projects')
     .then(user =>
       dbmanager.getUserById(managerId)
         .then((manager) => {
           global.botReporter.reportDeleteManager(user, manager);
 
-          dbmanager.removeManagerFromOwner(manager, user);
+          return dbmanager.removeManagerFromOwner(manager, user);
         })
     )
-    .then(() => res.send({}))
+    .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
 

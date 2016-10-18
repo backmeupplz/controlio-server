@@ -58,7 +58,7 @@ router.delete('/', validate(validation.delete), (req, res, next) => {
 
   // botReporter works inside dbmanager
   dbmanager.deletePost(userId, postId)
-    .then(() => res.send({}))
+    .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
 

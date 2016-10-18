@@ -43,17 +43,32 @@ function addManager(email) {
 }
 
 function removeManagerFromOwner(manager, owner) {
-  owner.projects.forEach((project) => {
-    if (String(project.manager) === String(manager._id)) {
-      project.manager = owner;
-      project.save();
+  return new Promise(() => {
+    if (!owner.managers.map(v => String(v)).includes(String(manager._id))) {
+      throw errors.userNotManager();
     }
+
+    owner.projects.forEach((project) => {
+      if (String(project.manager) === String(manager._id)) {
+        const projectCopy = Object.create(project);
+        projectCopy.manager = owner;
+        projectCopy.save();
+
+        const index = manager.projects.map(v => String(v)).indexOf(String(projectCopy._id));
+        if (index > -1) {
+          manager.projects.splice(index, 1);
+        }
+      }
+    });
+    manager.save();
+
+    const index = owner.managers.map(v => String(v)).indexOf(String(manager._id));
+    if (index > -1) {
+      owner.managers.splice(index, 1);
+    }
+
+    return owner.save();
   });
-
-  const index = owner.managers.map(v => String(v)).indexOf(String(manager._id));
-  owner.managers.splice(index, 1);
-
-  return owner.save();
 }
 
 // Projects

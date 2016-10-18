@@ -59,6 +59,12 @@ function addDemoAsClient() {
 function addDemoAsManager() {
   return error(403, 'You cannot add demo account as a manager');
 }
+function removeYourselfAsManager() {
+  return error(403, 'You cannot remove yourself as a manager');
+}
+function userNotManager() {
+  return error(403, 'This user is not your manager');
+}
 
 module.exports = {
   notFound,
@@ -79,4 +85,6 @@ module.exports = {
   magicLinkOnlyOnce,
   addDemoAsClient,
   addDemoAsManager,
+  removeYourselfAsManager,
+  userNotManager,
 };
