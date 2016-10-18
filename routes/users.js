@@ -292,7 +292,9 @@ router.get('/managers', (req, res, next) => {
       global.botReporter.reportGetManagers(user.email);
 
       user.managers.unshift(user);
-      res.send(user.managers);
+      const result = user.managers;
+      result[0].managers = result[0].managers.map(v => v._id);
+      res.send(result);
     })
     .catch(err => next(err));
 });
