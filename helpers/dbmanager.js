@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const errors = require('./errors');
 const _ = require('lodash');
+const payments = require('./payments');
 
 // Get schemas
 const User = mongoose.model('user');
@@ -16,8 +17,15 @@ function addUser(user) {
         if (databaseUser) {
           reject(errors.authUserAlreadyExists());
         } else {
-          const newUser = new User(user);
-          resolve(newUser.save());
+          payments.createStripeCustomer(user.email.toLowerCase())
+            .then((stripeCustomer) => {
+              user.stripeId = stripeCustomer.id;
+              const newUser = new User(user);
+              newUser.save()
+                .then(resolve)
+                .catch(reject);
+            })
+            .catch(reject);
         }
       })
   );
