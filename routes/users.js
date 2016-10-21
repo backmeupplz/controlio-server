@@ -321,6 +321,21 @@ router.delete('/manager', validate(validation.deleteManager), (req, res, next) =
     .catch(err => next(err));
 });
 
+router.post('/convertToBusiness', (req, res, next) => {
+  const userId = req.get('userId');
+  dbmanager.convertToBusiness(userId, true)
+    .then(() => res.send({ success: true }))
+    .catch(err => next(err));
+});
+
+router.post('/convertFromBusiness', (req, res, next) => {
+  const userId = req.get('userId');
+
+  dbmanager.convertToBusiness(userId, false)
+    .then(() => res.send({ success: true }))
+    .catch(err => next(err));
+});
+
 // Export
 
 module.exports = router;

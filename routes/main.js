@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/feature_list', (req, res) => {
-  res.send({ 0: false });
+  res.send({ 0: false, whatever: 'iwant'});
 });
 
 router.get('/.well-known/apple-app-site-association', (req, res) => {

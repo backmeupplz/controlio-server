@@ -83,6 +83,21 @@ function removeManagerFromOwner(manager, owner) {
   });
 }
 
+function convertToBusiness(userId, convert) {
+  return getUserById(userId)
+    .then((user) => {
+      if (!user) {
+        throw errors.noUserFound();
+      }
+      return user;
+    })
+    .then((user) => {
+      const userCopy = Object.create(user);
+      userCopy.isBusiness = convert;
+      return userCopy.save();
+    });
+}
+
 // Projects
 
 function addProject(userId, title, image, status, description, manager, clients) {
@@ -606,6 +621,7 @@ module.exports = {
   getUser,
   addManager,
   removeManagerFromOwner,
+  convertToBusiness,
   // Projects
   addProject,
   getProjects,
