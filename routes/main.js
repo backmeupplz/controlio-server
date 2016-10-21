@@ -2,6 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 
+router.get('/feature_list', (req, res) => {
+  res.send({ 0: false });
+});
+
 router.get('/.well-known/apple-app-site-association', (req, res) => {
   res.send({
     applinks: {
