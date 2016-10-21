@@ -43,11 +43,15 @@ function getUser(options, select) {
 }
 
 function addManager(email) {
-  const newUser = new User({
-    email,
-    addedAsManager: true,
-  });
-  return newUser.save();
+  return payments.createStripeCustomer(email.toLowerCase())
+    .then((stripeCustomer) => {
+      const newUser = new User({
+        email,
+        addedAsManager: true,
+        stripeId: stripeCustomer.id,
+      });
+      return newUser.save();
+    });
 }
 
 function removeManagerFromOwner(manager, owner) {
@@ -535,7 +539,17 @@ function addClientsByEmails(emails) {
     if (emails.length > 0) {
       const usersToAdd = emails.map(email => ({ email, addedAsClient: true }));
       User.create(usersToAdd)
-        .then(resolve)
+        .then((addedUsers) => {
+          addedUsers.forEach((user) => {
+            payments.createStripeCustomer(user.email.toLowerCase())
+              .then((stripeCustomer) => {
+                user.stripeId = stripeCustomer.id;
+                user.save();
+              })
+              .catch(err => console.error(err));
+          });
+          resolve(addedUsers);
+        })
         .catch(reject);
     } else {
       resolve([]);
