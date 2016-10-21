@@ -66,6 +66,14 @@ function userNotManager() {
   return error(403, 'This user is not your manager');
 }
 
+function notEnoughProjectsOnPlan(maxNumberOfProjects) {
+  let projectWord = 'projects';
+  if (maxNumberOfProjects === 1) {
+    projectWord = 'project';
+  }
+  return error(403, `Your plan only includes ${maxNumberOfProjects} ${projectWord}. Please upgrade your plan in settings or archive or delete older projects.`);
+}
+
 module.exports = {
   notFound,
   authEmailNotRegistered,
@@ -87,4 +95,5 @@ module.exports = {
   addDemoAsManager,
   removeYourselfAsManager,
   userNotManager,
+  notEnoughProjectsOnPlan,
 };

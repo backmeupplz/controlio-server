@@ -23,6 +23,11 @@ const userSchema = new Schema({
     required: true,
     default: 0,
   },
+  numberOfActiveProjects: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
   password: {
     type: String,
     select: false,
@@ -112,5 +117,18 @@ const userSchema = new Schema({
   },
   magicToken: String,
 });
+
+userSchema.methods.maxNumberOfProjects = (plan) => {
+  if (plan === 0) {
+    return 1;
+  } else if (plan === 1) {
+    return 5;
+  } else if (plan === 2) {
+    return 20;
+  } else if (plan === 3) {
+    return 50;
+  }
+  return 1;
+};
 
 mongoose.model('user', userSchema);

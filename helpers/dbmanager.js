@@ -44,7 +44,7 @@ function getUser(options, select) {
 
 function addManager(email) {
   const newUser = new User({
-    email: email,
+    email,
     addedAsManager: true,
   });
   return newUser.save();
@@ -93,6 +93,14 @@ function addProject(userId, title, image, status, description, manager, clients)
           return ownerObject;
         }
       })
+      .then((ownerObject) => {
+        const maxNumberOfProjects = ownerObject.maxNumberOfProjects(ownerObject.plan);
+        if (maxNumberOfProjects <= ownerObject.numberOfActiveProjects) {
+          throw errors.notEnoughProjectsOnPlan(maxNumberOfProjects);
+        } else {
+          return ownerObject;
+        }
+      })
       .then(ownerObject =>
         getUserById(manager)
           .then((managerObject) => {
@@ -132,6 +140,9 @@ function addProject(userId, title, image, status, description, manager, clients)
 
         // TODO: send clients registration email and\or invite
         allObjects.forEach((object) => {
+          if (object.email === ownerObject.email) {
+            object.numberOfActiveProjects += 1;
+          }
           object.projects.push(newProject);
           object.save();
         });
@@ -266,8 +277,9 @@ function archiveProject(userId, projectId, archive) {
     getUserById(userId)
       .then(user =>
         Project.findById(projectId)
+          .populate('owner')
           .then((project) => {
-            if (String(project.owner) !== String(user._id) &&
+            if (String(project.owner._id) !== String(user._id) &&
                 String(project.manager) !== String(user._id)) {
               throw errors.notAuthorized();
             }
@@ -275,15 +287,32 @@ function archiveProject(userId, projectId, archive) {
           })
       )
       .then(({ user, project }) => {
+        const maxNumberOfProjects = user.maxNumberOfProjects(user.plan);
+        if (maxNumberOfProjects <= user.numberOfActiveProjects && !archive) {
+          throw errors.notEnoughProjectsOnPlan(maxNumberOfProjects);
+        }
+        return { user, project };
+      })
+      .then(({ user, project }) => {
         const projectCopy = Object.create(project);
         projectCopy.isArchived = archive;
 
         global.botReporter.reportArchiveProject(user, projectCopy, archive);
-
         projectCopy.save()
-          .then(resolve)
+          .then((savedProject) => {
+            const populatedProjectCopy = Object.create(savedProject);
+            if (archive) {
+              populatedProjectCopy.owner.numberOfActiveProjects -= 1;
+            } else {
+              populatedProjectCopy.owner.numberOfActiveProjects += 1;
+            }
+            populatedProjectCopy.owner.save()
+              .then(() => resolve(populatedProjectCopy))
+              .catch(reject);
+          })
           .catch(reject);
       })
+      .catch(reject)
   );
 }
 
@@ -307,16 +336,19 @@ function deleteProject(userId, projectId) {
               }
             });
 
-            let index = project.manager.projects.map(v => String(v)).indexOf(String(project._id));
+            let index = project.owner.projects.map(v => String(v)).indexOf(String(project._id));
             if (index > -1) {
-              project.manager.projects.splice(index, 1);
-              project.manager.save();
+              project.owner.projects.splice(index, 1);
+              if (!project.isArchived) {
+                project.owner.numberOfActiveProjects -= 1;
+              }
+              project.owner.save();
             }
             if (String(project.manager._id) !== String(project.owner._id)) {
-              index = project.owner.projects.map(v => String(v)).indexOf(String(project._id));
+              index = project.manager.projects.map(v => String(v)).indexOf(String(project._id));
               if (index > -1) {
-                project.owner.projects.splice(index, 1);
-                project.owner.save();
+                project.manager.projects.splice(index, 1);
+                project.manager.save();
               }
             }
 
@@ -339,13 +371,21 @@ function deleteProject(userId, projectId) {
 // Posts
 
 function addPost(userId, projectId, text, attachments, type) {
-  return new Promise(resolve =>
+  return new Promise((resolve, reject) =>
     getUserById(userId)
       .then(user =>
         Project.findById(projectId)
           .populate('clients')
           .then(project => ({ user, project }))
       )
+      .then(({ user, project }) => {
+        const maxNumberOfProjects = user.maxNumberOfProjects(user.plan);
+        if (maxNumberOfProjects < user.numberOfActiveProjects) {
+          throw errors.notEnoughProjectsOnPlan(maxNumberOfProjects);
+        } else {
+          return { user, project };
+        }
+      })
       .then(({ user, project }) => {
         if (String(project.owner) !== String(user._id) &&
                 String(project.manager) !== String(user._id)) {
@@ -378,6 +418,7 @@ function addPost(userId, projectId, text, attachments, type) {
         return projectCopy.save()
           .then(dbproject => resolve({ dbpost, clients: dbproject.clients, sender: user }));
       })
+      .catch(reject)
   );
 }
 
