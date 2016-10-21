@@ -1,4 +1,4 @@
-const stripe = require('stripe')('sk_test_t4v531gxDQirk1hxuRb1PUOM');
+const stripe = require('stripe')('sk_live_An35Qqmfvufq59lmqLvzfN9g');
 
 function createStripeCustomer(email) {
   return new Promise((resolve, reject) => {
