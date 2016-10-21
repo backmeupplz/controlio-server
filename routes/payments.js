@@ -42,6 +42,14 @@ router.post('/customer/subscription', validate(validation.subscription), (req, r
     .catch(err => next(err));
 });
 
+router.post('/customer/coupon', validate(validation.coupon), (req, res, next) => {
+  const coupon = req.body.coupon;
+  const userId = req.get('userId');
+  dbmanager.applyStripeCoupon(userId, coupon)
+    .then(() => res.send({ success: true }))
+    .catch(err => next(err));
+});
+
 // Export
 
 module.exports = router;

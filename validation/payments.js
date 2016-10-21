@@ -21,4 +21,9 @@ module.exports = {
       planid: Joi.number().required(),
     },
   },
+  coupon: {
+    body: {
+      coupon: Joi.string().required(),
+    },
+  },
 };

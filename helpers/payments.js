@@ -1,6 +1,4 @@
 const stripe = require('stripe')('sk_test_t4v531gxDQirk1hxuRb1PUOM');
-const dbmanager = require('./dbmanager');
-const errors = require('./errors');
 
 function createStripeCustomer(email) {
   return new Promise((resolve, reject) => {
@@ -93,10 +91,34 @@ function setSripeSubscription(user, planid) {
   });
 }
 
+function applyStripeCoupon(user, coupon) {
+  return new Promise((resolve, reject) => {
+    stripe.coupons.retrieve(
+      coupon,
+      (err, stripeCoupon) => {
+        if (err) {
+          reject(err);
+        } else {
+          stripe.customers.update(user.stripeId, {
+            coupon: stripeCoupon.id,
+          }, (inErr, customer) => {
+            if (inErr) {
+              reject(inErr);
+            } else {
+              resolve(customer);
+            }
+          });
+        }
+      }
+    );
+  });
+}
+
 module.exports = {
   createStripeCustomer,
   getStripeCustomer,
   addStripeSource,
   setStripeDefaultSource,
   setSripeSubscription,
+  applyStripeCoupon,
 };

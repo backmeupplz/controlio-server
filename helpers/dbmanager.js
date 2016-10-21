@@ -471,6 +471,22 @@ function setSripeSubscription(userId, planid) {
   );
 }
 
+function applyStripeCoupon(userId, coupon) {
+  return new Promise((resolve, reject) =>
+    getUserById(userId, '+token')
+      .then((user) => {
+        if (!user) {
+          throw errors.noUserFound();
+        }
+        return user;
+      })
+      .then(user =>
+        payments.applyStripeCoupon(user, coupon)
+          .then(resolve)
+          .catch(reject))
+  );
+}
+
 // Helpers
 
 function addClientsByEmails(emails) {
@@ -549,6 +565,7 @@ module.exports = {
   deletePost,
   // Payments
   setSripeSubscription,
+  applyStripeCoupon,
   // Notifications
   removeTokens,
 };
