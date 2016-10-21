@@ -1,4 +1,5 @@
-const stripe = require('stripe')('sk_live_An35Qqmfvufq59lmqLvzfN9g');
+const config = require('../config');
+const stripe = require('stripe')(config.stripeApiKey);
 
 function createStripeCustomer(email) {
   return new Promise((resolve, reject) => {
