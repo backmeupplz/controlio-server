@@ -122,6 +122,26 @@ function reportDeletePost(user, post) {
   sendMessage(`👺 *${user.email}* deleted ${post.type} *${post.text}* from *${post.project.title}*`);
 }
 
+// Payments.js
+
+function reportChangeSubscription(user, planid) {
+  let planTitle = '';
+  if (planid === 0) {
+    planTitle = 'Free';
+  } else if (planid === 1) {
+    planTitle = '$20/month';
+  } else if (planid === 2) {
+    planTitle = '$50/month';
+  } else if (planid === 3) {
+    planTitle = '$100/month';
+  }
+  sendMessage(`💰 *${user.email}* changed subscription to *${planTitle}*`);
+}
+
+function reportRedeemCoupon(user, couponid) {
+  sendMessage(`💎 *${user.email}* redeemed coupon *${couponid}*`);
+}
+
 // General functions
 
 function sendMessage(msg) {
@@ -159,4 +179,7 @@ module.exports = {
   reportGetPosts,
   reportEditPost,
   reportDeletePost,
+  // Payments.js
+  reportChangeSubscription,
+  reportRedeemCoupon,
 };

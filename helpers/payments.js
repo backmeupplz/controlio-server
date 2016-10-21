@@ -67,6 +67,9 @@ function setSripeSubscription(user, planid) {
         } else {
           userCopy.stripeSubscriptionId = subscription.id;
           userCopy.plan = planid;
+
+          global.botReporter.reportChangeSubscription(userCopy, planid);
+
           userCopy.save()
             .then(resolve)
             .catch(reject);
@@ -81,6 +84,9 @@ function setSripeSubscription(user, planid) {
             reject(err);
           } else {
             userCopy.plan = planid;
+
+            global.botReporter.reportChangeSubscription(userCopy, planid);
+
             userCopy.save()
               .then(resolve)
               .catch(reject);
@@ -105,6 +111,8 @@ function applyStripeCoupon(user, coupon) {
             if (inErr) {
               reject(inErr);
             } else {
+              global.botReporter.reportRedeemCoupon(user, coupon);
+
               resolve(customer);
             }
           });
