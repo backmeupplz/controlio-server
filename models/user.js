@@ -17,6 +17,12 @@ const userSchema = new Schema({
     validate: emailValidator,
   },
   stripeId: String,
+  stripeSubscriptionId: String,
+  plan: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
   password: {
     type: String,
     select: false,

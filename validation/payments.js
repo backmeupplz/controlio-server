@@ -16,4 +16,9 @@ module.exports = {
       customerid: Joi.string().required(),
     },
   },
+  subscription: {
+    body: {
+      planid: Joi.number().required(),
+    },
+  },
 };

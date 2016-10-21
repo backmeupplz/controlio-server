@@ -1,4 +1,6 @@
 const stripe = require('stripe')('sk_test_t4v531gxDQirk1hxuRb1PUOM');
+const dbmanager = require('./dbmanager');
+const errors = require('./errors');
 
 function createStripeCustomer(email) {
   return new Promise((resolve, reject) => {
@@ -54,9 +56,47 @@ function setStripeDefaultSource(customerid, source) {
   });
 }
 
+function setSripeSubscription(user, planid) {
+  return new Promise((resolve, reject) => {
+    const userCopy = Object.create(user);
+    if (!user.stripeSubscriptionId) {
+      stripe.subscriptions.create({
+        customer: user.stripeId,
+        plan: planid,
+      }, (err, subscription) => {
+        if (err) {
+          reject(err);
+        } else {
+          userCopy.stripeSubscriptionId = subscription.id;
+          userCopy.plan = planid;
+          userCopy.save()
+            .then(resolve)
+            .catch(reject);
+        }
+      });
+    } else {
+      stripe.subscriptions.update(
+        user.stripeSubscriptionId,
+        { plan: planid },
+        (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            userCopy.plan = planid;
+            userCopy.save()
+              .then(resolve)
+              .catch(reject);
+          }
+        }
+      );
+    }
+  });
+}
+
 module.exports = {
   createStripeCustomer,
   getStripeCustomer,
   addStripeSource,
   setStripeDefaultSource,
+  setSripeSubscription,
 };

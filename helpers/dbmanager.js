@@ -453,6 +453,24 @@ function deletePost(userId, postId) {
   );
 }
 
+// Payments
+
+function setSripeSubscription(userId, planid) {
+  return new Promise((resolve, reject) =>
+    getUserById(userId, '+token')
+      .then((user) => {
+        if (!user) {
+          throw errors.noUserFound();
+        }
+        return user;
+      })
+      .then(user =>
+        payments.setSripeSubscription(user, planid)
+          .then(resolve)
+          .catch(reject))
+  );
+}
+
 // Helpers
 
 function addClientsByEmails(emails) {
@@ -529,6 +547,8 @@ module.exports = {
   getPosts,
   editPost,
   deletePost,
+  // Payments
+  setSripeSubscription,
   // Notifications
   removeTokens,
 };

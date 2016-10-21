@@ -3,6 +3,7 @@ const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/payments');
 const payments = require('../helpers/payments');
+const dbmanager = require('../helpers/dbmanager');
 
 const router = express.Router();
 
@@ -13,10 +14,7 @@ router.use(auth.checkToken);
 router.get('/customer', validate(validation.customer), (req, res, next) => {
   const customerid = req.query.customerid;
   payments.getStripeCustomer(customerid)
-    .then((customer) => {
-      console.log(customer);
-      res.send(customer);
-    })
+    .then(customer => res.send(customer))
     .catch(err => next(err));
 });
 
@@ -33,6 +31,14 @@ router.post('/customer/default_source', validate(validation.defaultSource), (req
   const source = req.body.source;
   payments.setStripeDefaultSource(customerid, source)
     .then(customer => res.send(customer))
+    .catch(err => next(err));
+});
+
+router.post('/customer/subscription', validate(validation.subscription), (req, res, next) => {
+  const planid = req.body.planid;
+  const userId = req.get('userId');
+  dbmanager.setSripeSubscription(userId, planid)
+    .then(user => res.send(user))
     .catch(err => next(err));
 });
 

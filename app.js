@@ -66,6 +66,9 @@ app.use('/payments/', payments);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
+  const err = new Error();
+  err.status = 404;
+  err.message = 'Not found';
   next(err);
 });
 
