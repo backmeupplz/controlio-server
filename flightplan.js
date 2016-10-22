@@ -8,7 +8,7 @@ const tmpDir = `${appName}-${new Date().getTime()}`;
 // configuration
 plan.target('staging', [
   {
-    host: '162.243.76.239',
+    host: '162.243.82.122',
     username,
     agent: process.env.SSH_AUTH_SOCK,
     privateKey: '/Users/BackMeUpPlz/.ssh/id_rsa',

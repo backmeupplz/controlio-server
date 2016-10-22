@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const config = require('../config');
 // Setup
 
-const jarvis = new TelegramBot(config.telegramKey, { polling: true });
+const jarvis = new TelegramBot(config.telegramKey, { polling: false });
 
 // General
 
