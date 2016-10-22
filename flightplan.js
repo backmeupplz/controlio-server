@@ -40,5 +40,5 @@ plan.remote((remote) => {
 
   remote.log('Reload application');
   remote.sudo(`ln -snf ~/${tmpDir} ~/${appName}`, { user: username });
-  remote.exec('sudo restart controlio');
+  remote.exec('sudo systemctl restart controlio');
 });
