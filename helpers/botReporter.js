@@ -1,8 +1,8 @@
 const TelegramBot = require('node-telegram-bot-api');
-
+const config = require('../config');
 // Setup
 
-const jarvis = new TelegramBot('237463370:AAFI2qe2SEaTIb5kQ_Es5ny5vccdh84pwfQ', { polling: true });
+const jarvis = new TelegramBot(config.telegramKey, { polling: true });
 
 // General
 
@@ -145,7 +145,7 @@ function reportRedeemCoupon(user, couponid) {
 // General functions
 
 function sendMessage(msg) {
-  jarvis.sendMessage('-1001074025264', msg, { parse_mode: 'Markdown' });
+  jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
 }
 
 module.exports = {

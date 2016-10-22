@@ -5,4 +5,6 @@ module.exports = {
   sendgridApiKey: process.env.SENDGRID_API_KEY,
   randomTokenSalt: process.env.TOKEN_SALT,
   stripeApiKey: process.env.STRIPE_API_KEY,
+  telegramKey: process.env.TELEGRAM_KEY,
+  telegramLogsId: process.env.TELEGRAM_ID,
 };
