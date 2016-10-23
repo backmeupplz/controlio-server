@@ -174,6 +174,40 @@ function addProject(userId, title, image, status, description, manager, clients)
   );
 }
 
+function getProject(userId, projectId) {
+  return new Promise((resolve, reject) =>
+    getUserById(userId)
+      .then((user) => {
+        if (!user) {
+          throw errors.noUserFound();
+        }
+        return user;
+      })
+      .then(user =>
+        Project.findById(projectId)
+          .then((project) => {
+            if (!project) {
+              throw errors.noProjectFound();
+            }
+            return { user, project };
+          })
+      )
+      .then(({ user, project }) => {
+        let hasAccess = false;
+        if (String(project.owner) === String(user._id) ||
+          String(project.manager) === String(user._id) ||
+          project.clients.map(v => String(v)).includes(String(user._id))) {
+          hasAccess = true;
+        }
+        if (!hasAccess) {
+          throw errors.noAccess();
+        }
+        resolve(project);
+      })
+      .catch(err => reject(err))
+  );
+}
+
 function getProjects(userId, skip, limit) {
   return new Promise((resolve, reject) =>
     getUserById(userId)
@@ -624,6 +658,7 @@ module.exports = {
   convertToBusiness,
   // Projects
   addProject,
+  getProject,
   getProjects,
   changeClients,
   editProject,

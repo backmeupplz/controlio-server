@@ -46,4 +46,9 @@ module.exports = {
       projectid: Joi.string().required(),
     },
   },
+  getProject: {
+    query: {
+      projectid: Joi.string().required(),
+    },
+  },
 };

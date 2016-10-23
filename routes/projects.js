@@ -32,6 +32,16 @@ router.post('/', validate(validation.post), (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.get('/project', validate(validation.getProject), (req, res, next) => {
+  const userId = req.get('userId');
+  const projectId = req.query.projectid;
+
+  // botReporter works inside dbmanager
+  dbmanager.getProject(userId, projectId)
+    .then(project => res.send(project))
+    .catch(err => next(err));
+});
+
 router.get('/', (req, res, next) => {
   const userId = req.get('userId');
   let skip = req.query.skip || 0;

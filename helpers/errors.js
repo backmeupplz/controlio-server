@@ -8,6 +8,9 @@ function error(status, message) {
 function notFound() {
   return error(404, 'Not found');
 }
+function noAccess() {
+  return error(403, 'No access');
+}
 function authEmailNotRegistered() {
   return error(403, 'Email not registered');
 }
@@ -76,6 +79,7 @@ function notEnoughProjectsOnPlan(maxNumberOfProjects) {
 
 module.exports = {
   notFound,
+  noAccess,
   authEmailNotRegistered,
   authWrongPassword,
   authTokenFailed,
