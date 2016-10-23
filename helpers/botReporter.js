@@ -45,7 +45,7 @@ function reportLogout(email) {
 }
 
 function reportGetProfile(email) {
-  sendMessage(`👤 *${email}* requested profile`);
+  sendMessage(`👤 Somebody requested profile of *${email}*`);
 }
 
 function reportEditProfile(user) {
