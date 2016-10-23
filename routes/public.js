@@ -38,9 +38,14 @@ router.get('/resetPassword', (req, res) => {
 });
 
 router.post('/resetPassword', (req, res) => {
-  const password = req.body.password;
+  const password = String(req.body.password);
   const userId = req.body.userid;
   const token = req.body.token;
+
+  if (password.length < 6 || password.length > 30) {
+    res.render('error', { error: 'Password length should be between 6 and 30 characters' });
+    return;
+  }
 
   dbmanager.getUserById(userId)
     .then((user) => {

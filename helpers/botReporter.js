@@ -8,7 +8,12 @@ const jarvis = new TelegramBot(config.telegramKey, { polling: false });
 
 function reportError(err, req) {
   if (String(req.get('host')) === 'forum.khoapham.vn') { return; }
-  if (String(req.originalUrl).indexOf('nikita') > -1) { return; }
+  const bannedUrlIncludes = ['nikita', 'n1kita'];
+  for (let i in bannedUrlIncludes) {
+    if (String(req.originalUrl).toLowerCase().indexOf(bannedUrlIncludes[i]) > -1) {
+      return;
+    }
+  }
   const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
   sendMessage(`❗ *Error!*\n${'```'}json\n${fullUrl} – ${req.method}\nheaders: ${JSON.stringify(req.headers, null, 2)}\nbody: ${JSON.stringify(req.body, null, 2)}\n${JSON.stringify(err, null, 2)}${'```'}`);
 }
