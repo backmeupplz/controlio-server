@@ -185,6 +185,7 @@ function getProject(userId, projectId) {
       })
       .then(user =>
         Project.findById(projectId)
+          .populate('lastStatus lastPost')
           .then((project) => {
             if (!project) {
               throw errors.noProjectFound();
@@ -222,7 +223,7 @@ function getProjects(userId, skip, limit) {
           .sort({ isArchived: 1 })
           .skip(skip)
           .limit(limit)
-          .populate('clients owner manager')
+          .populate('clients owner manager lastStatus lastPost')
           .then(projects => ({ user, projects }))
       )
       .then(({ user, projects }) => {
@@ -481,6 +482,7 @@ function getPosts(projectId, skip, limit) {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
+      .populate('manager')
       .then(resolve)
       .catch(reject);
   });
