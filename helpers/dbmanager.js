@@ -185,7 +185,7 @@ function getProject(userId, projectId) {
       })
       .then(user =>
         Project.findById(projectId)
-          .populate('lastStatus lastPost')
+          .populate('lastStatus lastPost clients owner manager')
           .then((project) => {
             if (!project) {
               throw errors.noProjectFound();
