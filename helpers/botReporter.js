@@ -9,12 +9,15 @@ const jarvis = new TelegramBot(config.telegramKey, { polling: false });
 function reportError(err, req) {
   const bannedUrlIncludes = ['nikita', 'n1kita', 'khoapham', '162.243.76.239', 'maroonpaymentsystems', 'maroonpay', 'healthepaymentservices', '162.243.82.122'];
   const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+  let isBannedUrl = false;
   bannedUrlIncludes.forEach((bannedUrl) => {
     if (fullUrl.toLowerCase().indexOf(bannedUrl) > -1) {
-      return;
+      isBannedUrl = true;
     }
   });
-  sendMessage(`❗ *Error!*\n${'```'}json\n${fullUrl} – ${req.method}\nheaders: ${JSON.stringify(req.headers, null, 2)}\nbody: ${JSON.stringify(req.body, null, 2)}\n${JSON.stringify(err, null, 2)}${'```'}`);
+  if (!isBannedUrl) {
+    sendMessage(`❗ *Error!*\n${'```'}json\n${fullUrl} – ${req.method}\nheaders: ${JSON.stringify(req.headers, null, 2)}\nbody: ${JSON.stringify(req.body, null, 2)}\n${JSON.stringify(err, null, 2)}${'```'}`);
+  }
 }
 
 // Users.js
