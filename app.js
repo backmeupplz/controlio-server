@@ -8,12 +8,12 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const fs = require('fs');
 const config = require('./config');
-const errors = require('./helpers/errors');
 
 const app = express();
 
 // Setup Bluebird as the Promise library
-global.Promise = require("bluebird");
+global.Promise = require('bluebird');
+
 Promise.config({ cancellation: true });
 
 // setup mongoose and load all models
@@ -33,7 +33,7 @@ const auth = require('./helpers/auth');
 const users = require('./routes/users');
 const projects = require('./routes/projects');
 const posts = require('./routes/posts');
-const public = require('./routes/public');
+const publicRoute = require('./routes/public');
 const main = require('./routes/main');
 const payments = require('./routes/payments');
 
@@ -52,7 +52,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
 // redirect public routes
-app.use('/public/', public);
+app.use('/public/', publicRoute);
 app.use('/', main);
 
 // check api token
