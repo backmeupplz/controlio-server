@@ -7,17 +7,22 @@ const jarvis = new TelegramBot(config.telegramKey, { polling: false });
 // General
 
 function reportError(err, req) {
-  const bannedUrlIncludes = ['nikita', 'n1kita', 'khoapham', '162.243.76.239', 'maroonpaymentsystems', 'maroonpay', 'healthepaymentservices', '162.243.82.122'];
+  const bannedURLs = ['nikita', 'n1kita', 'khoapham', '162.243.76.239', 'maroonpaymentsystems', 'maroonpay', 'healthepaymentservices', '162.243.82.122'];
   const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-  let isBannedUrl = false;
-  bannedUrlIncludes.forEach((bannedUrl) => {
-    if (fullUrl.toLowerCase().indexOf(bannedUrl) > -1) {
-      isBannedUrl = true;
-    }
-  });
-  if (!isBannedUrl) {
+
+  if (!checkIfBanned(fullUrl, bannedURLs)) {
     sendMessage(`❗ *Error!*\n${'```'}json\n${fullUrl} – ${req.method}\nheaders: ${JSON.stringify(req.headers, null, 2)}\nbody: ${JSON.stringify(req.body, null, 2)}\n${JSON.stringify(err, null, 2)}${'```'}`);
   }
+}
+
+function checkIfBanned(fullURL, bannedURLs) {
+  let isBannedURL = false;
+  bannedURLs.forEach((bannedURL) => {
+    if (fullURL.toLowerCase().indexOf(bannedURL) > -1) {
+      isBannedURL = true;
+    }
+  });
+  return isBannedURL;
 }
 
 // Users.js
@@ -153,7 +158,9 @@ function reportRedeemCoupon(user, couponid) {
 // General functions
 
 function sendMessage(msg) {
-  if( config.telegramKey ) jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
+  if (config.telegramKey) {
+    jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
+  }
 }
 
 module.exports = {
