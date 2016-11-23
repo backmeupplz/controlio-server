@@ -196,9 +196,9 @@ function getProject(userId, projectId) {
       )
       .then(({ user, project }) => {
         let hasAccess = false;
-        if (String(project.owner) === String(user._id) ||
-          String(project.manager) === String(user._id) ||
-          project.clients.map(v => String(v)).includes(String(user._id))) {
+        if (String(project.owner._id) === String(user._id) ||
+          String(project.manager._id) === String(user._id) ||
+          project.clients.map(v => String(v._id)).includes(String(user._id))) {
           hasAccess = true;
         }
         if (!hasAccess) {
@@ -230,7 +230,7 @@ function getProjects(userId, skip, limit) {
       .then(({ user, projects }) => {
         projects.forEach((project) => {
           project.canEdit = String(project.manager._id) === String(user._id) ||
-            String(project.owner) === String(user._id);
+            String(project.owner._id) === String(user._id);
         });
 
         botReporter.reportGetProjects(user, skip, limit);
