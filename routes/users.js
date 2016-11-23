@@ -6,7 +6,7 @@ const errors = require('../helpers/errors');
 const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/users');
-const router = require('express').Router(); // eslint-disable-line new-cap
+const router = require('express').Router();
 const randomToken = require('random-token').create(config.randomTokenSalt);
 
 // Public API
