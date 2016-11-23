@@ -25,7 +25,6 @@ fs.readdirSync(path.join(__dirname, '/models')).forEach((filename) => {
 });
 
 global.pushNotifications = require('./helpers/pushNotifications');
-global.emailSender = require('./helpers/emailSender');
 
 const auth = require('./helpers/auth');
 

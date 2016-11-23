@@ -9,6 +9,7 @@ const validation = require('../validation/users');
 const router = require('express').Router();
 const randomToken = require('random-token').create(config.randomTokenSalt);
 const botReporter = require('../helpers/botReporter');
+const emailSender = require('../helpers/emailSender');
 
 // Public API
 
@@ -30,7 +31,7 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
     .then((user) => {
       const userCopy = Object.create(user);
       userCopy.magicToken = randomToken(24);
-      global.emailSender.sendMagicLink(userCopy);
+      emailSender.sendMagicLink(userCopy);
       return userCopy.save()
         .then(() => res.send({ success: true }));
     })
@@ -173,7 +174,7 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
       const userCopy = Object.create(user);
       userCopy.tokenForPasswordReset = randomToken(24);
       userCopy.tokenForPasswordResetIsFresh = true;
-      global.emailSender.sendResetPassword(userCopy);
+      emailSender.sendResetPassword(userCopy);
       return userCopy.save()
         .then(() => res.send({ success: true }));
     })
