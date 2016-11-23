@@ -84,8 +84,5 @@ app.use((err, req, res, next) => {
   res.send(err);
 });
 
-// log that everything works
-console.info('Server is up and running!');
-
 // exports
 module.exports = app;
