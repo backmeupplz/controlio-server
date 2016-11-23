@@ -1,3 +1,4 @@
+// dependencies
 const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');
@@ -9,13 +10,13 @@ const cors = require('cors');
 const fs = require('fs');
 const config = require('./config');
 const botReporter = require('./helpers/botReporter');
-
-const app = express();
-
-// Setup Bluebird as the Promise library
+// change default promises to bluebird
 global.Promise = require('bluebird');
-
+// turn on cancellation for promises in bluebird
 Promise.config({ cancellation: true });
+
+// create app
+const app = express();
 
 // setup mongoose and load all models
 mongoose.connect(config.database);
@@ -24,6 +25,7 @@ fs.readdirSync(path.join(__dirname, '/models')).forEach((filename) => {
   require(path.join(__dirname, '/models/', filename)); // eslint-disable-line global-require
 });
 
+// getting auth after loading mongoose because it depends on user model
 const auth = require('./helpers/auth');
 
 // require routes
@@ -37,15 +39,21 @@ const payments = require('./routes/payments');
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
+// setup favicon
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+// setup logger
 app.use(logger('common', {
   stream: fs.createWriteStream('./access.log', { flags: 'a' }),
 }));
 app.use(logger('dev'));
+// setup body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+// setup cookie parser
 app.use(cookieParser());
+// expose public folder
 app.use(express.static(path.join(__dirname, 'public')));
+// support cors
 app.use(cors());
 
 // redirect public routes
@@ -70,11 +78,14 @@ app.use((req, res, next) => {
 });
 
 // error handler
-app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+app.use((err, req, res, next) => {
   botReporter.reportError(err, req);
   res.status(err.status || 500);
   res.send(err);
 });
 
-console.log('Server is up and running!'); // eslint-disable-line no-console
+// log that everything works
+console.info('Server is up and running!');
+
+// exports
 module.exports = app;
