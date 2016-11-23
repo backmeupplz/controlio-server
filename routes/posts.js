@@ -4,6 +4,7 @@ const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/posts');
 const botReporter = require('../helpers/botReporter');
+const pushNotifications = require('./helpers/pushNotifications');
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ router.post('/', validate(validation.post), (req, res, next) => {
   // botReporter works inside dbmanager
   dbmanager.addPost(userId, projectId, text, attachments, type)
     .then(({ dbpost, clients, sender }) => {
-      global.pushNotifications.sendNotification(`${sender.name || sender.email}: ${text}`, clients);
+      pushNotifications.sendNotification(`${sender.name || sender.email}: ${text}`, clients);
       res.send(dbpost);
     })
     .catch(err => next(err));
