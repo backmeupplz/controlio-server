@@ -201,6 +201,9 @@ function getProject(userId, projectId) {
           project.clients.map(v => String(v._id)).includes(String(user._id))) {
           hasAccess = true;
         }
+
+        project.canEdit = String(project.manager._id) === String(user._id) ||
+        String(project.owner._id) === String(user._id);
         if (!hasAccess) {
           throw errors.noAccess();
         }
