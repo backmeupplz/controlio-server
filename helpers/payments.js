@@ -1,5 +1,6 @@
 const config = require('../config');
 const stripe = require('stripe')(config.stripeApiKey);
+const botReporter = require('./botReporter');
 
 function createStripeCustomer(email) {
   return new Promise((resolve, reject) => {
@@ -69,7 +70,7 @@ function setSripeSubscription(user, planid) {
           userCopy.stripeSubscriptionId = subscription.id;
           userCopy.plan = planid;
 
-          global.botReporter.reportChangeSubscription(userCopy, planid);
+          botReporter.reportChangeSubscription(userCopy, planid);
 
           userCopy.save()
             .then(resolve)
@@ -86,7 +87,7 @@ function setSripeSubscription(user, planid) {
           } else {
             userCopy.plan = planid;
 
-            global.botReporter.reportChangeSubscription(userCopy, planid);
+            botReporter.reportChangeSubscription(userCopy, planid);
 
             userCopy.save()
               .then(resolve)
@@ -112,7 +113,7 @@ function applyStripeCoupon(user, coupon) {
             if (inErr) {
               reject(inErr);
             } else {
-              global.botReporter.reportRedeemCoupon(user, coupon);
+              botReporter.reportRedeemCoupon(user, coupon);
 
               resolve(customer);
             }

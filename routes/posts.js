@@ -3,6 +3,7 @@ const dbmanager = require('../helpers/dbmanager');
 const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/posts');
+const botReporter = require('../helpers/botReporter');
 
 const router = express.Router();
 
@@ -33,7 +34,7 @@ router.get('/', (req, res, next) => {
   skip = parseInt(skip, 10);
   limit = parseInt(limit, 10);
 
-  global.botReporter.reportGetPosts(projectId, skip, limit);
+  botReporter.reportGetPosts(projectId, skip, limit);
 
   dbmanager.getPosts(projectId, skip, limit)
     .then(posts => res.send(posts))

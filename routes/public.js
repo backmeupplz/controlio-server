@@ -2,6 +2,7 @@ const express = require('express');
 const dbmanager = require('../helpers/dbmanager');
 const errors = require('../helpers/errors');
 const hash = require('../helpers/hash');
+const botReporter = require('../helpers/botReporter');
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ router.get('/resetPassword', (req, res) => {
             user.tokenForPasswordResetIsFresh = false;
             user.save()
               .then(() => {
-                global.botReporter.reportGetResetPassword(user.email);
+                botReporter.reportGetResetPassword(user.email);
                 res.render('reset-password', { userid: userId, token: token });
               })
               .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
@@ -61,7 +62,7 @@ router.post('/resetPassword', (req, res) => {
               user.password = result;
               user.save()
                 .then(() => {
-                  global.botReporter.reportResetPassword(user.email);
+                  botReporter.reportResetPassword(user.email);
                   res.render('success', { message: 'Password was updated!' });
                 })
                 .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));

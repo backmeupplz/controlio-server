@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const errors = require('./errors');
 const _ = require('lodash');
 const payments = require('./payments');
+const botReporter = require('./botReporter');
 
 // Get schemas
 const User = mongoose.model('user');
@@ -165,7 +166,7 @@ function addProject(userId, title, image, status, description, manager, clients)
           object.projects.push(newProject);
           object.save();
         });
-        global.botReporter.reportCreateProject(ownerObject, newProject);
+        botReporter.reportCreateProject(ownerObject, newProject);
         return newProject;
       })
       .then(project => addPost(project.owner._id, project._id, status, [], 'status'))
@@ -232,7 +233,7 @@ function getProjects(userId, skip, limit) {
             String(project.owner) === String(user._id);
         });
 
-        global.botReporter.reportGetProjects(user, skip, limit);
+        botReporter.reportGetProjects(user, skip, limit);
         resolve(projects);
       })
       .catch(err => reject(err))
@@ -271,7 +272,7 @@ function changeClients(userId, projectId, clients) {
             });
             project.clients = clientObjects;
 
-            global.botReporter.reportChangeClients(project);
+            botReporter.reportChangeClients(project);
 
             project.save()
               .then(resolve)
@@ -314,7 +315,7 @@ function editProject(userId, projectId, title, description, image) {
             project.description = description;
             project.image = image;
 
-            global.botReporter.reportEditProject(project);
+            botReporter.reportEditProject(project);
 
             project.save()
               .then(resolve)
@@ -351,7 +352,7 @@ function archiveProject(userId, projectId, archive) {
         const projectCopy = Object.create(project);
         projectCopy.isArchived = archive;
 
-        global.botReporter.reportArchiveProject(user, projectCopy, archive);
+        botReporter.reportArchiveProject(user, projectCopy, archive);
         projectCopy.save()
           .then((savedProject) => {
             const populatedProjectCopy = Object.create(savedProject);
@@ -406,7 +407,7 @@ function deleteProject(userId, projectId) {
               }
             }
 
-            global.botReporter.reportDeleteProject(user, project);
+            botReporter.reportDeleteProject(user, project);
 
             project.remove((err) => {
               if (err) {
@@ -463,10 +464,10 @@ function addPost(userId, projectId, text, attachments, type) {
         projectCopy.posts.push(dbpost);
         if (dbpost.type === 'post') {
           projectCopy.lastPost = dbpost._id;
-          global.botReporter.reportAddPost(user, projectCopy, dbpost);
+          botReporter.reportAddPost(user, projectCopy, dbpost);
         } else {
           projectCopy.lastStatus = dbpost._id;
-          global.botReporter.reportChangeStatus(user, projectCopy, dbpost);
+          botReporter.reportChangeStatus(user, projectCopy, dbpost);
         }
 
         return projectCopy.save()
@@ -503,7 +504,7 @@ function editPost(userId, postId, text, attachments) {
             post.text = text;
             post.attachments = attachments;
 
-            global.botReporter.reportEditPost(user, post);
+            botReporter.reportEditPost(user, post);
 
             post.save()
               .then(resolve)
@@ -536,7 +537,7 @@ function deletePost(userId, postId) {
         }
         post.project.save();
 
-        global.botReporter.reportDeletePost(user, post);
+        botReporter.reportDeletePost(user, post);
 
         post.remove((err) => {
           if (err) {

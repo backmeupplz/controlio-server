@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const fs = require('fs');
 const config = require('./config');
+const botReporter = require('./helpers/botReporter');
 
 const app = express();
 
@@ -25,7 +26,6 @@ fs.readdirSync(path.join(__dirname, '/models')).forEach((filename) => {
 
 global.pushNotifications = require('./helpers/pushNotifications');
 global.emailSender = require('./helpers/emailSender');
-global.botReporter = require('./helpers/botReporter');
 
 const auth = require('./helpers/auth');
 
@@ -74,7 +74,7 @@ app.use((req, res, next) => {
 
 // error handler
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
-  global.botReporter.reportError(err, req);
+  botReporter.reportError(err, req);
   res.status(err.status || 500);
   res.send(err);
 });

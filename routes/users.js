@@ -8,13 +8,14 @@ const validate = require('express-validation');
 const validation = require('../validation/users');
 const router = require('express').Router();
 const randomToken = require('random-token').create(config.randomTokenSalt);
+const botReporter = require('../helpers/botReporter');
 
 // Public API
 
 router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next) => {
   const email = req.body.email.toLowerCase();
 
-  global.botReporter.reportMagicLinkRequest(email);
+  botReporter.reportMagicLinkRequest(email);
 
   dbmanager.getUser({ email })
     .then((user) => {
@@ -71,7 +72,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
           const savedUserCopy = Object.create(savedUser);
           savedUserCopy.password = undefined;
           res.send(savedUserCopy);
-          global.botReporter.reportMagicLinkLogin(savedUserCopy.email);
+          botReporter.reportMagicLinkLogin(savedUserCopy.email);
         });
     })
     .catch(err => next(err));
@@ -105,7 +106,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
       if (userCopy.token && (!iosPushToken || user.isDemo)) {
         userCopy.password = undefined;
         res.send(userCopy);
-        global.botReporter.reportLogin(userCopy.email);
+        botReporter.reportLogin(userCopy.email);
         p.cancel();
       } else {
         return userCopy;
@@ -149,7 +150,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
           const dbuserCopy = Object.create(dbuser);
           dbuserCopy.password = undefined;
           res.send(dbuserCopy);
-          global.botReporter.reportSignUp(email);
+          botReporter.reportSignUp(email);
         });
     })
     .catch(err => next(err));
@@ -158,7 +159,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
 router.post('/recoverPassword', validate(validation.resetPassword), (req, res, next) => {
   const email = req.body.email.toLowerCase();
 
-  global.botReporter.reportPasswordResetRequest(email);
+  botReporter.reportPasswordResetRequest(email);
 
   dbmanager.getUser({ email })
     .then((user) => {
@@ -192,7 +193,7 @@ router.post('/logout', (req, res, next) => {
       const userCopy = Object.create(user);
       userCopy.iosPushTokens.splice(userCopy.iosPushTokens.indexOf(iosPushToken), 1);
 
-      global.botReporter.reportLogout(userCopy.email);
+      botReporter.reportLogout(userCopy.email);
 
       userCopy.save()
         .then(dbuser => res.send(dbuser))
@@ -206,7 +207,7 @@ router.get('/profile', (req, res, next) => {
 
   dbmanager.getUserById(userId)
     .then((user) => {
-      global.botReporter.reportGetProfile(user.email);
+      botReporter.reportGetProfile(user.email);
 
       res.send(user);
     })
@@ -227,7 +228,7 @@ router.post('/profile', (req, res, next) => {
       user.photo = photo;
       return user.save()
         .then((newUser) => {
-          global.botReporter.reportEditProfile(newUser);
+          botReporter.reportEditProfile(newUser);
 
           res.send(newUser);
         });
@@ -259,7 +260,7 @@ router.post('/manager', validate(validation.addManager), (req, res, next) => {
           owner.managers.push(manager);
           owner.save()
             .then(() => {
-              global.botReporter.reportAddManager(owner, manager);
+              botReporter.reportAddManager(owner, manager);
 
               res.send(manager);
               // TODO: notify manager about being added
@@ -272,7 +273,7 @@ router.post('/manager', validate(validation.addManager), (req, res, next) => {
             owner.managers.push(newManager);
             owner.save()
               .then(() => {
-                global.botReporter.reportAddManager(owner, newManager);
+                botReporter.reportAddManager(owner, newManager);
                 res.send(newManager);
                 // TODO: notify manager about being added and registered to the system
               })
@@ -289,7 +290,7 @@ router.get('/managers', (req, res, next) => {
 
   dbmanager.getUserById(userId, null, null, 'managers')
     .then((user) => {
-      global.botReporter.reportGetManagers(user.email);
+      botReporter.reportGetManagers(user.email);
 
       user.managers.unshift(user);
       const result = user.managers;
@@ -312,7 +313,7 @@ router.delete('/manager', validate(validation.deleteManager), (req, res, next) =
     .then(user =>
       dbmanager.getUserById(managerId)
         .then((manager) => {
-          global.botReporter.reportDeleteManager(user, manager);
+          botReporter.reportDeleteManager(user, manager);
 
           return dbmanager.removeManagerFromOwner(manager, user);
         })
