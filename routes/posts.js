@@ -4,7 +4,7 @@ const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/posts');
 const botReporter = require('../helpers/botReporter');
-const pushNotifications = require('./helpers/pushNotifications');
+const pushNotifications = require('../helpers/pushNotifications');
 
 const router = express.Router();
 
