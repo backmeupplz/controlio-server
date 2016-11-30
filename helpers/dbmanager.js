@@ -20,18 +20,15 @@ function findUserById(id, projection) {
 }
 
 function addUser(user) {
-  const lowerCaseEmail = user.email.toLowerCase();
-
-  return findUser({ email: lowerCaseEmail })
+  return findUser({ email: user.email })
     .then((databaseUser) => {
       if (databaseUser) {
         throw errors.authUserAlreadyExists();
       } else {
-        return payments.createStripeCustomer(lowerCaseEmail)
+        return payments.createStripeCustomer(user.email)
           .then((stripeCustomer) => {
             const userCopy = _.clone(user);
             userCopy.stripeId = stripeCustomer.id;
-            console.log(userCopy);
             const newUser = new User(userCopy);
             return newUser.save();
           });

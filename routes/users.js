@@ -19,18 +19,20 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
 
   botReporter.reportMagicLinkRequest(email);
 
-  dbmanager.getUser({ email })
+  dbmanager.findUser({ email })
+    .select('email')
+    /** If user doesn't exist, we create one */
     .then((user) => {
-      if (!user) {
-        return dbmanager.addUser({
-          email,
-          token: jwt.sign(email, config.jwtSecret),
-        });
+      if (user) {
+        return user;
       }
-      return user;
+      return dbmanager.addUser({
+        email,
+        token: jwt.sign(email, config.jwtSecret),
+      });
     })
     .then((user) => {
-      const userCopy = Object.create(user);
+      const userCopy = _.clone(user);
       userCopy.magicToken = randomToken(24);
       emailSender.sendMagicLink(userCopy);
       return userCopy.save()
@@ -81,7 +83,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
 });
 
 router.post('/login', validate(validation.login), (req, res, next) => {
-  const email = req.body.email;
+  const email = req.body.email.toLowerCase();
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
   const androidPushToken = req.body.androidPushToken;
@@ -145,7 +147,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
 });
 
 router.post('/signUp', validate(validation.signup), (req, res, next) => {
-  const email = req.body.email;
+  const email = req.body.email.toLowerCase();
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
 
