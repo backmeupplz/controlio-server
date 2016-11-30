@@ -159,7 +159,7 @@ function reportRedeemCoupon(user, couponid) {
 
 function sendMessage(msg) {
   if (config.telegramKey) {
-    jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
+    // jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
   }
 }
 

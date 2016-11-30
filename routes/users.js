@@ -10,6 +10,7 @@ const router = require('express').Router();
 const randomToken = require('random-token').create(config.randomTokenSalt);
 const botReporter = require('../helpers/botReporter');
 const emailSender = require('../helpers/emailSender');
+const _ = require('lodash');
 
 // Public API
 
@@ -80,11 +81,15 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
 });
 
 router.post('/login', validate(validation.login), (req, res, next) => {
-  const email = req.body.email.toLowerCase();
+  const email = req.body.email;
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
+  const androidPushToken = req.body.androidPushToken;
+  const webPushToken = req.body.webPushToken;
 
-  const p = dbmanager.getUser({ email }, '+password +token')
+  dbmanager.findUser({ email })
+    .select('email password token addedAsManager addedAsClient isDemo isAdmin isBusiness plan')
+    /** Check if user exists */
     .then((user) => {
       if (!user) {
         throw errors.authEmailNotRegistered();
@@ -92,6 +97,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
         return user;
       }
     })
+    /** Check password */
     .then(user =>
       hash.checkPassword(user.password, rawPassword)
         .then((result) => {
@@ -102,37 +108,44 @@ router.post('/login', validate(validation.login), (req, res, next) => {
           }
         })
     )
+    /** Add token if missing */
     .then((user) => {
-      const userCopy = Object.create(user);
-      if (userCopy.token && (!iosPushToken || user.isDemo)) {
-        userCopy.password = undefined;
-        res.send(userCopy);
-        botReporter.reportLogin(userCopy.email);
-        p.cancel();
-      } else {
-        return userCopy;
-      }
-    })
-    .then((user) => {
-      const userCopy = Object.create(user);
+      const userCopy = _.clone(user);
       if (!userCopy.token) {
         userCopy.token = jwt.sign(email, config.jwtSecret);
       }
-      if (iosPushToken && !user.isDemo) {
+      return userCopy;
+    })
+    /** Add push tokens if provided */
+    .then((user) => {
+      const userCopy = _.clone(user);
+      if (userCopy.isDemo) {
+        return userCopy;
+      }
+      if (iosPushToken) {
         userCopy.iosPushTokens.push(iosPushToken);
       }
-      return userCopy.save()
-        .then((savedUser) => {
-          const savedUserCopy = Object.create(savedUser);
-          savedUserCopy.password = undefined;
-          res.send(savedUserCopy);
-        });
+      if (androidPushToken) {
+        userCopy.androidPushTokens.push(androidPushToken);
+      }
+      if (webPushToken) {
+        userCopy.webPushTokens.push(webPushToken);
+      }
+      return userCopy;
     })
+    /** Save user and return without password */
+    .then(user =>
+      user.save()
+        .then((savedUser) => {
+          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'token', 'addedAsManager', 'addedAsClient', 'isDemo', 'isAdmin', 'isBusiness', 'plan']);
+          res.send(savedUserCopy);
+        })
+    )
     .catch(err => next(err));
 });
 
 router.post('/signUp', validate(validation.signup), (req, res, next) => {
-  const email = req.body.email.toLowerCase();
+  const email = req.body.email;
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
 
@@ -143,14 +156,14 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
         password,
         token: jwt.sign(email, config.jwtSecret),
       };
-      if (iosPushToken && !user.isDemo) {
+      if (iosPushToken) {
         user.iosPushTokens = [iosPushToken];
       }
       return dbmanager.addUser(user)
         .then((dbuser) => {
-          const dbuserCopy = Object.create(dbuser);
-          dbuserCopy.password = undefined;
+          const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'addedAsManager', 'addedAsClient', 'isDemo', 'isAdmin', 'isBusiness', 'plan']);
           res.send(dbuserCopy);
+
           botReporter.reportSignUp(email);
         });
     })
@@ -158,11 +171,13 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
 });
 
 router.post('/recoverPassword', validate(validation.resetPassword), (req, res, next) => {
-  const email = req.body.email.toLowerCase();
+  const email = req.body.email;
 
   botReporter.reportPasswordResetRequest(email);
 
-  dbmanager.getUser({ email })
+  dbmanager.findUser({ email })
+    .select('email')
+    /** Check user existence */
     .then((user) => {
       if (!user) {
         next(errors.authEmailNotRegistered());
@@ -170,8 +185,9 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
         return user;
       }
     })
+    /** Save tokens and send email */
     .then((user) => {
-      const userCopy = Object.create(user);
+      const userCopy = _.clone(user);
       userCopy.tokenForPasswordReset = randomToken(24);
       userCopy.tokenForPasswordResetIsFresh = true;
       emailSender.sendResetPassword(userCopy);

@@ -45,4 +45,4 @@ function sendMagicLink(user) {
 module.exports = {
   sendResetPassword,
   sendMagicLink,
-}
+};

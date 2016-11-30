@@ -1,32 +1,32 @@
 const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
-const validate = require('mongoose-validator');
-
-const emailValidator = [
-  validate({
-    validator: 'isEmail',
-    message: 'Wrong email format',
-  }),
-];
 
 const userSchema = new Schema({
   email: {
     type: String,
     required: true,
-    validate: emailValidator,
+    select: false,
   },
-  stripeId: String,
-  stripeSubscriptionId: String,
+  stripeId: {
+    type: String,
+    select: false,
+  },
+  stripeSubscriptionId: {
+    type: String,
+    select: false,
+  },
   plan: {
     type: Number,
     required: true,
     default: 0,
+    select: false,
   },
   numberOfActiveProjects: {
     type: Number,
     required: true,
     default: 0,
+    select: false,
   },
   password: {
     type: String,
@@ -40,36 +40,31 @@ const userSchema = new Schema({
     type: Boolean,
     required: true,
     default: false,
+    select: false,
   },
   isAdmin: {
     type: Boolean,
     required: true,
     default: false,
+    select: false,
   },
   isDemo: {
     type: Boolean,
     required: true,
     default: false,
-  },
-  isCompleted: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  isEmailVerified: {
-    type: Boolean,
-    required: true,
-    default: false,
+    select: false,
   },
   addedAsClient: {
     type: Boolean,
     required: true,
     default: false,
+    select: false,
   },
   addedAsManager: {
     type: Boolean,
     required: true,
     default: false,
+    select: false,
   },
   projects: [{
     type: Schema.ObjectId,
@@ -97,25 +92,41 @@ const userSchema = new Schema({
     required: true,
     default: [],
   }],
+  webPushTokens: [{
+    type: String,
+    select: false,
+    required: true,
+    default: [],
+  }],
   name: {
     type: String,
     required: false,
+    select: false,
   },
   phone: {
     type: String,
     required: false,
+    select: false,
   },
   photo: {
     type: String,
     required: false,
+    select: false,
   },
-  tokenForPasswordReset: String,
+  tokenForPasswordReset: {
+    type: String,
+    select: false,
+  },
   tokenForPasswordResetIsFresh: {
     type: Boolean,
     required: true,
     default: false,
+    select: false,
   },
-  magicToken: String,
+  magicToken: {
+    type: String,
+    select: false,
+  },
 });
 
 userSchema.methods.maxNumberOfProjects = (plan) => {

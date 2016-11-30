@@ -11,36 +11,32 @@ const Post = mongoose.model('post');
 
 // Users
 
+function findUser(options) {
+  return User.findOne(options);
+}
+
+function findUserById(id, projection) {
+  return User.findById(id, projection);
+}
+
 function addUser(user) {
-  return new Promise((resolve, reject) =>
-    User.findOne({ email: user.email.toLowerCase() })
-      .then((databaseUser) => {
-        if (databaseUser) {
-          reject(errors.authUserAlreadyExists());
-        } else {
-          payments.createStripeCustomer(user.email.toLowerCase())
-            .then((stripeCustomer) => {
-              user.stripeId = stripeCustomer.id;
-              const newUser = new User(user);
-              newUser.save()
-                .then(resolve)
-                .catch(reject);
-            })
-            .catch(reject);
-        }
-      })
-  );
-}
+  const lowerCaseEmail = user.email.toLowerCase();
 
-function getUserById(id, select, projection, populate) {
-  return User.findById(id, projection)
-    .select(select || '')
-    .populate(populate || '');
-}
-
-function getUser(options, select) {
-  return User.findOne(options)
-    .select(select || '');
+  return findUser({ email: lowerCaseEmail })
+    .then((databaseUser) => {
+      if (databaseUser) {
+        throw errors.authUserAlreadyExists();
+      } else {
+        return payments.createStripeCustomer(lowerCaseEmail)
+          .then((stripeCustomer) => {
+            const userCopy = _.clone(user);
+            userCopy.stripeId = stripeCustomer.id;
+            console.log(userCopy);
+            const newUser = new User(userCopy);
+            return newUser.save();
+          });
+      }
+    });
 }
 
 function addManager(email) {
@@ -656,9 +652,9 @@ function removeTokens(tokens) {
 
 module.exports = {
   // Users
+  findUser,
+  findUserById,
   addUser,
-  getUserById,
-  getUser,
   addManager,
   removeManagerFromOwner,
   convertToBusiness,
