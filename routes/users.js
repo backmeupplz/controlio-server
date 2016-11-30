@@ -45,8 +45,12 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
   const userId = req.body.userid;
   const token = req.body.token;
   const iosPushToken = req.body.iosPushToken;
+  const androidPushToken = req.body.androidPushToken;
+  const webPushToken = req.body.webPushToken;
 
-  dbmanager.getUserById(userId, '+token')
+  dbmanager.findUserById(userId)
+    .select('email token addedAsManager addedAsClient isDemo isAdmin isBusiness plan magicToken')
+    /** Check if user exists */
     .then((user) => {
       if (!user) {
         throw errors.noUserFound();
@@ -54,27 +58,48 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
         return user;
       }
     })
+    /** Check if magic tokens match */
     .then((user) => {
-      if (user.magicToken !== token) {
+      if (!user.magicToken || user.magicToken !== token) {
         throw errors.magicLinkOnlyOnce();
       } else {
         return user;
       }
     })
+    /** Add token if missing */
     .then((user) => {
-      const userCopy = Object.create(user);
+      const userCopy = _.clone(user);
       if (!userCopy.token) {
         userCopy.token = jwt.sign(userCopy.email, config.jwtSecret);
       }
-      if (iosPushToken && !user.isDemo) {
+      return userCopy;
+    })
+    /** Add push tokens if provided */
+    .then((user) => {
+      const userCopy = _.clone(user);
+      if (userCopy.isDemo) {
+        return userCopy;
+      }
+      if (iosPushToken) {
         userCopy.iosPushTokens.push(iosPushToken);
       }
+      if (androidPushToken) {
+        userCopy.androidPushTokens.push(androidPushToken);
+      }
+      if (webPushToken) {
+        userCopy.webPushTokens.push(webPushToken);
+      }
+      return userCopy;
+    })
+    /** Login */
+    .then((user) => {
+      const userCopy = _.clone(user);
+
       userCopy.magicToken = null;
 
       return userCopy.save()
         .then((savedUser) => {
-          const savedUserCopy = Object.create(savedUser);
-          savedUserCopy.password = undefined;
+          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'addedAsManager', 'addedAsClient', 'isDemo', 'isAdmin', 'isBusiness', 'plan']);
           res.send(savedUserCopy);
           botReporter.reportMagicLinkLogin(savedUserCopy.email);
         });
@@ -139,7 +164,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
     .then(user =>
       user.save()
         .then((savedUser) => {
-          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'token', 'addedAsManager', 'addedAsClient', 'isDemo', 'isAdmin', 'isBusiness', 'plan']);
+          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'addedAsManager', 'addedAsClient', 'isDemo', 'isAdmin', 'isBusiness', 'plan']);
           res.send(savedUserCopy);
         })
     )
