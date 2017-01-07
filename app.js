@@ -1,4 +1,4 @@
-// dependencies
+/** Dependencies */
 const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');
@@ -10,6 +10,7 @@ const cors = require('cors');
 const fs = require('fs');
 const config = require('./config');
 const botReporter = require('./helpers/botReporter');
+
 // change default promises to bluebird
 global.Promise = require('bluebird');
 // turn on cancellation for promises in bluebird

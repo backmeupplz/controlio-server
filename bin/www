@@ -8,19 +8,7 @@ const server = http.createServer(app);
 
 server.listen(port);
 server.on('error', (error) => {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
-  switch (error.code) {
-    case 'EACCES':
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      process.exit(1);
-      break;
-    default:
-      throw error;
-  }
+  throw error;
 });
 
 server.on('listening', () => {
