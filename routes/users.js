@@ -164,7 +164,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
     .then(user =>
       user.save()
         .then((savedUser) => {
-          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'addedAsManager', 'addedAsClient', 'isDemo', 'isAdmin', 'isBusiness', 'plan']);
+          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan']);
           res.send(savedUserCopy);
         })
     )
@@ -188,7 +188,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
       }
       return dbmanager.addUser(user)
         .then((dbuser) => {
-          const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'addedAsManager', 'addedAsClient', 'isDemo', 'isAdmin', 'isBusiness', 'plan']);
+          const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan']);
           res.send(dbuserCopy);
 
           botReporter.reportSignUp(email);

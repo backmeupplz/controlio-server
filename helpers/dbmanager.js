@@ -11,8 +11,8 @@ const Post = mongoose.model('post');
 
 // Users
 
-function findUser(options) {
-  return User.findOne(options);
+function findUser(query) {
+  return User.findOne(query);
 }
 
 function findUserById(id, projection) {

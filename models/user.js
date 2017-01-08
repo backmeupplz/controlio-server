@@ -3,13 +3,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  email: {
-    type: String,
-    required: true,
-    select: false,
-  },
+  /** Stripe */
   stripeId: {
     type: String,
+    required: true,
     select: false,
   },
   stripeSubscriptionId: {
@@ -22,10 +19,10 @@ const userSchema = new Schema({
     default: 0,
     select: false,
   },
-  numberOfActiveProjects: {
-    type: Number,
+  /** Variables */
+  email: {
+    type: String,
     required: true,
-    default: 0,
     select: false,
   },
   password: {
@@ -34,12 +31,6 @@ const userSchema = new Schema({
   },
   token: {
     type: String,
-    select: false,
-  },
-  isBusiness: {
-    type: Boolean,
-    required: true,
-    default: false,
     select: false,
   },
   isAdmin: {
@@ -54,32 +45,6 @@ const userSchema = new Schema({
     default: false,
     select: false,
   },
-  addedAsClient: {
-    type: Boolean,
-    required: true,
-    default: false,
-    select: false,
-  },
-  addedAsManager: {
-    type: Boolean,
-    required: true,
-    default: false,
-    select: false,
-  },
-  projects: [{
-    type: Schema.ObjectId,
-    ref: 'project',
-    select: false,
-    required: true,
-    default: [],
-  }],
-  managers: [{
-    type: Schema.ObjectId,
-    ref: 'user',
-    select: false,
-    required: true,
-    default: [],
-  }],
   iosPushTokens: [{
     type: String,
     select: false,
@@ -113,6 +78,15 @@ const userSchema = new Schema({
     required: false,
     select: false,
   },
+  /** Projects */
+  projects: [{
+    type: Schema.ObjectId,
+    ref: 'project',
+    select: false,
+    required: true,
+    default: [],
+  }],
+  /** System variables */
   tokenForPasswordReset: {
     type: String,
     select: false,
