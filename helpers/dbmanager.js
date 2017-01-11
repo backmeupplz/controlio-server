@@ -15,6 +15,28 @@ function findUser(query) {
   return User.findOne(query);
 }
 
+function findOrCreateUserWithEmail(email) {
+  return new Promise((resolve, reject) =>
+    User.findOne({ email })
+      .then((user) => {
+        if (user) {
+          resolve(user);
+          return;
+        }
+        payments.createStripeCustomer(email)
+          .then((stripeCustomer) => {
+            const userCopy = { email };
+            userCopy.stripeId = stripeCustomer.id;
+            const newUser = new User(userCopy);
+            return newUser.save()
+              .then(resolve)
+              .catch(reject);
+          })
+          .catch(reject);
+      })
+  );
+}
+
 function findUserById(id, projection) {
   return User.findById(id, projection);
 }
@@ -78,7 +100,7 @@ function removeManagerFromOwner(manager, owner) {
 }
 
 function convertToBusiness(userId, convert) {
-  return getUserById(userId)
+  return findUserById(userId)
     .then((user) => {
       if (!user) {
         throw errors.noUserFound();
@@ -94,83 +116,124 @@ function convertToBusiness(userId, convert) {
 
 // Projects
 
-function addProject(userId, title, image, status, description, manager, clients) {
-  return new Promise((resolve, reject) =>
-    getUserById(userId)
-      .then((ownerObject) => {
-        if (!ownerObject) {
-          throw errors.noOwnerFound();
-        } else if (clients.includes(ownerObject.email)) {
-          throw errors.addSelfAsClient();
-        } else {
-          return ownerObject;
-        }
-      })
-      .then((ownerObject) => {
-        const maxNumberOfProjects = ownerObject.maxNumberOfProjects(ownerObject.plan);
-        if (maxNumberOfProjects <= ownerObject.numberOfActiveProjects) {
-          throw errors.notEnoughProjectsOnPlan(maxNumberOfProjects);
-        } else {
-          return ownerObject;
-        }
-      })
-      .then(ownerObject =>
-        getUserById(manager)
-          .then((managerObject) => {
-            if (!managerObject) {
-              throw errors.noManagerFound();
-            } else {
-              // TODO: send manager a notice or request for approval
-              return { ownerObject, managerObject };
-            }
-          })
-      )
-      .then(({ ownerObject, managerObject }) =>
-        getClients(clients)
-          .then((clientObjects) => {
-            if (!clientObjects) {
-              throw errors.noClientObjectsCreated();
-            } else {
-              return { ownerObject, managerObject, clientObjects };
-            }
-          })
-      )
-      .then(({ ownerObject, managerObject, clientObjects }) => {
-        const project = new Project({
-          title,
-          image,
-          description,
-          owner: ownerObject,
-          manager: managerObject,
-          clients: clientObjects,
-        });
-        return project.save()
-          .then(newProject => ({ ownerObject, managerObject, clientObjects, newProject }));
-      })
-      .then(({ ownerObject, managerObject, clientObjects, newProject }) => {
-        const managerObjectArray = ownerObject.email === managerObject.email ? [] : [managerObject];
-        const allObjects = _.union([ownerObject], managerObjectArray, clientObjects);
+function addProject(project) {
+  return findUserById(project.userId)
+    .then((user) => {
+      if (project.type === 'client') {
+        return addProjectAsClient(project, user);
+      }
+      return addProjectAsManager(project, user);
+    });
+}
 
-        // TODO: send clients registration email and\or invite
-        allObjects.forEach((object) => {
-          if (object.email === ownerObject.email) {
-            object.numberOfActiveProjects += 1;
-          }
-          object.projects.push(newProject);
-          object.save();
-        });
-        botReporter.reportCreateProject(ownerObject, newProject);
-        return newProject;
+function addProjectAsClient(project, user) {
+  return new Promise((resolve) => {
+    if (!project.managerEmail) {
+      throw errors.fieldNotFound('managerEmail');
+    }
+    return findOrCreateUserWithEmail(project.managerEmail)
+      /** Add owner and client */
+      .then((manager) => {
+        const projectCopy = _.clone(project);
+        projectCopy.ownerInvited = manager;
+        projectCopy.clients = [user];
+        return { projectCopy, manager };
       })
-      .then(project => addPost(project.owner._id, project._id, status, [], 'status'))
-      .then(() => resolve({ success: true }))
-      .catch(reject)
-  );
+      /** Add initial status if any */
+      .then(({ projectCopy, manager }) => {
+        if (project.initialStatus) {
+          const projectCopyCopy = _.clone(projectCopy);
+          const initialStatus = new Post({
+            type: 'status',
+            text: project.initialStatus,
+            author: user,
+          });
+          return initialStatus.save()
+            .then((dbInitialStatus) => {
+              projectCopyCopy.posts = [dbInitialStatus];
+              return { projectCopy: projectCopyCopy, manager };
+            });
+        }
+        return { projectCopy, manager };
+      })
+      /** Save project to database */
+      .then(({ projectCopy, manager }) => {
+        const newProject = new Project(projectCopy);
+        return newProject.save()
+          .then((dbProject) => {
+            user.projectsClient.push(dbProject);
+            user.projects.push(dbProject);
+            manager.projectsInvitedManage.push(dbProject);
+            manager.projectsInvited.push(dbProject);
+            const promises = [user.save(), manager.save()];
+            return Promise.all(promises)
+              .then(() => {
+                resolve({ success: true });
+              });
+          });
+      });
+  });
+}
+
+function addProjectAsManager(project, user) {
+  return new Promise((resolve) => {
+    if (!project.clientEmails) {
+      throw errors.fieldNotFound('clientEmails');
+    }
+    const promises = [];
+    project.clientEmails.forEach((email) => {
+      promises.push(findOrCreateUserWithEmail(email));
+    });
+    return Promise.all(promises)
+      /** Add owner and clients */
+      .then((clients) => {
+        const projectCopy = _.clone(project);
+        projectCopy.owner = user;
+        projectCopy.clientsInvited = clients;
+        return projectCopy;
+      })
+      /** Add initial status if any */
+      .then((projectCopy) => {
+        if (project.initialStatus) {
+          const projectCopyCopy = _.clone(projectCopy);
+          const initialStatus = new Post({
+            type: 'status',
+            text: project.initialStatus,
+            author: user,
+          });
+          return initialStatus.save()
+            .then((dbInitialStatus) => {
+              projectCopyCopy.posts = [dbInitialStatus];
+              return projectCopyCopy;
+            });
+        }
+        return projectCopy;
+      })
+      /** Save project to database */
+      .then((projectCopy) => {
+        const newProject = new Project(projectCopy);
+        return newProject.save()
+          .then((dbProject) => {
+            user.projectsOwn.push(dbProject);
+            user.projects.push(dbProject);
+            const innerPromises = [user.save()];
+            projectCopy.clientsInvited.forEach((client) => {
+              client.projectsInvitedClient.push(dbProject);
+              client.projectsInvited.push(dbProject);
+              innerPromises.push(client.save());
+            });
+            return Promise.all(innerPromises)
+              .then(() => {
+                resolve({ success: true });
+              });
+          });
+      });
+  });
 }
 
 function getProject(userId, projectId) {
   return new Promise((resolve, reject) =>
-    getUserById(userId)
+    findUserById(userId)
       .then((user) => {
         if (!user) {
           throw errors.noUserFound();
@@ -208,7 +271,7 @@ function getProject(userId, projectId) {
 
 function getProjects(userId, skip, limit) {
   return new Promise((resolve, reject) =>
-    getUserById(userId)
+    findUserById(userId)
       .then((user) => {
         if (!user) {
           throw errors.noUserFound();
@@ -241,7 +304,7 @@ function changeClients(userId, projectId, clients) {
     Project.findById(projectId)
       .populate('clients')
       .then(project =>
-        getUserById(userId)
+        findUserById(userId)
           .then((user) => {
             if (String(project.owner) !== String(user._id) &&
                 String(project.manager) !== String(user._id)) {
@@ -297,7 +360,7 @@ function changeClients(userId, projectId, clients) {
 
 function editProject(userId, projectId, title, description, image) {
   return new Promise((resolve, reject) => {
-    getUserById(userId)
+    findUserById(userId)
       .then((user) => {
         Project.findById(projectId)
           .then((project) => {
@@ -325,7 +388,7 @@ function editProject(userId, projectId, title, description, image) {
 
 function archiveProject(userId, projectId, archive) {
   return new Promise((resolve, reject) =>
-    getUserById(userId)
+    findUserById(userId)
       .then(user =>
         Project.findById(projectId)
           .populate('owner')
@@ -369,7 +432,7 @@ function archiveProject(userId, projectId, archive) {
 
 function deleteProject(userId, projectId) {
   return new Promise((resolve, reject) =>
-    getUserById(userId)
+    findUserById(userId)
       .then(user =>
         Project.findById(projectId)
           .populate('clients manager owner')
@@ -423,7 +486,7 @@ function deleteProject(userId, projectId) {
 
 function addPost(userId, projectId, text, attachments, type) {
   return new Promise((resolve, reject) =>
-    getUserById(userId)
+    findUserById(userId)
       .then(user =>
         Project.findById(projectId)
           .populate('clients')
@@ -487,7 +550,7 @@ function getPosts(projectId, skip, limit) {
 
 function editPost(userId, postId, text, attachments) {
   return new Promise((resolve, reject) => {
-    getUserById(userId)
+    findUserById(userId)
       .then((user) => {
         Post.findById(postId)
           .populate('project')
@@ -514,7 +577,7 @@ function editPost(userId, postId, text, attachments) {
 
 function deletePost(userId, postId) {
   return new Promise(resolve =>
-    getUserById(userId)
+    findUserById(userId)
       .then(user =>
         Post.findById(postId)
           .populate('project')
@@ -550,7 +613,7 @@ function deletePost(userId, postId) {
 
 function setSripeSubscription(userId, planid) {
   return new Promise((resolve, reject) =>
-    getUserById(userId, '+token')
+    findUserById(userId, '+token')
       .then((user) => {
         if (!user) {
           throw errors.noUserFound();
@@ -566,7 +629,7 @@ function setSripeSubscription(userId, planid) {
 
 function applyStripeCoupon(userId, coupon) {
   return new Promise((resolve, reject) =>
-    getUserById(userId, '+token')
+    findUserById(userId, '+token')
       .then((user) => {
         if (!user) {
           throw errors.noUserFound();

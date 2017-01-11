@@ -13,22 +13,16 @@ const router = express.Router();
 router.use(auth.checkToken);
 
 router.post('/', validate(validation.post), (req, res, next) => {
-  const userId = req.get('userId');
-  const title = req.body.title;
-  const image = req.body.image;
-  const status = req.body.status;
-  const description = req.body.description;
-  const manager = req.body.manager;
-  const clients = _.uniq(req.body.clients.map(email => email.toLowerCase()));
-
-  if (clients.includes('giraffe@controlio.co')) {
-    next(errors.addDemoAsClient());
-    return;
+  const project = _.clone(req.body);
+  project.userId = req.get('userId');
+  if (project.managerEmail) {
+    project.managerEmail = project.managerEmail.toLowerCase();
   }
-
-  // botReporter works inside dbmanager
-  dbmanager.addProject(userId, title, image, status, description, manager, clients)
-    .then(project => res.send(project))
+  if (req.body.clientEmails) {
+    project.clientEmails = _.uniq(req.body.clientEmails.map(email => email.toLowerCase()));
+  }
+  dbmanager.addProject(project)
+    .then(dbproject => res.send(dbproject))
     .catch(err => next(err));
 });
 

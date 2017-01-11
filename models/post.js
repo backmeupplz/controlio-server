@@ -5,16 +5,13 @@ const Schema = mongoose.Schema;
 const postSchema = new Schema({
   type: {
     type: String,
+    enum: ['post', 'status'],
     default: 'post',
   },
   text: String,
-  manager: {
+  author: {
     type: Schema.ObjectId,
     ref: 'user',
-  },
-  project: {
-    type: Schema.ObjectId,
-    ref: 'project',
   },
   attachments: [String],
 }, { timestamps: true });

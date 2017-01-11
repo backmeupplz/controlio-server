@@ -17,7 +17,7 @@ function checkToken(req, res, next) {
     if (err) {
       return next(err);
     }
-    dbmanager.getUserById(userId, '+token')
+    dbmanager.findUserById(userId, '+token')
       .then(user => {
         if (!user) {
           return next(errors.authEmailNotRegistered());

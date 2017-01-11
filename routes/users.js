@@ -249,7 +249,8 @@ router.post('/logout', (req, res, next) => {
 router.get('/profile', (req, res, next) => {
   const userId = req.get('userId');
 
-  dbmanager.getUserById(userId)
+  dbmanager.findUserById(userId)
+    .select('email name phone photo')
     .then((user) => {
       botReporter.reportGetProfile(user.email);
 
@@ -265,16 +266,18 @@ router.post('/profile', (req, res, next) => {
   const phone = req.body.phone;
   const photo = req.body.photo;
 
-  dbmanager.getUserById(userId, '+token')
+  dbmanager.findUserById(userId)
+    .select('token email name phone photo')
     .then((user) => {
-      user.name = name;
-      user.phone = phone;
-      user.photo = photo;
-      return user.save()
-        .then((newUser) => {
-          botReporter.reportEditProfile(newUser);
+      const userCopy = _.clone(user);
+      userCopy.name = name;
+      userCopy.phone = phone;
+      userCopy.photo = photo;
+      return userCopy.save()
+        .then((savedUser) => {
+          botReporter.reportEditProfile(savedUser);
 
-          res.send(newUser);
+          res.send(savedUser);
         });
     })
     .catch(err => next(err));

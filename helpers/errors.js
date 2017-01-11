@@ -68,6 +68,9 @@ function removeYourselfAsManager() {
 function userNotManager() {
   return error(403, 'This user is not your manager');
 }
+function fieldNotFound(field) {
+  return error(403, `Field '${field}' not found`);
+}
 
 function notEnoughProjectsOnPlan(maxNumberOfProjects) {
   let projectWord = 'projects';
@@ -100,4 +103,5 @@ module.exports = {
   removeYourselfAsManager,
   userNotManager,
   notEnoughProjectsOnPlan,
+  fieldNotFound,
 };

@@ -3,49 +3,48 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const projectSchema = new Schema({
-  title: String,
+  title: {
+    type: String,
+    required: true,
+  },
   image: String,
   description: String,
-  completed: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
   owner: {
     type: Schema.ObjectId,
     ref: 'user',
-    required: true,
   },
-  manager: {
+  ownerInvited: {
     type: Schema.ObjectId,
     ref: 'user',
-    required: true,
   },
-  clients: [{
+  managers: [{
     type: Schema.ObjectId,
     ref: 'user',
     required: true,
     default: [],
   }],
-  lastStatus: {
+  managersInvited: [{
     type: Schema.ObjectId,
-    ref: 'post',
-  },
-  lastPost: {
+    ref: 'user',
+    required: true,
+    default: [],
+  }],
+  clients: [{
     type: Schema.ObjectId,
-    ref: 'post',
-  },
+    ref: 'user',
+    required: true,
+  }],
+  clientsInvited: [{
+    type: Schema.ObjectId,
+    ref: 'user',
+    required: true,
+  }],
   posts: [{
     type: Schema.ObjectId,
     ref: 'post',
     required: true,
     default: [],
   }],
-  canEdit: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
   isArchived: {
     type: Boolean,
     required: true,
