@@ -23,22 +23,22 @@ const userSchema = new Schema({
   email: {
     type: String,
     required: true,
-    select: false,
+    select: true,
   },
   name: {
     type: String,
     required: false,
-    select: false,
+    select: true,
   },
   phone: {
     type: String,
     required: false,
-    select: false,
+    select: true,
   },
   photo: {
     type: String,
     required: false,
-    select: false,
+    select: true,
   },
   password: {
     type: String,

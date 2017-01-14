@@ -37,8 +37,8 @@ function findOrCreateUserWithEmail(email) {
   );
 }
 
-function findUserById(id, projection) {
-  return User.findById(id, projection);
+function findUserById(id) {
+  return User.findById(id);
 }
 
 function addUser(user) {
@@ -135,6 +135,7 @@ function addProjectAsClient(project, user) {
       /** Add owner and client */
       .then((manager) => {
         const projectCopy = _.clone(project);
+        projectCopy.createdType = 'clientCreated';
         projectCopy.ownerInvited = manager;
         projectCopy.clients = [user];
         return { projectCopy, manager };
@@ -151,6 +152,8 @@ function addProjectAsClient(project, user) {
           return initialStatus.save()
             .then((dbInitialStatus) => {
               projectCopyCopy.posts = [dbInitialStatus];
+              projectCopyCopy.lastPost = dbInitialStatus;
+              projectCopyCopy.lastStatus = dbInitialStatus;
               return { projectCopy: projectCopyCopy, manager };
             });
         }
@@ -188,6 +191,7 @@ function addProjectAsManager(project, user) {
       /** Add owner and clients */
       .then((clients) => {
         const projectCopy = _.clone(project);
+        projectCopy.createdType = 'managerCreated';
         projectCopy.owner = user;
         projectCopy.clientsInvited = clients;
         return projectCopy;
@@ -204,6 +208,8 @@ function addProjectAsManager(project, user) {
           return initialStatus.save()
             .then((dbInitialStatus) => {
               projectCopyCopy.posts = [dbInitialStatus];
+              projectCopyCopy.lastPost = dbInitialStatus;
+              projectCopyCopy.lastStatus = dbInitialStatus;
               return projectCopyCopy;
             });
         }
@@ -272,28 +278,48 @@ function getProject(userId, projectId) {
 function getProjects(userId, skip, limit) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .then((user) => {
-        if (!user) {
-          throw errors.noUserFound();
-        }
-        return user;
-      })
       .then(user =>
-        Project.find({ $or: [{ clients: user._id }, { owner: user._id }, { manager: user._id }] })
-          .sort({ isArchived: 1 })
+        Project.find({ $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
+          .sort({ updatedAt: -1 })
           .skip(skip)
           .limit(limit)
-          .populate('clients owner manager lastStatus lastPost')
+          .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived')
+          .populate('lastStatus lastPost')
           .then(projects => ({ user, projects }))
       )
       .then(({ user, projects }) => {
-        projects.forEach((project) => {
-          project.canEdit = String(project.manager._id) === String(user._id) ||
-            String(project.owner._id) === String(user._id);
-        });
-
         botReporter.reportGetProjects(user, skip, limit);
         resolve(projects);
+      })
+      .catch(err => reject(err))
+  );
+}
+
+function getInvitedProjects(userId) {
+  return new Promise((resolve, reject) =>
+    findUserById(userId)
+      .then(user =>
+        Project.find({ $or: [{ clientsInvited: user._id }, { ownerInvited: user._id }, { managersInvited: user._id }] })
+          .sort({ updatedAt: -1 })
+          .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived ownerInvited managersInvited clientsInvited createdType clients')
+          .populate('lastStatus lastPost ownerInvited managersInvited clientsInvited clients')
+          .then(projects => ({ user, projects }))
+      )
+      .then(({ user, projects }) => {
+        /** Todo: add bot reporter */
+        // botReporter.reportGetProjects(user);
+        resolve(projects);
+      })
+      .catch(err => reject(err))
+  );
+}
+
+function acceptInvite(userId, projectId, accept) {
+  return new Promise((resolve, reject) =>
+    findUserById(userId)
+      .then((user) => {
+        console.log(accept);
+        resolve();
       })
       .catch(err => reject(err))
   );
@@ -722,6 +748,8 @@ module.exports = {
   addProject,
   getProject,
   getProjects,
+  getInvitedProjects,
+  acceptInvite,
   changeClients,
   editProject,
   archiveProject,
