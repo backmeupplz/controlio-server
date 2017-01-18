@@ -3,10 +3,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const projectSchema = new Schema({
-  createdType: {
-    type: String,
-    enum: ['managerCreated', 'clientCreated'],
-  },
   title: {
     type: String,
     required: true,
@@ -25,19 +21,7 @@ const projectSchema = new Schema({
     ref: 'user',
     select: false,
   },
-  ownerInvited: {
-    type: Schema.ObjectId,
-    ref: 'user',
-    select: false,
-  },
   managers: [{
-    type: Schema.ObjectId,
-    ref: 'user',
-    required: true,
-    default: [],
-    select: false,
-  }],
-  managersInvited: [{
     type: Schema.ObjectId,
     ref: 'user',
     required: true,
@@ -50,10 +34,11 @@ const projectSchema = new Schema({
     required: true,
     select: false,
   }],
-  clientsInvited: [{
+  invites: [{
     type: Schema.ObjectId,
-    ref: 'user',
+    ref: 'invite',
     required: true,
+    default: [],
     select: false,
   }],
   posts: [{

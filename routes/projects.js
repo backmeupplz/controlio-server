@@ -48,10 +48,10 @@ router.get('/', (req, res, next) => {
 
 router.get('/invites', (req, res, next) => {
   const userId = req.get('userId');
-
-  dbmanager.getInvitedProjects(userId)
-    .then(projects => res.send(projects))
-    .catch(err => next(err));
+  res.send([]);
+  // dbmanager.getInvitedProjects(userId)
+  //   .then(projects => res.send(projects))
+  //   .catch(err => next(err));
 });
 
 router.post('/invites', (req, res, next) => {

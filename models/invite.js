@@ -2,24 +2,22 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
-const postSchema = new Schema({
+const inviteSchema = new Schema({
   type: {
     type: String,
-    enum: ['post', 'status'],
-    default: 'post',
+    enum: ['manage', 'own', 'client'],
     required: true,
   },
-  text: String,
-  author: {
+  sender: {
     type: Schema.ObjectId,
     ref: 'user',
     required: true,
   },
-  attachments: [{
-    type: String,
+  project: {
+    type: Schema.ObjectId,
+    ref: 'project',
     required: true,
-    default: [],
-  }],
+  },
 }, { timestamps: true });
 
-mongoose.model('post', postSchema);
+mongoose.model('invite', inviteSchema);

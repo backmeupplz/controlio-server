@@ -8,6 +8,7 @@ const botReporter = require('./botReporter');
 const User = mongoose.model('user');
 const Project = mongoose.model('project');
 const Post = mongoose.model('post');
+const Invite = mongoose.model('invite');
 
 // Users
 
@@ -132,11 +133,9 @@ function addProjectAsClient(project, user) {
       throw errors.fieldNotFound('managerEmail');
     }
     return findOrCreateUserWithEmail(project.managerEmail)
-      /** Add owner and client */
+      /** Add client */
       .then((manager) => {
         const projectCopy = _.clone(project);
-        projectCopy.createdType = 'clientCreated';
-        projectCopy.ownerInvited = manager;
         projectCopy.clients = [user];
         return { projectCopy, manager };
       })
@@ -159,16 +158,28 @@ function addProjectAsClient(project, user) {
         }
         return { projectCopy, manager };
       })
-      /** Save project to database */
+      /** Save project to database and add project to client */
       .then(({ projectCopy, manager }) => {
         const newProject = new Project(projectCopy);
         return newProject.save()
           .then((dbProject) => {
-            user.projectsClient.push(dbProject);
             user.projects.push(dbProject);
-            manager.projectsInvitedManage.push(dbProject);
-            manager.projectsInvited.push(dbProject);
-            const promises = [user.save(), manager.save()];
+            return user.save()
+              .then(dbUser => ({ dbProject, dbUser, manager }));
+          });
+      })
+      /** Add invite to owner */
+      .then(({ dbProject, dbUser, manager }) => {
+        const invite = new Invite({
+          type: 'own',
+          sender: dbUser._id,
+          project: dbProject._id,
+        });
+        return invite.save()
+          .then((dbInvite) => {
+            dbProject.invites.push(dbInvite._id);
+            manager.invites.push(dbInvite._id);
+            const promises = [dbProject.save(), manager.save()];
             return Promise.all(promises)
               .then(() => {
                 resolve({ success: true });
@@ -188,16 +199,14 @@ function addProjectAsManager(project, user) {
       promises.push(findOrCreateUserWithEmail(email));
     });
     return Promise.all(promises)
-      /** Add owner and clients */
+      /** Add owner */
       .then((clients) => {
         const projectCopy = _.clone(project);
-        projectCopy.createdType = 'managerCreated';
         projectCopy.owner = user;
-        projectCopy.clientsInvited = clients;
-        return projectCopy;
+        return { projectCopy, clients };
       })
       /** Add initial status if any */
-      .then((projectCopy) => {
+      .then(({ projectCopy, clients }) => {
         if (project.initialStatus) {
           const projectCopyCopy = _.clone(projectCopy);
           const initialStatus = new Post({
@@ -210,28 +219,46 @@ function addProjectAsManager(project, user) {
               projectCopyCopy.posts = [dbInitialStatus];
               projectCopyCopy.lastPost = dbInitialStatus;
               projectCopyCopy.lastStatus = dbInitialStatus;
-              return projectCopyCopy;
+              return { projectCopy: projectCopyCopy, clients };
             });
         }
-        return projectCopy;
+        return { projectCopy, clients };
       })
-      /** Save project to database */
-      .then((projectCopy) => {
+      /** Save project to database and add project to owner */
+      .then(({ projectCopy, clients }) => {
         const newProject = new Project(projectCopy);
         return newProject.save()
           .then((dbProject) => {
-            user.projectsOwn.push(dbProject);
             user.projects.push(dbProject);
-            const innerPromises = [user.save()];
-            projectCopy.clientsInvited.forEach((client) => {
-              client.projectsInvitedClient.push(dbProject);
-              client.projectsInvited.push(dbProject);
-              innerPromises.push(client.save());
+            return user.save()
+              .then(dbUser => ({ dbUser, dbProject, clients }));
+          });
+      })
+      /** Add invites to clients */
+      .then(({ dbUser, dbProject, clients }) => {
+        const innerPromises = [];
+        clients.forEach((client) => {
+          innerPromises.push(new Promise((resolve) => {
+            const invite = new Invite({
+              type: 'client',
+              sender: dbUser._id,
+              project: dbProject._id,
             });
-            return Promise.all(innerPromises)
-              .then(() => {
-                resolve({ success: true });
+            return invite.save()
+              .then((dbInvite) => {
+                client.invites.push(dbInvite);
+                return client.save()
+                  .then(() => {
+                    resolve(dbInvite._id);
+                  });
               });
+          }));
+        });
+        return Promise.all(innerPromises)
+          .then((invites) => {
+            dbProject.invites = dbProject.invites.concat(invites);
+            return dbProject.save()
+              .then(() => resolve({ success: true }));
           });
       });
   });
