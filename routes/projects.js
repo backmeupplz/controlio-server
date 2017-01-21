@@ -53,7 +53,7 @@ router.get('/invites', (req, res, next) => {
     .catch(err => next(err));
 });
 
-router.post('/invites', validate(validation.postInvite), (req, res, next) => {
+router.post('/invite', validate(validation.postInvite), (req, res, next) => {
   const userId = req.get('userId');
   const inviteId = req.body.inviteId;
   const accept = req.body.accept;
