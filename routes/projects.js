@@ -48,18 +48,17 @@ router.get('/', (req, res, next) => {
 
 router.get('/invites', (req, res, next) => {
   const userId = req.get('userId');
-  res.send([]);
-  // dbmanager.getInvitedProjects(userId)
-  //   .then(projects => res.send(projects))
-  //   .catch(err => next(err));
+  dbmanager.getInvites(userId)
+    .then(invites => res.send(invites))
+    .catch(err => next(err));
 });
 
-router.post('/invites', (req, res, next) => {
+router.post('/invites', validate(validation.postInvite), (req, res, next) => {
   const userId = req.get('userId');
-  const projectId = req.body.projectId;
+  const inviteId = req.body.inviteId;
   const accept = req.body.accept;
 
-  dbmanager.acceptInvite(userId, projectId, accept)
+  dbmanager.acceptInvite(userId, inviteId, accept)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });

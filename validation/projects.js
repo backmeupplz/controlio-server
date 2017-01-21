@@ -14,6 +14,12 @@ module.exports = {
       image: Joi.string().required(),
     },
   },
+  postInvite: {
+    body: {
+      inviteId: Joi.string().required(),
+      accept: Joi.number().required(),
+    },
+  },
   postStatus: {
     body: {
       projectid: Joi.string().required(),

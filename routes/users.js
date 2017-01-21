@@ -49,7 +49,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
   const webPushToken = req.body.webPushToken;
 
   dbmanager.findUserById(userId)
-    .select('email token addedAsManager addedAsClient isDemo isAdmin isBusiness plan magicToken')
+    .select('email token isDemo isAdmin plan magicToken')
     /** Check if user exists */
     .then((user) => {
       if (!user) {
@@ -99,7 +99,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
 
       return userCopy.save()
         .then((savedUser) => {
-          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'addedAsManager', 'addedAsClient', 'isDemo', 'isAdmin', 'isBusiness', 'plan']);
+          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan']);
           res.send(savedUserCopy);
           botReporter.reportMagicLinkLogin(savedUserCopy.email);
         });
@@ -115,7 +115,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
   const webPushToken = req.body.webPushToken;
 
   dbmanager.findUser({ email })
-    .select('email password token addedAsManager addedAsClient isDemo isAdmin isBusiness plan')
+    .select('email password token isDemo isAdmin plan')
     /** Check if user exists */
     .then((user) => {
       if (!user) {
@@ -175,6 +175,8 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
   const email = req.body.email.toLowerCase();
   const rawPassword = req.body.password;
   const iosPushToken = req.body.iosPushToken;
+  const androidPushToken = req.body.androidPushToken;
+  const webPushToken = req.body.webPushToken;
 
   hash.hashPassword(rawPassword)
     .then((password) => {
@@ -185,6 +187,12 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
       };
       if (iosPushToken) {
         user.iosPushTokens = [iosPushToken];
+      }
+      if (androidPushToken) {
+        user.androidPushTokens = [androidPushToken];
+      }
+      if (webPushToken) {
+        user.webPushTokens = [webPushToken];
       }
       return dbmanager.addUser(user)
         .then((dbuser) => {

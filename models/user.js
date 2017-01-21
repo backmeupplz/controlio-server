@@ -23,23 +23,62 @@ const userSchema = new Schema({
   email: {
     type: String,
     required: true,
-    select: true,
   },
   name: {
     type: String,
     required: false,
-    select: true,
   },
   phone: {
     type: String,
     required: false,
-    select: true,
   },
   photo: {
     type: String,
     required: false,
-    select: true,
   },
+  isAdmin: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  isDemo: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  /** Push tokens */
+  iosPushTokens: [{
+    type: String,
+    required: true,
+    default: [],
+    select: false,
+  }],
+  androidPushTokens: [{
+    type: String,
+    required: true,
+    default: [],
+    select: false,
+  }],
+  webPushTokens: [{
+    type: String,
+    required: true,
+    default: [],
+    select: false,
+  }],
+  /** Projects */
+  invites: [{
+    type: Schema.ObjectId,
+    ref: 'invite',
+    required: true,
+    default: [],
+  }],
+  projects: [{
+    type: Schema.ObjectId,
+    ref: 'project',
+    required: true,
+    default: [],
+  }],
+  /** System variables */
   password: {
     type: String,
     select: false,
@@ -48,52 +87,6 @@ const userSchema = new Schema({
     type: String,
     select: false,
   },
-  isAdmin: {
-    type: Boolean,
-    required: true,
-    default: false,
-    select: false,
-  },
-  isDemo: {
-    type: Boolean,
-    required: true,
-    default: false,
-    select: false,
-  },
-  iosPushTokens: [{
-    type: String,
-    select: false,
-    required: true,
-    default: [],
-  }],
-  androidPushTokens: [{
-    type: String,
-    select: false,
-    required: true,
-    default: [],
-  }],
-  webPushTokens: [{
-    type: String,
-    select: false,
-    required: true,
-    default: [],
-  }],
-  /** Projects */
-  invites: [{
-    type: Schema.ObjectId,
-    ref: 'invite',
-    required: true,
-    default: [],
-    select: false,
-  }],
-  projects: [{
-    type: Schema.ObjectId,
-    ref: 'project',
-    select: false,
-    required: true,
-    default: [],
-  }],
-  /** System variables */
   tokenForPasswordReset: {
     type: String,
     select: false,

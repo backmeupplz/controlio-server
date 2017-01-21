@@ -50,6 +50,9 @@ function alreadyManager() {
 function noProjectFound() {
   return error(400, 'No project found');
 }
+function noInviteFound() {
+  return error(400, 'No invite found');
+}
 function notAuthorized() {
   return error(403, 'Not authorized');
 }
@@ -96,6 +99,7 @@ module.exports = {
   addSelfAsClient,
   alreadyManager,
   noProjectFound,
+  noInviteFound,
   notAuthorized,
   magicLinkOnlyOnce,
   addDemoAsClient,

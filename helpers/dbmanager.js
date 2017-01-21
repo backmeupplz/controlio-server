@@ -264,6 +264,26 @@ function addProjectAsManager(project, user) {
   });
 }
 
+function getProjects(userId, skip, limit) {
+  return new Promise((resolve, reject) =>
+    findUserById(userId)
+      .then(user =>
+        Project.find({ $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
+          .sort({ updatedAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived')
+          .populate('lastStatus lastPost')
+          .then(projects => ({ user, projects }))
+      )
+      .then(({ user, projects }) => {
+        botReporter.reportGetProjects(user, skip, limit);
+        resolve(projects);
+      })
+      .catch(err => reject(err))
+  );
+}
+
 function getProject(userId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
@@ -302,51 +322,70 @@ function getProject(userId, projectId) {
   );
 }
 
-function getProjects(userId, skip, limit) {
+function getInvites(userId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .then(user =>
-        Project.find({ $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
-          .sort({ updatedAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived')
-          .populate('lastStatus lastPost')
-          .then(projects => ({ user, projects }))
-      )
-      .then(({ user, projects }) => {
-        botReporter.reportGetProjects(user, skip, limit);
-        resolve(projects);
+      .select('invites')
+      .populate({
+        path: 'invites',
+        populate: [{
+          path: 'sender',
+          model: 'user',
+        },
+        {
+          path: 'project',
+          model: 'project',
+        }],
       })
+      .then(user => resolve(user.invites))
       .catch(err => reject(err))
   );
 }
 
-function getInvitedProjects(userId) {
+function acceptInvite(userId, inviteId, accept) {
   return new Promise((resolve, reject) =>
+    /** Find user and invite */
     findUserById(userId)
       .then(user =>
-        Project.find({ $or: [{ clientsInvited: user._id }, { ownerInvited: user._id }, { managersInvited: user._id }] })
-          .sort({ updatedAt: -1 })
-          .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived ownerInvited managersInvited clientsInvited createdType clients')
-          .populate('lastStatus lastPost ownerInvited managersInvited clientsInvited clients')
-          .then(projects => ({ user, projects }))
+        Invite.findById(inviteId)
+          .populate('project')
+          .then((invite) => {
+            if (!invite) {
+              throw errors.noInviteFound();
+            }
+            return { user, invite };
+          })
       )
-      .then(({ user, projects }) => {
-        /** Todo: add bot reporter */
-        // botReporter.reportGetProjects(user);
-        resolve(projects);
+      /** Remove invite from user and project */
+      .then(({ user, invite }) => {
+        // Remove invite from user
+        user.invites = user.invites.filter(i => !i.equals(invite._id));
+        // Remove invite from project
+        invite.project.invites = invite.project.invites.filter(i => !i.equals(invite._id));
+        const promises = [user.save(), invite.save()];
+        return Promise.all(promises)
+          .then(() => ({ user, invite }));
       })
-      .catch(err => reject(err))
-  );
-}
+      .then(({ user, invite }) => {
+        if (!accept) {
+          resolve();
+          return;
+        }
 
-function acceptInvite(userId, projectId, accept) {
-  return new Promise((resolve, reject) =>
-    findUserById(userId)
-      .then((user) => {
-        console.log(accept);
-        resolve();
+        const project = invite.project;
+        if (invite.type === 'manage') {
+          project.managers.push(user._id);
+          user.projects.push(project._id);
+        } else if (invite.type === 'own') {
+          project.owner = user._id;
+          user.projects.push(project._id);
+        } else if (invite.type === 'client') {
+          project.clients.push(user._id);
+          user.projects.push(project._id);
+        }
+        const promises = [user.save(), project.save()];
+        return Promise.all(promises)
+          .then(() => resolve());
       })
       .catch(err => reject(err))
   );
@@ -775,7 +814,7 @@ module.exports = {
   addProject,
   getProject,
   getProjects,
-  getInvitedProjects,
+  getInvites,
   acceptInvite,
   changeClients,
   editProject,
