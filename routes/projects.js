@@ -63,6 +63,8 @@ router.post('/invite', validate(validation.postInvite), (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Not yet checked */
+
 router.post('/status', validate(validation.postStatus), (req, res, next) => {
   const projectId = req.body.projectid;
   const status = req.body.status;

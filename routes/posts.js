@@ -19,7 +19,6 @@ router.post('/', validate(validation.post), (req, res, next) => {
   const attachments = req.body.attachments;
   const type = req.body.type || 'post';
 
-  // botReporter works inside dbmanager
   dbmanager.addPost(userId, projectId, text, attachments, type)
     .then(({ dbpost, clients, sender }) => {
       pushNotifications.sendNotification(`${sender.name || sender.email}: ${text}`, clients);
@@ -30,10 +29,8 @@ router.post('/', validate(validation.post), (req, res, next) => {
 
 router.get('/', (req, res, next) => {
   const projectId = req.query.projectid;
-  let skip = req.query.skip || 0;
-  let limit = req.query.limit || 20;
-  skip = parseInt(skip, 10);
-  limit = parseInt(limit, 10);
+  const skip = parseInt(req.query.skip || 0, 10);
+  const limit = parseInt(req.query.limit || 20, 10);
 
   botReporter.reportGetPosts(projectId, skip, limit);
 

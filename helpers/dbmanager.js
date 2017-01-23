@@ -272,12 +272,24 @@ function getProjects(userId, skip, limit) {
           .sort({ updatedAt: -1 })
           .skip(skip)
           .limit(limit)
-          .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived')
+          .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived owner managers')
           .populate('lastStatus lastPost')
           .then(projects => ({ user, projects }))
       )
       .then(({ user, projects }) => {
         botReporter.reportGetProjects(user, skip, limit);
+        projects.forEach((project) => {
+          let canEdit = false;
+          if (project.owner && project.owner.equals(user._id)) {
+            canEdit = true;
+          }
+          project.managers.forEach((manager) => {
+            if (manager.equals(user._id)) {
+              canEdit = true;
+            }
+          });
+          project.canEdit = canEdit;
+        });
         resolve(projects);
       })
       .catch(err => reject(err))
@@ -630,6 +642,9 @@ function addPost(userId, projectId, text, attachments, type) {
 
 function getPosts(projectId, skip, limit) {
   return new Promise((resolve, reject) => {
+    Project.findById(projectId, {
+      posts: { $slice: [0, 3] },
+    })
     Post.find({ project: new mongoose.Types.ObjectId(projectId) })
       .sort({ createdAt: -1 })
       .skip(skip)

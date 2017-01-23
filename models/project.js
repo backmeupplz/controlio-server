@@ -49,6 +49,7 @@ const projectSchema = new Schema({
     required: true,
     default: false,
   },
+  canEdit: Boolean,
 }, { timestamps: true });
 
 mongoose.model('project', projectSchema);
