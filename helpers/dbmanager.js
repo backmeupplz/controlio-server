@@ -637,9 +637,7 @@ function getPosts(userId, projectId, skip, limit) {
   return new Promise(resolve =>
     findUserById(userId)
       .then(user =>
-        Project.findById(projectId, {
-          posts: { $slice: [skip, limit] },
-        })
+        Project.findById(projectId)
           .populate({
             path: 'posts',
             populate: {
@@ -667,7 +665,11 @@ function getPosts(userId, projectId, skip, limit) {
         if (!authorized) {
           throw errors.notAuthorized();
         }
-        resolve(project.posts);
+        const sortedPosts = project.posts.sort((a, b) =>
+            b.createdAt - a.createdAt
+        );
+        const slicedPosts = sortedPosts.slice(skip, skip + limit);
+        resolve(slicedPosts);
       })
   );
 }
