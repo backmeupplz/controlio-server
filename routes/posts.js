@@ -20,21 +20,21 @@ router.post('/', validate(validation.post), (req, res, next) => {
   const type = req.body.type || 'post';
 
   dbmanager.addPost(userId, projectId, text, attachments, type)
-    .then(({ dbpost, clients, sender }) => {
-      pushNotifications.sendNotification(`${sender.name || sender.email}: ${text}`, clients);
-      res.send(dbpost);
+    .then((post) => {
+      res.send(post);
     })
     .catch(err => next(err));
 });
 
 router.get('/', (req, res, next) => {
-  const projectId = req.query.projectid;
+  const userId = req.get('userId');
+  const projectId = req.query.projectId;
   const skip = parseInt(req.query.skip || 0, 10);
   const limit = parseInt(req.query.limit || 20, 10);
 
   botReporter.reportGetPosts(projectId, skip, limit);
 
-  dbmanager.getPosts(projectId, skip, limit)
+  dbmanager.getPosts(userId, projectId, skip, limit)
     .then(posts => res.send(posts))
     .catch(err => next(err));
 });

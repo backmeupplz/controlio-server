@@ -593,66 +593,83 @@ function addPost(userId, projectId, text, attachments, type) {
     findUserById(userId)
       .then(user =>
         Project.findById(projectId)
-          .populate('clients')
           .then(project => ({ user, project }))
       )
       .then(({ user, project }) => {
-        const maxNumberOfProjects = user.maxNumberOfProjects(user.plan);
-        if (maxNumberOfProjects < user.numberOfActiveProjects) {
-          throw errors.notEnoughProjectsOnPlan(maxNumberOfProjects);
-        } else {
-          return { user, project };
+        let authorized = false;
+        if (project.owner.equals(user._id)) {
+          authorized = true;
         }
-      })
-      .then(({ user, project }) => {
-        if (String(project.owner) !== String(user._id) &&
-                String(project.manager) !== String(user._id)) {
+        project.managers.forEach((manager) => {
+          if (manager.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
           throw errors.notAuthorized();
         }
         return { user, project };
       })
       .then(({ user, project }) => {
         const post = new Post({
+          author: user._id,
           text,
-          project,
           attachments,
           type,
-          manager: project.manager,
         });
         return post.save()
-          .then(dbpost => ({ user, project, dbpost }));
+          .then(dbpost => ({ project, dbpost }));
       })
-      .then(({ user, project, dbpost }) => {
-        const projectCopy = Object.create(project);
-        projectCopy.posts.push(dbpost);
-        if (dbpost.type === 'post') {
-          projectCopy.lastPost = dbpost._id;
-          botReporter.reportAddPost(user, projectCopy, dbpost);
-        } else {
-          projectCopy.lastStatus = dbpost._id;
-          botReporter.reportChangeStatus(user, projectCopy, dbpost);
+      .then(({ project, dbpost }) => {
+        project.posts.push(dbpost);
+        if (dbpost.type === 'status') {
+          project.lastStatus = dbpost._id;
         }
-
-        return projectCopy.save()
-          .then(dbproject => resolve({ dbpost, clients: dbproject.clients, sender: user }));
+        project.lastPost = dbpost._id;
+        return project.save()
+          .then(() => resolve(dbpost));
       })
       .catch(reject)
   );
 }
 
-function getPosts(projectId, skip, limit) {
-  return new Promise((resolve, reject) => {
-    Project.findById(projectId, {
-      posts: { $slice: [0, 3] },
-    })
-    Post.find({ project: new mongoose.Types.ObjectId(projectId) })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('manager')
-      .then(resolve)
-      .catch(reject);
-  });
+function getPosts(userId, projectId, skip, limit) {
+  return new Promise(resolve =>
+    findUserById(userId)
+      .then(user =>
+        Project.findById(projectId, {
+          posts: { $slice: [skip, limit] },
+        })
+          .populate({
+            path: 'posts',
+            populate: {
+              path: 'author',
+              model: 'user',
+            },
+          })
+          .then(project => ({ user, project }))
+      )
+      .then(({ user, project }) => {
+        let authorized = false;
+        if (project.owner.equals(user._id)) {
+          authorized = true;
+        }
+        project.managers.forEach((manager) => {
+          if (manager.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        project.clients.forEach((client) => {
+          if (client.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        resolve(project.posts);
+      })
+  );
 }
 
 function editPost(userId, postId, text, attachments) {
