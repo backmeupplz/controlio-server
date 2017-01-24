@@ -174,6 +174,7 @@ function addProjectAsClient(project, user) {
           type: 'own',
           sender: dbUser._id,
           project: dbProject._id,
+          invitee: maanger._id,
         });
         return invite.save()
           .then((dbInvite) => {
@@ -243,6 +244,7 @@ function addProjectAsManager(project, user) {
               type: 'client',
               sender: dbUser._id,
               project: dbProject._id,
+              invitee: client._id,
             });
             return invite.save()
               .then((dbInvite) => {
@@ -299,15 +301,15 @@ function getProjects(userId, skip, limit) {
 function getProject(userId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .then((user) => {
-        if (!user) {
-          throw errors.noUserFound();
-        }
-        return user;
-      })
       .then(user =>
         Project.findById(projectId)
-          .populate('lastStatus lastPost clients owner manager')
+        .populate({
+          path: 'invites',
+          populate: [{
+            path: 'sender',
+            model: 'user',
+          }],
+        })
           .then((project) => {
             if (!project) {
               throw errors.noProjectFound();
@@ -316,18 +318,18 @@ function getProject(userId, projectId) {
           })
       )
       .then(({ user, project }) => {
-        let hasAccess = false;
-        if (String(project.owner._id) === String(user._id) ||
-          String(project.manager._id) === String(user._id) ||
-          project.clients.map(v => String(v._id)).includes(String(user._id))) {
-          hasAccess = true;
-        }
+        // let hasAccess = false;
+        // if (String(project.owner._id) === String(user._id) ||
+        //   String(project.manager._id) === String(user._id) ||
+        //   project.clients.map(v => String(v._id)).includes(String(user._id))) {
+        //   hasAccess = true;
+        // }
 
-        project.canEdit = String(project.manager._id) === String(user._id) ||
-        String(project.owner._id) === String(user._id);
-        if (!hasAccess) {
-          throw errors.noAccess();
-        }
+        // project.canEdit = String(project.manager._id) === String(user._id) ||
+        // String(project.owner._id) === String(user._id);
+        // if (!hasAccess) {
+        //   throw errors.noAccess();
+        // }
         resolve(project);
       })
       .catch(err => reject(err))

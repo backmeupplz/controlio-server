@@ -18,6 +18,10 @@ const inviteSchema = new Schema({
     ref: 'project',
     required: true,
   },
+  invitee: {
+    type: Schema.ObjectId,
+    ref: 'user',
+  }
 }, { timestamps: true });
 
 mongoose.model('invite', inviteSchema);

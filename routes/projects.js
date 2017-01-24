@@ -30,7 +30,6 @@ router.get('/project', validate(validation.getProject), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.query.projectid;
 
-  // botReporter works inside dbmanager
   dbmanager.getProject(userId, projectId)
     .then(project => res.send(project))
     .catch(err => next(err));
@@ -64,16 +63,6 @@ router.post('/invite', validate(validation.postInvite), (req, res, next) => {
 });
 
 /** Not yet checked */
-
-router.post('/status', validate(validation.postStatus), (req, res, next) => {
-  const projectId = req.body.projectid;
-  const status = req.body.status;
-
-  // botReporter works inside dbmanager
-  dbmanager.changeStatus(projectId, status)
-    .then(project => res.send(project))
-    .catch(err => next(err));
-});
 
 router.post('/clients', validate(validation.postClients), (req, res, next) => {
   const userId = req.get('userId');
