@@ -174,7 +174,7 @@ function addProjectAsClient(project, user) {
           type: 'own',
           sender: dbUser._id,
           project: dbProject._id,
-          invitee: maanger._id,
+          invitee: manager._id,
         });
         return invite.save()
           .then((dbInvite) => {
@@ -300,16 +300,38 @@ function getProjects(userId, skip, limit) {
 
 function getProject(userId, projectId) {
   return new Promise((resolve, reject) =>
+    /** Get user */
     findUserById(userId)
       .then(user =>
+        /** Get project */
         Project.findById(projectId)
-        .populate({
+        .populate([{
           path: 'invites',
           populate: [{
-            path: 'sender',
+            path: 'invitee',
             model: 'user',
           }],
-        })
+        },
+        {
+          path: 'lastPost',
+          model: 'post',
+        },
+        {
+          path: 'lastStatus',
+          model: 'post',
+        },
+        {
+          path: 'clients',
+          model: 'user',
+        },
+        {
+          path: 'managers',
+          model: 'user',
+        },
+        {
+          path: 'owner',
+          model: 'user',
+        }])
           .then((project) => {
             if (!project) {
               throw errors.noProjectFound();
@@ -317,19 +339,39 @@ function getProject(userId, projectId) {
             return { user, project };
           })
       )
+      /** Check if user is authorized to get this project */
       .then(({ user, project }) => {
-        // let hasAccess = false;
-        // if (String(project.owner._id) === String(user._id) ||
-        //   String(project.manager._id) === String(user._id) ||
-        //   project.clients.map(v => String(v._id)).includes(String(user._id))) {
-        //   hasAccess = true;
-        // }
-
-        // project.canEdit = String(project.manager._id) === String(user._id) ||
-        // String(project.owner._id) === String(user._id);
-        // if (!hasAccess) {
-        //   throw errors.noAccess();
-        // }
+        let authorized = false;
+        if (project.owner && project.owner._id.equals(user._id)) {
+          authorized = true;
+        }
+        project.managers.forEach((manager) => {
+          if (manager._id.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        project.clients.forEach((client) => {
+          if (client._id.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return { user, project };
+      })
+      /** Add canEdit field */
+      .then(({ user, project }) => {
+        let canEdit = false;
+        if (project.owner && project.owner._id.equals(user._id)) {
+          canEdit = true;
+        }
+        project.managers.forEach((manager) => {
+          if (manager._id.equals(user._id)) {
+            canEdit = true;
+          }
+        });
+        project.canEdit = canEdit;
         resolve(project);
       })
       .catch(err => reject(err))
