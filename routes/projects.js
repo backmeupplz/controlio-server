@@ -71,6 +71,21 @@ router.delete('/invite', (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.post('/managers', (req, res, next) => {
+  const userId = req.get('userId');
+  const projectId = req.body.projectId;
+  const managers = _.uniq(req.body.managers.map(email => email.toLowerCase()));
+
+  if (managers.includes('giraffe@controlio.co')) {
+    next(errors.addDemoAsClient());
+    return;
+  }
+
+  dbmanager.addManagers(userId, projectId, managers)
+    .then(() => res.send({ success: true }))
+    .catch(err => next(err));
+});
+
 router.delete('/manager', (req, res, next) => {
   const userId = req.get('userId');
   const managerId = req.body.managerId;
@@ -91,11 +106,9 @@ router.delete('/client', (req, res, next) => {
     .catch(err => next(err));
 });
 
-/** Not yet checked */
-
-router.post('/clients', validate(validation.postClients), (req, res, next) => {
+router.post('/clients', (req, res, next) => {
   const userId = req.get('userId');
-  const projectId = req.body.projectid;
+  const projectId = req.body.projectId;
   const clients = _.uniq(req.body.clients.map(email => email.toLowerCase()));
 
   if (clients.includes('giraffe@controlio.co')) {
@@ -103,11 +116,12 @@ router.post('/clients', validate(validation.postClients), (req, res, next) => {
     return;
   }
 
-  // botReporter works inside dbmanager
-  dbmanager.changeClients(userId, projectId, clients)
-    .then(project => res.send(project))
+  dbmanager.addClients(userId, projectId, clients)
+    .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
+
+/** Not yet checked */
 
 router.put('/', validate(validation.put), (req, res, next) => {
   const userId = req.get('userId');

@@ -129,6 +129,9 @@ function addProject(project) {
 
 function addProjectAsClient(project, user) {
   return new Promise((resolve) => {
+    if (user.email === project.managerEmail) {
+      throw errors.addSelfAsManager();
+    }
     if (!project.managerEmail) {
       throw errors.fieldNotFound('managerEmail');
     }
@@ -194,6 +197,9 @@ function addProjectAsManager(project, user) {
   return new Promise((resolve) => {
     if (!project.clientEmails) {
       throw errors.fieldNotFound('clientEmails');
+    }
+    if (project.clientEmails.includes(user.email)) {
+      throw errors.addSelfAsClient();
     }
     const promises = [];
     project.clientEmails.forEach((email) => {
@@ -491,6 +497,92 @@ function removeInvite(userId, inviteId) {
   );
 }
 
+function addManagers(userId, projectId, managers) {
+  return new Promise((resolve, reject) =>
+    /** Find user and project */
+    findUserById(userId)
+      .then(user => 
+        Project.findById(projectId)
+          .then((project) => {
+            if (!project) {
+              throw errors.noProjectFound();
+            }
+            return { user, project };
+          })
+      )
+      /** Check if owner */
+      .then(({ user, project }) => {
+        let authorized = false;
+        if (project.owner && project.owner.equals(user._id)) {
+          authorized = true;
+        }
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return { project, user };
+      })
+      /** Get clients objects */
+      .then(({ project, user }) => {
+        const promises = [];
+        managers.forEach((email) => {
+          promises.push(findOrCreateUserWithEmail(email));
+        });
+        return Promise.all(promises)
+          .then(managerObjects => ({ managerObjects, project, user }));
+      })
+      /** Filter managers */
+      .then(({ managerObjects, project, user }) => {
+        const existingClients = project.clients.map(v => String(v));
+        const existingManagers = project.managers.map(v => String(v));
+        const owner = String(project.owner);
+        const filteredManagerObjects = managerObjects.filter((managerObject) => {
+          const id = String(managerObject._id);
+          const valid = true;
+          if (existingClients.includes(id)) {
+            valid = false;
+          }
+          if (existingManagers.includes(id)) {
+            valid = false;
+          }
+          if (owner === id) {
+            valid = false;
+          }
+          return valid;
+        });
+        return { managerObjects: filteredManagerObjects, project, user };
+      })
+      /** Add client invites */
+      .then(({ managerObjects, project, user }) => {
+        const innerPromises = [];
+        managerObjects.forEach((manager) => {
+          innerPromises.push(new Promise((resolve) => {
+            const invite = new Invite({
+              type: 'manage',
+              sender: user._id,
+              project: project._id,
+              invitee: manager._id,
+            });
+            return invite.save()
+              .then((dbInvite) => {
+                manager.invites.push(dbInvite);
+                return manager.save()
+                  .then(() => {
+                    resolve(dbInvite._id);
+                  });
+              });
+          }));
+        });
+        return Promise.all(innerPromises)
+          .then((invites) => {
+            project.invites = project.invites.concat(invites);
+            return project.save()
+              .then(() => resolve({ success: true }));
+          });
+      })
+      .catch(err => reject(err))
+  );
+}
+
 function removeManager(userId, managerId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
@@ -522,6 +614,98 @@ function removeManager(userId, managerId, projectId) {
       )
       .catch(reject)
   );  
+}
+
+function addClients(userId, projectId, clients) {
+  return new Promise((resolve, reject) =>
+    /** Find user and project */
+    findUserById(userId)
+      .then(user => 
+        Project.findById(projectId)
+          .then((project) => {
+            if (!project) {
+              throw errors.noProjectFound();
+            }
+            return { user, project };
+          })
+      )
+      /** Check if owner or manager */
+      .then(({ user, project }) => {
+        let authorized = false;
+        if (project.owner && project.owner.equals(user._id)) {
+          authorized = true;
+        }
+        project.managers.forEach((manager) => {
+          if (manager.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return { project, user };
+      })
+      /** Get clients objects */
+      .then(({ project, user }) => {
+        const promises = [];
+        clients.forEach((email) => {
+          promises.push(findOrCreateUserWithEmail(email));
+        });
+        return Promise.all(promises)
+          .then(clientObjects => ({ clientObjects, project, user }));
+      })
+      /** Filter clients */
+      .then(({ clientObjects, project, user }) => {
+        const existingClients = project.clients.map(v => String(v));
+        const existingManagers = project.managers.map(v => String(v));
+        const owner = String(project.owner);
+
+        const filteredClientObjects = clientObjects.filter((clientObject) => {
+          const id = String(clientObject._id);
+          const valid = true;
+          if (existingClients.includes(id)) {
+            valid = false;
+          }
+          if (existingManagers.includes(id)) {
+            valid = false;
+          }
+          if (owner === id) {
+            valid = false;
+          }
+          return valid;
+        });
+        return { clientObjects: filteredClientObjects, project, user };
+      })
+      /** Add client invites */
+      .then(({ clientObjects, project, user }) => {
+        const innerPromises = [];
+        clientObjects.forEach((client) => {
+          innerPromises.push(new Promise((resolve) => {
+            const invite = new Invite({
+              type: 'client',
+              sender: user._id,
+              project: project._id,
+              invitee: client._id,
+            });
+            return invite.save()
+              .then((dbInvite) => {
+                client.invites.push(dbInvite);
+                return client.save()
+                  .then(() => {
+                    resolve(dbInvite._id);
+                  });
+              });
+          }));
+        });
+        return Promise.all(innerPromises)
+          .then((invites) => {
+            project.invites = project.invites.concat(invites);
+            return project.save()
+              .then(() => resolve({ success: true }));
+          });
+      })
+      .catch(err => reject(err))
+  );
 }
 
 function removeClient(userId, clientId, projectId) {
@@ -749,7 +933,7 @@ function getPosts(userId, projectId, skip, limit) {
       )
       .then(({ user, project }) => {
         let authorized = false;
-        if (project.owner.equals(user._id)) {
+        if (project.owner && project.owner.equals(user._id)) {
           authorized = true;
         }
         project.managers.forEach((manager) => {
@@ -951,7 +1135,9 @@ module.exports = {
   getInvites,
   acceptInvite,
   removeInvite,
+  addManagers,
   removeManager,
+  addClients,
   removeClient,
   editProject,
   archiveProject,

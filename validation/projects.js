@@ -32,6 +32,12 @@ module.exports = {
       clients: Joi.required(),
     },
   },
+  postManagers: {
+    body: {
+      projectid: Joi.string().required(),
+      managers: Joi.required(),
+    },
+  },
   archive: {
     body: {
       projectid: Joi.string().required(),
