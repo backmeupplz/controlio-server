@@ -447,63 +447,119 @@ function acceptInvite(userId, inviteId, accept) {
   );
 }
 
-function changeClients(userId, projectId, clients) {
-  return new Promise((resolve, reject) => {
-    Project.findById(projectId)
-      .populate('clients')
-      .then(project =>
-        findUserById(userId)
-          .then((user) => {
-            if (String(project.owner) !== String(user._id) &&
-                String(project.manager) !== String(user._id)) {
-              throw errors.notAuthorized();
-            } else if (clients.includes(user.email)) {
-              throw errors.addSelfAsClient();
+function removeInvite(userId, inviteId) {
+  return new Promise((resolve, reject) =>
+    /** Find user and invite */
+    findUserById(userId)
+      .then(user => 
+        Invite.findById(inviteId)
+          .populate('project invitee')
+          .then((invite) => {
+            if (!invite) {
+              throw errors.noInviteFound();
             }
-            return project;
+            return { user, invite };
           })
       )
-      .then((project) => {
-        const existingClientEmails = project.clients.map(client => client.email);
-        const clientsEmailsToRemove = _.difference(existingClientEmails, clients);
-
-        // Add project to new clients and new clients to project,
-        // remove unnecessary clients from project
-        getClients(clients)
-          .then((clientObjects) => {
-            clientObjects.forEach((clientObject) => {
-              if (!clientObject.projects.map(p => String(p)).includes(String(project._id))) {
-                clientObject.projects.push(project._id);
-                clientObject.save();
-              }
-            });
-            project.clients = clientObjects;
-
-            botReporter.reportChangeClients(project);
-
-            project.save()
-              .then(resolve)
-              .catch(reject);
-          })
-          .catch(reject);
-
-        // Remove project from unnecessary clients
-        getClients(clientsEmailsToRemove)
-          .then((clientObjects) => {
-            clientObjects.forEach((clientObject) => {
-              const index = clientObject.projects.map(p =>
-                String(p)).indexOf(String(project._id)
-              );
-              if (index > -1) {
-                clientObject.projects.splice(index, 1);
-                clientObject.save();
-              }
-            });
-          })
+      .then(({ user, invite }) => {
+        let authorized = false;
+        if (invite.project.owner && invite.project.owner.equals(user._id)) {
+          authorized = true;
+        }
+        invite.project.managers.forEach((manager) => {
+          if (manager.equals(user._id) && invite.type === 'client') {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return invite;
+      })
+      /** Remove invite from user and project */
+      .then((invite) => {
+        // Remove invite from user
+        invite.invitee.invites = invite.invitee.invites.filter(i => !i.equals(invite._id));
+        // Remove invite from project
+        invite.project.invites = invite.project.invites.filter(i => !i.equals(invite._id));
+        const promises = [invite.invitee.save(), invite.project.save()];
+        return Promise.all(promises)
+          .then(resolve)
           .catch(reject);
       })
-      .catch(reject);
-  });
+      .catch(err => reject(err))
+  );
+}
+
+function removeManager(userId, managerId, projectId) {
+  return new Promise((resolve, reject) =>
+    findUserById(userId)
+      .then(user =>
+        Project.findById(projectId)
+          .then(project => ({ user, project }))
+      )
+      .then(({ user, project }) => {
+        if (!project) {
+          throw errors.noProjectFound();
+        }
+        let authorized = false;
+        if (project.owner.equals(user._id)) {
+          authorized = true;
+        }
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return { user, project };
+      })
+      .then(({ user, project }) =>
+        findUserById(managerId)
+          .then((manager) => {
+            manager.projects = manager.projects.filter(project => String(project) !== projectId);
+            project.managers = project.managers.filter(pManager => !pManager.equals(manager._id));
+            const promises = [manager.save(), project.save()];
+            return Promise.all(promises);
+          })
+      )
+      .catch(reject)
+  );  
+}
+
+function removeClient(userId, clientId, projectId) {
+  return new Promise((resolve, reject) =>
+    findUserById(userId)
+      .then(user =>
+        Project.findById(projectId)
+          .then(project => ({ user, project }))
+      )
+      .then(({ user, project }) => {
+        if (!project) {
+          throw errors.noProjectFound();
+        }
+        let authorized = false;
+        if (project.owner.equals(user._id)) {
+          authorized = true;
+        }
+        project.managers.forEach((manager) => {
+          if (manager.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return { user, project };
+      })
+      .then(({ user, project }) =>
+        findUserById(clientId)
+          .then((client) => {
+            client.projects = client.projects.filter(project => String(project) !== projectId);
+            project.clients = project.clients.filter(pclient => !pclient.equals(client._id));
+            const promises = [client.save(), project.save()];
+            return Promise.all(promises);
+          })
+      )
+      .catch(reject)
+  );  
 }
 
 function editProject(userId, projectId, title, description, image) {
@@ -894,7 +950,9 @@ module.exports = {
   getProjects,
   getInvites,
   acceptInvite,
-  changeClients,
+  removeInvite,
+  removeManager,
+  removeClient,
   editProject,
   archiveProject,
   deleteProject,

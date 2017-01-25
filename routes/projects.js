@@ -62,6 +62,35 @@ router.post('/invite', validate(validation.postInvite), (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.delete('/invite', (req, res, next) => {
+  const userId = req.get('userId');
+  const inviteId = req.body.inviteId;
+
+  dbmanager.removeInvite(userId, inviteId)
+    .then(() => res.send({ success: true }))
+    .catch(err => next(err));
+});
+
+router.delete('/manager', (req, res, next) => {
+  const userId = req.get('userId');
+  const managerId = req.body.managerId;
+  const projectId = req.body.projectId;
+
+  dbmanager.removeManager(userId, managerId, projectId)
+    .then(() => res.send({ success: true }))
+    .catch(err => next(err));
+});
+
+router.delete('/client', (req, res, next) => {
+  const userId = req.get('userId');
+  const clientId = req.body.clientId;
+  const projectId = req.body.projectId;
+
+  dbmanager.removeClient(userId, clientId, projectId)
+    .then(() => res.send({ success: true }))
+    .catch(err => next(err));
+});
+
 /** Not yet checked */
 
 router.post('/clients', validate(validation.postClients), (req, res, next) => {
