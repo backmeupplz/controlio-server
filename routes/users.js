@@ -255,15 +255,10 @@ router.post('/logout', (req, res, next) => {
 });
 
 router.get('/profile', (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.query.id || req.get('userId');
 
-  dbmanager.findUserById(userId)
-    .select('email name phone photo')
-    .then((user) => {
-      botReporter.reportGetProfile(user.email);
-
-      res.send(user);
-    })
+  dbmanager.getProfile(userId)
+    .then(user => res.send(user))
     .catch(err => next(err));
 });
 

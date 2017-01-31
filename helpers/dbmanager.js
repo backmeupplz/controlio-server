@@ -42,6 +42,20 @@ function findUserById(id) {
   return User.findById(id);
 }
 
+function getProfile(userId) {
+  return new Promise((resolve, reject) => {
+    findUserById(userId)
+      .then((user) => {
+        if (!user) {
+          throw errors.noUserFound();
+        }
+        const userCopy = _.pick(user.toObject(), ['_id', 'email', 'name', 'phone', 'photo']);
+        resolve(userCopy);
+      })
+      .catch(err => reject(err));
+  });
+}
+
 function addUser(user) {
   return findUser({ email: user.email })
     .then((databaseUser) => {
@@ -1078,31 +1092,6 @@ function addClientsByEmails(emails) {
   });
 }
 
-function getClients(clientEmails) {
-  return new Promise((resolve, reject) => {
-    User.find({ email: { $in: clientEmails } })
-      .then((existingClientObjects) => {
-        if (existingClientObjects) {
-          // Check what emails aren't created yet
-          const existingClientEmails =
-            existingClientObjects.map(clientObject => clientObject.email);
-          const clientsEmailsToCreate = _.difference(clientEmails, existingClientEmails);
-
-          // Create missing users
-          addClientsByEmails(clientsEmailsToCreate)
-            .then((addedClientObjects) => {
-              const allClientObjects = existingClientObjects.concat(addedClientObjects);
-              resolve(allClientObjects);
-            })
-            .catch(reject);
-        } else {
-          reject(errors.noClientObjectsCreated());
-        }
-      })
-      .catch(reject);
-  });
-}
-
 // Push notifications
 
 function removeTokens(tokens) {
@@ -1124,6 +1113,7 @@ module.exports = {
   // Users
   findUser,
   findUserById,
+  getProfile,
   addUser,
   addManager,
   removeManagerFromOwner,
