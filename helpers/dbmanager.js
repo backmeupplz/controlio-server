@@ -763,26 +763,37 @@ function removeClient(userId, clientId, projectId) {
 function editProject(userId, projectId, title, description, image) {
   return new Promise((resolve, reject) => {
     findUserById(userId)
-      .then((user) => {
+      .then(user =>
         Project.findById(projectId)
-          .then((project) => {
-            if (String(project.owner) !== String(user._id) &&
-                String(project.manager) !== String(user._id)) {
-              reject(errors.notAuthorized());
-              return;
-            }
+          .then(project => ({ user, project })))
+      .then(({ user, project }) => {
+        if (!project) {
+          throw errors.noProjectFound();
+        }
+        let authorized = false;
+        if (project.owner.equals(user._id)) {
+          authorized = true;
+        }
+        project.managers.forEach((manager) => {
+          if (manager.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return project;
+      })
+      .then((project) => {
+        project.title = title;
+        project.description = description;
+        project.image = image;
 
-            project.title = title;
-            project.description = description;
-            project.image = image;
+        botReporter.reportEditProject(project);
 
-            botReporter.reportEditProject(project);
-
-            project.save()
-              .then(resolve)
-              .catch(reject);
-          })
-          .catch(reject);
+        return project.save()
+        .then(resolve)
+        .catch(reject);
       })
       .catch(reject);
   });

@@ -121,20 +121,22 @@ router.post('/clients', (req, res, next) => {
     .catch(err => next(err));
 });
 
-/** Not yet checked */
-
-router.put('/', validate(validation.put), (req, res, next) => {
+router.put('/', (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
   const title = req.body.title;
-  const description = req.body.description;
+  let description = req.body.description;
+  if (description.length <= 0) {
+    description = null;
+  }
   const image = req.body.image;
 
-  // botReporter works inside dbmanager
   dbmanager.editProject(userId, projectId, title, description, image)
     .then(project => res.send(project))
     .catch(err => next(err));
 });
+
+/** Not yet checked */
 
 router.delete('/', validate(validation.delete), (req, res, next) => {
   const userId = req.get('userId');
