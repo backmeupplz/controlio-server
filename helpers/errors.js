@@ -1,9 +1,24 @@
+/**
+ * Module to generate errors
+ *
+ * @module errors
+ * @license MIT
+ */
+
+/**
+ * Error factory
+ * @param {Number} status Status number of the error
+ * @param {String} message Message of the error
+ * @return {Error} Resulting error
+ */
 function error(status, message) {
   const err = new Error();
   err.message = message;
   err.status = status;
   return err;
 }
+
+/** Methods to generate various errors */
 
 function notFound() {
   return error(404, 'Not found');
@@ -74,7 +89,6 @@ function userNotManager() {
 function fieldNotFound(field) {
   return error(403, `Field '${field}' not found`);
 }
-
 function notEnoughProjectsOnPlan(maxNumberOfProjects) {
   let projectWord = 'projects';
   if (maxNumberOfProjects === 1) {
@@ -83,6 +97,7 @@ function notEnoughProjectsOnPlan(maxNumberOfProjects) {
   return error(403, `Your plan only includes ${maxNumberOfProjects} ${projectWord}. Please upgrade your plan in settings or archive or delete older projects.`);
 }
 
+/** Exports */
 module.exports = {
   notFound,
   noAccess,
