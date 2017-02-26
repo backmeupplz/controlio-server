@@ -1,3 +1,4 @@
+/** Dependencies */
 const dbmanager = require('../helpers/dbmanager');
 const hash = require('../helpers/hash');
 const jwt = require('jsonwebtoken');
@@ -12,8 +13,9 @@ const botReporter = require('../helpers/botReporter');
 const emailSender = require('../helpers/emailSender');
 const _ = require('lodash');
 
-// Public API
+/** Public API */
 
+/** Method to request magic link email */
 router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next) => {
   const email = req.body.email.toLowerCase();
 
@@ -41,6 +43,7 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
     .catch(err => next(err));
 });
 
+/** Method to try to login with the magic link */
 router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, next) => {
   const userId = req.body.userid;
   const token = req.body.token;
@@ -107,6 +110,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
     .catch(err => next(err));
 });
 
+/** Method for usual login with email and password */
 router.post('/login', validate(validation.login), (req, res, next) => {
   const email = req.body.email.toLowerCase();
   const rawPassword = req.body.password;
@@ -171,6 +175,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to signup user */
 router.post('/signUp', validate(validation.signup), (req, res, next) => {
   const email = req.body.email.toLowerCase();
   const rawPassword = req.body.password;
@@ -205,6 +210,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to send restore email password */
 router.post('/recoverPassword', validate(validation.resetPassword), (req, res, next) => {
   const email = req.body.email;
 
@@ -232,10 +238,10 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
     .catch(err => next(err));
 });
 
-// Private API
-
+/** Private API check */
 router.use(auth.checkToken);
 
+/** Method to remove the specified push notifications token */
 router.post('/logout', (req, res, next) => {
   const userId = req.get('userId');
   const iosPushToken = req.body.iosPushToken;
@@ -254,6 +260,7 @@ router.post('/logout', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to get user's profile */
 router.get('/profile', (req, res, next) => {
   const userId = req.query.id || req.get('userId');
 
@@ -262,6 +269,7 @@ router.get('/profile', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to edit user's profile */
 router.post('/profile', (req, res, next) => {
   const userId = req.get('userId');
 
@@ -286,107 +294,5 @@ router.post('/profile', (req, res, next) => {
     .catch(err => next(err));
 });
 
-router.post('/manager', validate(validation.addManager), (req, res, next) => {
-  const managerEmail = req.body.email.toLowerCase();
-  const userId = req.get('userId');
-
-  if (managerEmail === 'giraffe@controlio.co') {
-    next(errors.addDemoAsManager());
-    return;
-  }
-
-  dbmanager.getUserById(userId)
-    .then(owner =>
-      dbmanager.getUser({ email: managerEmail })
-        .then(manager => ({ owner, manager }))
-    )
-    .then(({ owner, manager }) => {
-      if (manager) {
-        if (manager.email === owner.email) {
-          next(errors.addSelfAsManager());
-        } else if (owner.managers.map(v => String(v)).includes(String(manager._id))) {
-          next(errors.alreadyManager());
-        } else {
-          owner.managers.push(manager);
-          owner.save()
-            .then(() => {
-              botReporter.reportAddManager(owner, manager);
-
-              res.send(manager);
-              // TODO: notify manager about being added
-            })
-            .catch(err => next(err));
-        }
-      } else {
-        dbmanager.addManager(managerEmail)
-          .then((newManager) => {
-            owner.managers.push(newManager);
-            owner.save()
-              .then(() => {
-                botReporter.reportAddManager(owner, newManager);
-                res.send(newManager);
-                // TODO: notify manager about being added and registered to the system
-              })
-              .catch(err => next(err));
-          })
-          .catch(err => next(err));
-      }
-    })
-    .catch(err => next(err));
-});
-
-router.get('/managers', (req, res, next) => {
-  const userId = req.get('userId');
-
-  dbmanager.getUserById(userId, null, null, 'managers')
-    .then((user) => {
-      botReporter.reportGetManagers(user.email);
-
-      user.managers.unshift(user);
-      const result = user.managers;
-      result[0].managers = result[0].managers.map(v => v._id);
-      res.send(result);
-    })
-    .catch(err => next(err));
-});
-
-router.delete('/manager', validate(validation.deleteManager), (req, res, next) => {
-  const managerId = req.body.id;
-  const userId = req.get('userId');
-
-  if (managerId === userId) {
-    next(errors.removeYourselfAsManager());
-    return;
-  }
-
-  dbmanager.getUserById(userId, null, null, 'projects')
-    .then(user =>
-      dbmanager.getUserById(managerId)
-        .then((manager) => {
-          botReporter.reportDeleteManager(user, manager);
-
-          return dbmanager.removeManagerFromOwner(manager, user);
-        })
-    )
-    .then(() => res.send({ success: true }))
-    .catch(err => next(err));
-});
-
-router.post('/convertToBusiness', (req, res, next) => {
-  const userId = req.get('userId');
-  dbmanager.convertToBusiness(userId, true)
-    .then(() => res.send({ success: true }))
-    .catch(err => next(err));
-});
-
-router.post('/convertFromBusiness', (req, res, next) => {
-  const userId = req.get('userId');
-
-  dbmanager.convertToBusiness(userId, false)
-    .then(() => res.send({ success: true }))
-    .catch(err => next(err));
-});
-
-// Export
-
+/** Export */
 module.exports = router;
