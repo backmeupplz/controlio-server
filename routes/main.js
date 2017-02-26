@@ -1,3 +1,4 @@
+/** Dependencies */
 const express = require('express');
 
 const router = express.Router();
@@ -37,13 +38,12 @@ router.get('/apple-app-site-association', (req, res) => {
   });
 });
 
-/** Show magic link login page */
+/** Show magic link login pagem */
 router.get('/magic', (req, res) => {
   const userid = req.query.userid;
   const token = req.query.token;
   res.render('magic', { userid, token });
 });
 
-// Export
-
+/** Export */
 module.exports = router;
