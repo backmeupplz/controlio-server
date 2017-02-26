@@ -1,3 +1,4 @@
+/** Dependencies */
 const express = require('express');
 const dbmanager = require('../helpers/dbmanager');
 const auth = require('../helpers/auth');
@@ -8,10 +9,10 @@ const _ = require('lodash');
 
 const router = express.Router();
 
-// Private API
-
+/** Private API check */
 router.use(auth.checkToken);
 
+/** Method to create a new project */
 router.post('/', validate(validation.post), (req, res, next) => {
   const project = _.clone(req.body);
   project.userId = req.get('userId');
@@ -26,6 +27,7 @@ router.post('/', validate(validation.post), (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to get a project by id */
 router.get('/project', validate(validation.getProject), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.query.projectid;
@@ -35,6 +37,7 @@ router.get('/project', validate(validation.getProject), (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to get a list of the projects */
 router.get('/', (req, res, next) => {
   const userId = req.get('userId');
   const skip = parseInt(req.query.skip || 0, 10);
@@ -45,6 +48,7 @@ router.get('/', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to get invites to projects for user */
 router.get('/invites', (req, res, next) => {
   const userId = req.get('userId');
   dbmanager.getInvites(userId)
@@ -52,6 +56,7 @@ router.get('/invites', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to accept or reject invite */
 router.post('/invite', validate(validation.postInvite), (req, res, next) => {
   const userId = req.get('userId');
   const inviteId = req.body.inviteId;
@@ -62,6 +67,7 @@ router.post('/invite', validate(validation.postInvite), (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to delete an invite */
 router.delete('/invite', (req, res, next) => {
   const userId = req.get('userId');
   const inviteId = req.body.inviteId;
@@ -71,6 +77,7 @@ router.delete('/invite', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to add managers */
 router.post('/managers', (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectId;
@@ -86,6 +93,7 @@ router.post('/managers', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to delete a manager */
 router.delete('/manager', (req, res, next) => {
   const userId = req.get('userId');
   const managerId = req.body.managerId;
@@ -96,6 +104,7 @@ router.delete('/manager', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to delete a client */
 router.delete('/client', (req, res, next) => {
   const userId = req.get('userId');
   const clientId = req.body.clientId;
@@ -106,6 +115,7 @@ router.delete('/client', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to add clients */
 router.post('/clients', (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectId;
@@ -121,6 +131,7 @@ router.post('/clients', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to edit project */
 router.put('/', (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
@@ -136,38 +147,37 @@ router.put('/', (req, res, next) => {
     .catch(err => next(err));
 });
 
-/** Not yet checked */
+/** TODO: methods below need refactoring and testing */
 
+/** Method to delete a project */
 router.delete('/', validate(validation.delete), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
 
-  // botReporter works inside dbmanager
   dbmanager.deleteProject(userId, projectId)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
 
+/** Method to archive the project */
 router.post('/archive', validate(validation.archive), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
 
-  // botReporter works inside dbmanager
   dbmanager.archiveProject(userId, projectId, true)
     .then(project => res.send(project))
     .catch(err => next(err));
 });
 
+/** Method to unarchive the project */
 router.post('/unarchive', validate(validation.unarchive), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
 
-  // botReporter works inside dbmanager
   dbmanager.archiveProject(userId, projectId, false)
     .then(project => res.send(project))
     .catch(err => next(err));
 });
 
-// Export
-
+/** Export */
 module.exports = router;
