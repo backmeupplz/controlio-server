@@ -11,25 +11,25 @@ const fs = require('fs');
 const config = require('./config');
 const botReporter = require('./helpers/botReporter');
 
-// change default promises to bluebird
+/** Change default promises to bluebird */
 global.Promise = require('bluebird');
-// turn on cancellation for promises in bluebird
+/** Turn on cancellation for promises in bluebird */
 Promise.config({ cancellation: true });
 
-// create app
+/** Create app */
 const app = express();
 
-// setup mongoose and load all models
+/** Setup mongoose and load all models */
 mongoose.connect(config.database);
 mongoose.Promise = global.Promise;
 fs.readdirSync(path.join(__dirname, '/models')).forEach((filename) => {
-  require(path.join(__dirname, '/models/', filename)); // eslint-disable-line global-require
+  require(path.join(__dirname, '/models/', filename));
 });
 
-// getting auth after loading mongoose because it depends on user model
+/** Getting auth after loading mongoose because it depends on user model */
 const auth = require('./helpers/auth');
 
-// require routes
+/** Require routes */
 const users = require('./routes/users');
 const projects = require('./routes/projects');
 const posts = require('./routes/posts');
@@ -37,40 +37,41 @@ const publicRoute = require('./routes/public');
 const main = require('./routes/main');
 const payments = require('./routes/payments');
 
-// view engine setup
+/** View engine setup */
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
-// setup favicon
+/** Setup favicon */
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-// setup logger
+/** Setup logger */
 app.use(logger('common', {
   stream: fs.createWriteStream('./access.log', { flags: 'a' }),
 }));
 app.use(logger('dev'));
-// setup body parser
+/** Setup body parser */
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-// setup cookie parser
+/** Setup cookie parser */
 app.use(cookieParser());
-// expose public folder
+/** Expose public folder */
 app.use(express.static(path.join(__dirname, 'public')));
-// support cors
+/** Support cors */
+/** TODO: need to support only approved cors */
 app.use(cors());
 
-// redirect public routes
+/** Redirect public routes */
 app.use('/public/', publicRoute);
 app.use('/', main);
 
-// check api token
+/** Check api token */
 app.use(auth.checkApiKey);
 
-// redirect routes
+/** Redirect routes */
 app.use('/users/', users);
 app.use('/projects', projects);
 app.use('/posts/', posts);
 app.use('/payments/', payments);
 
-// catch 404 and forward to error handler
+/** Catch 404 and forward to error handler */
 app.use((req, res, next) => {
   const err = new Error();
   err.status = 404;
@@ -78,12 +79,12 @@ app.use((req, res, next) => {
   next(err);
 });
 
-// error handler
+/** Error handler */
 app.use((err, req, res, next) => {
   botReporter.reportError(err, req);
   res.status(err.status || 500);
   res.send(err);
 });
 
-// exports
+/** Exports */
 module.exports = app;

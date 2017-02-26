@@ -5,6 +5,8 @@ module.exports = {
     'promise',
   ],
   'rules': {
+    'global-require': 0,
+    'import/no-extraneous-dependencies': 0,
     'promise/param-names': 2,
     'promise/always-return': 0,
     'promise/catch-or-return': 2,
