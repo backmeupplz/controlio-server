@@ -1,10 +1,17 @@
+/**
+ * Telegram bot that sends crucial logs
+ *
+ * @module app
+ * @license MIT
+ */
+
+/** Dependencies */
 const TelegramBot = require('node-telegram-bot-api');
 const config = require('../config');
-// Setup
 
 const jarvis = new TelegramBot(config.telegramKey, { polling: false });
 
-// General
+/** General */
 
 function reportError(err, req) {
   const bannedURLs = ['nikita', 'n1kita', 'khoapham', '162.243.76.239', 'maroonpaymentsystems', 'maroonpay', 'healthepaymentservices', '162.243.82.122'];
@@ -25,7 +32,7 @@ function checkIfBanned(fullURL, bannedURLs) {
   return isBannedURL;
 }
 
-// Users.js
+/** Users.js */
 
 function reportMagicLinkRequest(email) {
   sendMessage(`🎩 *${email}* requested magic link`);
@@ -71,7 +78,7 @@ function reportDeleteManager(owner, manager) {
   sendMessage(`❌ *${owner.email}* deleted *${manager.email}* as a manager`);
 }
 
-// Public.js
+/** Public.js */
 
 function reportGetResetPassword(email) {
   sendMessage(`👀 *${email}* viewed reset password page`);
@@ -81,7 +88,7 @@ function reportResetPassword(email) {
   sendMessage(`🗝 *${email}* has reset password`);
 }
 
-// Projects.js
+/** Projects.js */
 
 function reportCreateProject(user, project) {
   const clientEmailsString = project.clients.map(client => client.email).join(', ');
@@ -112,7 +119,7 @@ function reportDeleteProject(user, project) {
   sendMessage(`☠️ *${user.email}* deleted *${project.title}*`);
 }
 
-// Posts.js
+/** Posts.js */
 
 function reportAddPost(user, project, post) {
   const attachmentsString = post.attachments.join(', ');
@@ -135,7 +142,7 @@ function reportDeletePost(user, post) {
   sendMessage(`👺 *${user.email}* deleted ${post.type} *${post.text}* from *${post.project.title}*`);
 }
 
-// Payments.js
+/** Payments.js */
 
 function reportChangeSubscription(user, planid) {
   let planTitle = '';
@@ -155,18 +162,20 @@ function reportRedeemCoupon(user, couponid) {
   sendMessage(`💎 *${user.email}* redeemed coupon *${couponid}*`);
 }
 
-// General functions
+/** General functions */
 
 function sendMessage(msg) {
   if (config.telegramKey) {
+    /** TODO: enable bot reporter */
     // jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
   }
 }
 
+/** Exports */
 module.exports = {
-  // General
+  /** General */
   reportError,
-  // Users.js
+  /** Users.js */
   reportMagicLinkRequest,
   reportMagicLinkLogin,
   reportLogin,
@@ -178,10 +187,10 @@ module.exports = {
   reportAddManager,
   reportGetManagers,
   reportDeleteManager,
-  // Public.js
+  /** Public.js */
   reportGetResetPassword,
   reportResetPassword,
-  // Projects.js
+  /** Projects.js */
   reportCreateProject,
   reportGetProjects,
   reportChangeStatus,
@@ -189,12 +198,12 @@ module.exports = {
   reportEditProject,
   reportArchiveProject,
   reportDeleteProject,
-  // Posts.js
+  /** Posts.js */
   reportAddPost,
   reportGetPosts,
   reportEditPost,
   reportDeletePost,
-  // Payments.js
+  /** Payments.js */
   reportChangeSubscription,
   reportRedeemCoupon,
 };
