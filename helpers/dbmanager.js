@@ -1,21 +1,39 @@
+/**
+ * Manager to encapsulate all actions on database
+ *
+ * @module dbmanager
+ * @license MIT
+ */
+
+/** Dependencies */
 const mongoose = require('mongoose');
 const errors = require('./errors');
 const _ = require('lodash');
 const payments = require('./payments');
 const botReporter = require('./botReporter');
 
-// Get schemas
+/** Get schemas */
 const User = mongoose.model('user');
 const Project = mongoose.model('project');
 const Post = mongoose.model('post');
 const Invite = mongoose.model('invite');
 
-// Users
+/** Users */
 
+/**
+ * Function to get one user from database
+ * @param {Mongoose:query} query Query to find the right user
+ * @return {Promise(Mongoose:User)} Promise with a User from the database
+ */
 function findUser(query) {
   return User.findOne(query);
 }
 
+/**
+ * Function to get one user from database (or create one if it doesn't exist yet)
+ * @param {String} email Email of the user to find or create
+ * @return {Promise(Mongoose:User)} Promise with the required user
+ */
 function findOrCreateUserWithEmail(email) {
   return new Promise((resolve, reject) =>
     User.findOne({ email })
@@ -38,10 +56,20 @@ function findOrCreateUserWithEmail(email) {
   );
 }
 
+/**
+ * Function to find a user by id
+ * @param {Mongoose:ObjectId} id Id of the user to find
+ * @return {Promise(Mongoose:User)} User with such id
+ */
 function findUserById(id) {
   return User.findById(id);
 }
 
+/**
+ * Function to get user's profile
+ * @param {Mongoose:ObjectId} userId Id of the user to get profile
+ * @return {Promise(Mongoose:User)} User with one's profile
+ */
 function getProfile(userId) {
   return new Promise((resolve, reject) => {
     findUserById(userId)
@@ -56,6 +84,11 @@ function getProfile(userId) {
   });
 }
 
+/**
+ * Function to add a user
+ * @param {Object} user User object to create new database user
+ * @return {Promise(Mongoose:User)} Promise with the User that should be created
+ */
 function addUser(user) {
   return findUser({ email: user.email })
     .then((databaseUser) => {
@@ -73,64 +106,13 @@ function addUser(user) {
     });
 }
 
-function addManager(email) {
-  return payments.createStripeCustomer(email.toLowerCase())
-    .then((stripeCustomer) => {
-      const newUser = new User({
-        email,
-        addedAsManager: true,
-        stripeId: stripeCustomer.id,
-      });
-      return newUser.save();
-    });
-}
+/** Projects */
 
-function removeManagerFromOwner(manager, owner) {
-  return new Promise(() => {
-    if (!owner.managers.map(v => String(v)).includes(String(manager._id))) {
-      throw errors.userNotManager();
-    }
-
-    owner.projects.forEach((project) => {
-      if (String(project.manager) === String(manager._id)) {
-        const projectCopy = Object.create(project);
-        projectCopy.manager = owner;
-        projectCopy.save();
-
-        const index = manager.projects.map(v => String(v)).indexOf(String(projectCopy._id));
-        if (index > -1) {
-          manager.projects.splice(index, 1);
-        }
-      }
-    });
-    manager.save();
-
-    const index = owner.managers.map(v => String(v)).indexOf(String(manager._id));
-    if (index > -1) {
-      owner.managers.splice(index, 1);
-    }
-
-    return owner.save();
-  });
-}
-
-function convertToBusiness(userId, convert) {
-  return findUserById(userId)
-    .then((user) => {
-      if (!user) {
-        throw errors.noUserFound();
-      }
-      return user;
-    })
-    .then((user) => {
-      const userCopy = Object.create(user);
-      userCopy.isBusiness = convert;
-      return userCopy.save();
-    });
-}
-
-// Projects
-
+/**
+ * Function to add a project to the db
+ * @param {Object} project Json of the project to add to the db
+ * @return {Promise(Mongoose:Project)} Promise with the Project that should be created
+ */
 function addProject(project) {
   return findUserById(project.userId)
     .then((user) => {
@@ -141,6 +123,12 @@ function addProject(project) {
     });
 }
 
+/**
+ * Function to add a project as client to the db
+ * @param {Object} project Json of the project to add to the db
+ * @param {Mongoose:User} user User that adds this project
+ * @return {Promise(Mongoose:Project)} Promise with the Project that should be created
+ */
 function addProjectAsClient(project, user) {
   return new Promise((resolve) => {
     if (user.email === project.managerEmail) {
@@ -207,6 +195,12 @@ function addProjectAsClient(project, user) {
   });
 }
 
+/**
+ * Function to add a project as manager to the db
+ * @param {Object} project Json of the project to add to the db
+ * @param {Mongoose:User} user User that adds this project
+ * @return {Promise(Mongoose:Project)} Promise with the Project that should be created
+ */
 function addProjectAsManager(project, user) {
   return new Promise((resolve) => {
     if (!project.clientEmails) {
@@ -286,6 +280,13 @@ function addProjectAsManager(project, user) {
   });
 }
 
+/**
+ * Function to get a list of projects
+ * @param {Mongoose:ObjectId} userId Id of the user that's requesting the list
+ * @param {Number} skip Skip of the list
+ * @param {Number} limit Limit of the list
+ * @return {Promise([Mongoose:Project])} Requested list of projects
+ */
 function getProjects(userId, skip, limit) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
@@ -318,6 +319,12 @@ function getProjects(userId, skip, limit) {
   );
 }
 
+/**
+ * Function to get project by id
+ * @param {Mongoose:ObjectId} userId Id of the user who is requesting the project
+ * @param {Mongoose:ObjectId} projectId Id of the requested project
+ * @return {Promise(Mongoose:Project)} Promise with the requested project
+ */
 function getProject(userId, projectId) {
   return new Promise((resolve, reject) =>
     /** Get user */
@@ -398,6 +405,11 @@ function getProject(userId, projectId) {
   );
 }
 
+/**
+ * Fucntion to get invites for the user
+ * @param {Mongoose:ObjectId} userId Id of the user who's requesting the list of the invites
+ * @return {Promise([Mongoose:Invite])} A list of requested invites
+ */
 function getInvites(userId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
@@ -418,6 +430,13 @@ function getInvites(userId) {
   );
 }
 
+/**
+ * Function to accept or reject invite
+ * @param {Mongoose:ObjectId} userId Id of the users who sends the request
+ * @param {Mongoose:ObjectId} inviteId Id of the invite that should be accepted or rejected
+ * @param {Boolean} accept True if the invite should be accepted and false if rejected
+ * @return {Promise()} Promise that's resolved when invite is successfuly accepted or rejected
+ */
 function acceptInvite(userId, inviteId, accept) {
   return new Promise((resolve, reject) =>
     /** Find user and invite */
@@ -467,6 +486,12 @@ function acceptInvite(userId, inviteId, accept) {
   );
 }
 
+/**
+ * Function to delete the invite
+ * @param {Mongoose:ObjectId} userId Id of the requesting user
+ * @param {Mongoose:ObjectId} inviteId Id of the invite to delete
+ * @return {Promise()} Promised that's resolved on success
+ */
 function removeInvite(userId, inviteId) {
   return new Promise((resolve, reject) =>
     /** Find user and invite */
@@ -511,6 +536,13 @@ function removeInvite(userId, inviteId) {
   );
 }
 
+/**
+ * Function to add managers to the project
+ * @param {Mongoose:ObjectId} userId Id of the user that's adding managers
+ * @param {Mongoose:ObjectId} projectId Id of the project to add managers
+ * @param {[String]]} managers List of emails of managers to add
+ * @return {Promise()} Promise that's resolved on success
+ */
 function addManagers(userId, projectId, managers) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
@@ -597,6 +629,13 @@ function addManagers(userId, projectId, managers) {
   );
 }
 
+/**
+ * Function to remove manager from project
+ * @param {Mongoose:ObjectId} userId If of user who performs the action
+ * @param {Mongoose:ObjectId} managerId Id of manager to remove
+ * @param {Mongoose:ObjectId} projectId Id of project from where remove the manager
+ * @return {Promise()} Promise that's resolved on success
+ */
 function removeManager(userId, managerId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
@@ -630,6 +669,13 @@ function removeManager(userId, managerId, projectId) {
   );  
 }
 
+/**
+ * Function to add clients to the project
+ * @param {Mongoose:ObjectId} userId Id of the user that's adding clients
+ * @param {Mongoose:ObjectId} projectId Id of the project to add clients
+ * @param {[String]]} clients List of emails of clients to add
+ * @return {Promise()} Promise that's resolved on success
+ */
 function addClients(userId, projectId, clients) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
@@ -722,6 +768,13 @@ function addClients(userId, projectId, clients) {
   );
 }
 
+/**
+ * Function to remove client from project
+ * @param {Mongoose:ObjectId} userId If of user who performs the action
+ * @param {Mongoose:ObjectId} clientId Id of client to remove
+ * @param {Mongoose:ObjectId} projectId Id of project from where remove the client
+ * @return {Promise()} Promise that's resolved on success
+ */
 function removeClient(userId, clientId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
@@ -799,6 +852,13 @@ function editProject(userId, projectId, title, description, image) {
   });
 }
 
+/**
+ * Function to archive the project
+ * @param {Mongoose:ObjectId} userId If of user who is archiving the project
+ * @param {Mongoose:ObjectId} projectId If of the project to archive
+ * @param {Boolean} archive True = archive, false = unarchive
+ * @return {Promise(Mongoose:Project)} Resulting project
+ */
 function archiveProject(userId, projectId, archive) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
@@ -843,6 +903,12 @@ function archiveProject(userId, projectId, archive) {
   );
 }
 
+/**
+ * Function to delete project
+ * @param {Mongoose:ObjectId} userId Id of the user who deletes the project
+ * @param {Mongoose:ObjectId} projectId If of the project to delete
+ * @return {Promise()} Promise that gets resolved on success
+ */
 function deleteProject(userId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
@@ -895,8 +961,17 @@ function deleteProject(userId, projectId) {
   );
 }
 
-// Posts
+/** Posts */
 
+/**
+ * Function to add new post
+ * @param {Mongoose:ObjectId} userId Id of the user to add post
+ * @param {Mongoose:ObjectId} projectId Id of project where to add post
+ * @param {String} text Text of the post
+ * @param {[String]]} attachments A list of attachment urls
+ * @param {String} type Type (post or status)
+ * @return {Promise(Mongoose:Post)} Resulting post
+ */
 function addPost(userId, projectId, text, attachments, type) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
@@ -942,6 +1017,14 @@ function addPost(userId, projectId, text, attachments, type) {
   );
 }
 
+/**
+ * Function to get a list of posts
+ * @param {Mongoose:ObjectId} userId Id of the requesting user
+ * @param {Mongoose:ObjectId} projectId Id of the project where to get posts
+ * @param {Number} skip Skip of this List
+ * @param {Number} limit Limit of this list
+ * @return {Promise([Mongoose:Post])} A list of requested posts
+ */
 function getPosts(userId, projectId, skip, limit) {
   return new Promise(resolve =>
     findUserById(userId)
@@ -983,6 +1066,14 @@ function getPosts(userId, projectId, skip, limit) {
   );
 }
 
+/**
+ * Function to edit the post
+ * @param {Mongoose:ObjectId} userId Id of editting user
+ * @param {Mongoose:ObjectId} postId Id of the post to edit
+ * @param {String} text New text
+ * @param {[String]} attachments New attachments
+ * @return {Promise(Mongoose:Post)} Resulting post
+ */
 function editPost(userId, postId, text, attachments) {
   return new Promise((resolve, reject) => {
     findUserById(userId)
@@ -1010,6 +1101,12 @@ function editPost(userId, postId, text, attachments) {
   });
 }
 
+/**
+ * Function to dleete a post
+ * @param {Mongoose:ObjectId} userId Id of deleting user
+ * @param {Mongoose:ObjectId} postId Id of the post to delete
+ * @return {Promise()} Promise thart's resolved on success
+ */
 function deletePost(userId, postId) {
   return new Promise(resolve =>
     findUserById(userId)
@@ -1044,8 +1141,13 @@ function deletePost(userId, postId) {
   );
 }
 
-// Payments
+/** Payments */
 
+/**
+ * Method to change user's Stripe subscription id
+ * @param {Mongoose:ObjectId} userId Id of the users to get subscription changed
+ * @param {Number} planid Id of the plan
+ */
 function setSripeSubscription(userId, planid) {
   return new Promise((resolve, reject) =>
     findUserById(userId, '+token')
@@ -1062,6 +1164,11 @@ function setSripeSubscription(userId, planid) {
   );
 }
 
+/**
+ * Method to apply stripe coupon
+ * @param {Mongoose:ObjectId} userId Id of the user that applies coupon
+ * @param {String} coupon Id of the coupon
+ */
 function applyStripeCoupon(userId, coupon) {
   return new Promise((resolve, reject) =>
     findUserById(userId, '+token')
@@ -1078,33 +1185,12 @@ function applyStripeCoupon(userId, coupon) {
   );
 }
 
-// Helpers
+/** Push notifications */
 
-function addClientsByEmails(emails) {
-  return new Promise((resolve, reject) => {
-    if (emails.length > 0) {
-      const usersToAdd = emails.map(email => ({ email, addedAsClient: true }));
-      User.create(usersToAdd)
-        .then((addedUsers) => {
-          addedUsers.forEach((user) => {
-            payments.createStripeCustomer(user.email.toLowerCase())
-              .then((stripeCustomer) => {
-                user.stripeId = stripeCustomer.id;
-                user.save();
-              })
-              .catch(err => console.error(err));
-          });
-          resolve(addedUsers);
-        })
-        .catch(reject);
-    } else {
-      resolve([]);
-    }
-  });
-}
-
-// Push notifications
-
+/**
+ * Method to remove push notification tokens
+ * @param {[String]]} tokens Tokens to remove
+ */
 function removeTokens(tokens) {
   tokens.forEach((token) => {
     User.find({ iosPushTokens: token })
@@ -1118,18 +1204,14 @@ function removeTokens(tokens) {
   });
 }
 
-// Export
-
+/** Exports */
 module.exports = {
-  // Users
+  /** Users */
   findUser,
   findUserById,
   getProfile,
   addUser,
-  addManager,
-  removeManagerFromOwner,
-  convertToBusiness,
-  // Projects
+  /** Projects */
   addProject,
   getProject,
   getProjects,
@@ -1143,14 +1225,14 @@ module.exports = {
   editProject,
   archiveProject,
   deleteProject,
-  // Posts
+  /** Posts */
   addPost,
   getPosts,
   editPost,
   deletePost,
-  // Payments
+  /** Payments */
   setSripeSubscription,
   applyStripeCoupon,
-  // Notifications
+  /** Notifications */
   removeTokens,
 };
