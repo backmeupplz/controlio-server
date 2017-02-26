@@ -1,17 +1,17 @@
+/** Dependencies */
 const express = require('express');
 const dbmanager = require('../helpers/dbmanager');
 const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/posts');
 const botReporter = require('../helpers/botReporter');
-const pushNotifications = require('../helpers/pushNotifications');
 
 const router = express.Router();
 
-// Private API
-
+/** Private API check */
 router.use(auth.checkToken);
 
+/** Method to add new post to the database */
 router.post('/', validate(validation.post), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
@@ -26,6 +26,7 @@ router.post('/', validate(validation.post), (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to get a list of posts for the project */
 router.get('/', (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.query.projectId;
@@ -39,28 +40,27 @@ router.get('/', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to edit a post */
 router.put('/', validate(validation.put), (req, res, next) => {
   const userId = req.get('userId');
   const postId = req.body.postid;
   const text = req.body.text;
   const attachments = req.body.attachments;
 
-  // botReporter works inside dbmanager
   dbmanager.editPost(userId, postId, text, attachments)
     .then(post => res.send(post))
     .catch(err => next(err));
 });
 
+/** Method to delete the post */
 router.delete('/', validate(validation.delete), (req, res, next) => {
   const userId = req.get('userId');
   const postId = req.body.postid;
 
-  // botReporter works inside dbmanager
   dbmanager.deletePost(userId, postId)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
 
-// Export
-
+/** Export */
 module.exports = router;
