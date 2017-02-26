@@ -1,7 +1,7 @@
 /**
  * Module to handle payments stuff
  *
- * @module app
+ * @module payments
  * @license MIT
  */
 

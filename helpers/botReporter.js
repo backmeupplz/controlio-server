@@ -1,7 +1,7 @@
 /**
  * Telegram bot that sends crucial logs
  *
- * @module app
+ * @module botReporter
  * @license MIT
  */
 
