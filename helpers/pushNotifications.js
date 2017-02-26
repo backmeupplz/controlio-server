@@ -1,3 +1,11 @@
+/**
+ * Module to send out ush notifications
+ *
+ * @module app
+ * @license MIT
+ */
+
+/** Dependencies */
 const apn = require('apn');
 const path = require('path');
 
@@ -7,6 +15,11 @@ const provider = new apn.Provider({
   production: true,
 });
 
+/**
+ * Method to send push notification
+ * @param {String} text Text to send
+ * @param {[Mongo:User]]} users A list of users to receive the notification
+ */
 function sendNotification(text, users) {
   const notification = new apn.Notification();
   notification.alert = text;
@@ -18,15 +31,16 @@ function sendNotification(text, users) {
   provider.send(notification, resultTokens)
     .then((response) => {
       if (response.sent.length > 0) {
-        console.log(`Sent '${text}' to ${response.sent.map(v => JSON.stringify(v))}`);
+        console.info(`Sent '${text}' to ${response.sent.map(v => JSON.stringify(v))}`);
       }
       if (response.failed.length > 0) {
-        console.log(`Failed sending to ${response.failed.map(fail => JSON.stringify(fail))}`);
+        console.info(`Failed sending to ${response.failed.map(fail => JSON.stringify(fail))}`);
       }
     })
-    .catch(err => console.log(err));
+    .catch(/** TODO: handle error */);
 }
 
+/** Exports */
 module.exports = {
   sendNotification,
 };
