@@ -21,7 +21,7 @@ const inviteSchema = new Schema({
   invitee: {
     type: Schema.ObjectId,
     ref: 'user',
-  }
+  },
 }, { timestamps: true });
 
 mongoose.model('invite', inviteSchema);
