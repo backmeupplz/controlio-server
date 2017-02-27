@@ -5,7 +5,7 @@ const username = 'deploy';
 
 const tmpDir = `${appName}-${new Date().getTime()}`;
 
-// configuration
+/** Configuration */
 plan.target('staging', [
   {
     host: '162.243.82.122',
