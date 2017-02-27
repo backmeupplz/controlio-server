@@ -19,7 +19,7 @@ router.get('/customer', validate(validation.customer), (req, res, next) => {
     .catch(err => next(err));
 });
 
-/** Proxy method to stripe servers to get payment sources of the customer */
+/** Proxy method to stripe servers to add payment sources of the customer */
 router.post('/customer/sources', validate(validation.postSource), (req, res, next) => {
   const customerid = req.body.customerid;
   const source = req.body.source;
