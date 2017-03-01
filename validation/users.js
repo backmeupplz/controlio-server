@@ -9,7 +9,7 @@ module.exports = {
   },
   signup: {
     body: {
-      email: Joi.string().email().required(),
+      email: Joi.string().email().max(100).required(),
       password: Joi.string().min(6).max(30).required(),
     },
   },
