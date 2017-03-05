@@ -270,7 +270,7 @@ router.get('/profile', (req, res, next) => {
 });
 
 /** Method to edit user's profile */
-router.post('/profile', (req, res, next) => {
+router.post('/profile', validate(validation.editProfile), (req, res, next) => {
   const userId = req.get('userId');
 
   const name = req.body.name;

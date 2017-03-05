@@ -39,4 +39,10 @@ module.exports = {
       token: Joi.string().required(),
     },
   },
+  editProfile: {
+    body: {
+      name: Joi.string().max(100),
+      phone: Joi.string().max(20)
+    },
+  },
 };
