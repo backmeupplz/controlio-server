@@ -89,6 +89,9 @@ function userNotManager() {
 function fieldNotFound(field) {
   return error(403, `Field '${field}' not found`);
 }
+function leaveAsOwner() {
+  return error(403, 'You cannot leave the project as an owner');
+}
 function notEnoughProjectsOnPlan(maxNumberOfProjects) {
   let projectWord = 'projects';
   if (maxNumberOfProjects === 1) {
@@ -121,6 +124,7 @@ module.exports = {
   addDemoAsManager,
   removeYourselfAsManager,
   userNotManager,
+  leaveAsOwner,
   notEnoughProjectsOnPlan,
   fieldNotFound,
 };

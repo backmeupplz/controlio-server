@@ -968,9 +968,53 @@ function deleteProject(userId, projectId) {
  * @return {Promise()} Promise that's executed upon completion
  */
 function leaveProject(userId, projectId) {
-  return new Promise((resolve, reject) => {
-    
-  });
+  return new Promise((resolve, reject) =>
+    findUserById(userId)
+    /** Get user and project */
+      .then(user =>
+        Project.findById(projectId)
+          .then((project) => {
+            if (!project) {
+              throw errors.noProjectFound();
+            }
+            return { user, project };
+          })
+      )
+      /** Check if user is not an owner */
+      .then(({ user, project }) => {
+        if (project.owner.equals(user._id)) {
+          throw errors.leaveAsOwner();
+        }
+        return { user, project };
+      })
+      /** Check if user is authorized */
+      .then(({ user, project }) => {
+        let authorized = false;
+        project.managers.forEach((manager) => {
+          if (manager.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        project.clients.forEach((client) => {
+          if (client.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return { user, project };
+      })
+      /** Leave project */
+      .then(({ user, project }) => {
+        user.projects = user.projects.filter(id => String(id) !== projectId);
+        project.managers = project.managers.filter(pManager => !pManager.equals(user._id));
+        project.clients = project.clients.filter(pClient => !pClient.equals(user._id));
+        const promises = [user.save(), project.save()];
+        return Promise.all(promises);
+      })
+      .catch(reject)
+  );
 }
 
 /** Posts */
