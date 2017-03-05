@@ -961,6 +961,18 @@ function deleteProject(userId, projectId) {
   );
 }
 
+/**
+ * Method to leave the project
+ * @param {Mongoose:ObjectId} userId If of the user who is leaving the project
+ * @param {Mongoose:ObjectId} projectId Id of the project to leave
+ * @return {Promise()} Promise that's executed upon completion
+ */
+function leaveProject(userId, projectId) {
+  return new Promise((resolve, reject) => {
+    
+  });
+}
+
 /** Posts */
 
 /**
@@ -1225,6 +1237,7 @@ module.exports = {
   editProject,
   archiveProject,
   deleteProject,
+  leaveProject,
   /** Posts */
   addPost,
   getPosts,

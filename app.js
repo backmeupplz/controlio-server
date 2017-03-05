@@ -81,6 +81,7 @@ app.use((req, res, next) => {
 
 /** Error handler */
 app.use((err, req, res, next) => {
+  console.log(err);
   botReporter.reportError(err, req);
   res.status(err.status || 500);
   res.send(err);

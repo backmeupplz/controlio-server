@@ -147,6 +147,16 @@ router.put('/', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** Method to leave project */
+router.post('/leave', (req, res, next) => {
+  const userId = req.get('userId');
+  const projectId = req.body.projectid;
+
+  dbmanager.leaveProject(userId, projectId)
+    .then(() => res.send({ success: true }))
+    .catch(err => next(err));
+});
+
 /** TODO: methods below need refactoring and testing */
 
 /** Method to delete a project */
