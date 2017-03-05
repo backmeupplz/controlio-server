@@ -10,6 +10,7 @@ const cors = require('cors');
 const fs = require('fs');
 const config = require('./config');
 const botReporter = require('./helpers/botReporter');
+const errors = require('./helpers/errors');
 
 /** Change default promises to bluebird */
 global.Promise = require('bluebird');
@@ -81,7 +82,7 @@ app.use((req, res, next) => {
 
 /** Error handler */
 app.use((err, req, res, next) => {
-  console.log(err);
+  err = errors.standardize(err);
   botReporter.reportError(err, req);
   res.status(err.status || 500);
   res.send(err);

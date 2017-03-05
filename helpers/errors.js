@@ -100,6 +100,13 @@ function notEnoughProjectsOnPlan(maxNumberOfProjects) {
   return error(403, `Your plan only includes ${maxNumberOfProjects} ${projectWord}. Please upgrade your plan in settings or archive or delete older projects.`);
 }
 
+function standardize(originalError) {
+  const resultError = new Error();
+  resultError.status = originalError.status || 500;
+  resultError.message = originalError.message;
+  return resultError;
+}
+
 /** Exports */
 module.exports = {
   notFound,
@@ -127,4 +134,5 @@ module.exports = {
   leaveAsOwner,
   notEnoughProjectsOnPlan,
   fieldNotFound,
+  standardize,
 };
