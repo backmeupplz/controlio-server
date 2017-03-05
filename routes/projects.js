@@ -38,7 +38,7 @@ router.get('/project', validate(validation.getProject), (req, res, next) => {
 });
 
 /** Method to get a list of the projects */
-router.get('/', (req, res, next) => {
+router.get('/', validate(validation.getProjects), (req, res, next) => {
   const userId = req.get('userId');
   const skip = parseInt(req.query.skip || 0, 10);
   const limit = parseInt(req.query.limit || 20, 10);
@@ -59,7 +59,7 @@ router.get('/invites', (req, res, next) => {
 /** Method to accept or reject invite */
 router.post('/invite', validate(validation.postInvite), (req, res, next) => {
   const userId = req.get('userId');
-  const inviteId = req.body.inviteId;
+  const inviteId = req.body.inviteid;
   const accept = req.body.accept;
 
   dbmanager.acceptInvite(userId, inviteId, accept)
@@ -68,9 +68,9 @@ router.post('/invite', validate(validation.postInvite), (req, res, next) => {
 });
 
 /** Method to delete an invite */
-router.delete('/invite', (req, res, next) => {
+router.delete('/invite', validate(validation.deleteInvite), (req, res, next) => {
   const userId = req.get('userId');
-  const inviteId = req.body.inviteId;
+  const inviteId = req.body.inviteid;
 
   dbmanager.removeInvite(userId, inviteId)
     .then(() => res.send({ success: true }))
@@ -78,9 +78,9 @@ router.delete('/invite', (req, res, next) => {
 });
 
 /** Method to add managers */
-router.post('/managers', (req, res, next) => {
+router.post('/managers', validate(validation.postManagers), (req, res, next) => {
   const userId = req.get('userId');
-  const projectId = req.body.projectId;
+  const projectId = req.body.projectid;
   const managers = _.uniq(req.body.managers.map(email => email.toLowerCase()));
 
   if (managers.includes('giraffe@controlio.co')) {
@@ -94,10 +94,10 @@ router.post('/managers', (req, res, next) => {
 });
 
 /** Method to delete a manager */
-router.delete('/manager', (req, res, next) => {
+router.delete('/manager', validate(validation.deleteManager), (req, res, next) => {
   const userId = req.get('userId');
-  const managerId = req.body.managerId;
-  const projectId = req.body.projectId;
+  const managerId = req.body.managerid;
+  const projectId = req.body.projectid;
 
   dbmanager.removeManager(userId, managerId, projectId)
     .then(() => res.send({ success: true }))
@@ -105,10 +105,10 @@ router.delete('/manager', (req, res, next) => {
 });
 
 /** Method to delete a client */
-router.delete('/client', (req, res, next) => {
+router.delete('/client', validate(validation.deleteClient), (req, res, next) => {
   const userId = req.get('userId');
-  const clientId = req.body.clientId;
-  const projectId = req.body.projectId;
+  const clientId = req.body.clientid;
+  const projectId = req.body.projectid;
 
   dbmanager.removeClient(userId, clientId, projectId)
     .then(() => res.send({ success: true }))
@@ -116,9 +116,9 @@ router.delete('/client', (req, res, next) => {
 });
 
 /** Method to add clients */
-router.post('/clients', (req, res, next) => {
+router.post('/clients', validate(validation.postClients), (req, res, next) => {
   const userId = req.get('userId');
-  const projectId = req.body.projectId;
+  const projectId = req.body.projectid;
   const clients = _.uniq(req.body.clients.map(email => email.toLowerCase()));
 
   if (clients.includes('giraffe@controlio.co')) {
@@ -132,7 +132,7 @@ router.post('/clients', (req, res, next) => {
 });
 
 /** Method to edit project */
-router.put('/', (req, res, next) => {
+router.put('/', validate(validation.put), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
   const title = req.body.title;
@@ -148,7 +148,7 @@ router.put('/', (req, res, next) => {
 });
 
 /** Method to leave project */
-router.post('/leave', (req, res, next) => {
+router.post('/leave', validate(validation.leave), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
 

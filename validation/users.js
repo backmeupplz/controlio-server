@@ -42,7 +42,12 @@ module.exports = {
   editProfile: {
     body: {
       name: Joi.string().max(100),
-      phone: Joi.string().max(20)
+      phone: Joi.string().max(20),
+    },
+  },
+  logout: {
+    body: {
+      iosPushToken: Joi.string().required(),
     },
   },
 };

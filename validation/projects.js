@@ -10,14 +10,12 @@ module.exports = {
     body: {
       projectid: Joi.string().required(),
       title: Joi.string().required(),
-      description: Joi.string().required(),
-      image: Joi.string().required(),
     },
   },
   postInvite: {
     body: {
-      inviteId: Joi.string().required(),
-      accept: Joi.number().required(),
+      inviteid: Joi.string().required(),
+      accept: Joi.boolean().required(),
     },
   },
   postStatus: {
@@ -29,13 +27,13 @@ module.exports = {
   postClients: {
     body: {
       projectid: Joi.string().required(),
-      clients: Joi.required(),
+      clients: Joi.array().required(),
     },
   },
   postManagers: {
     body: {
       projectid: Joi.string().required(),
-      managers: Joi.required(),
+      managers: Joi.array().required(),
     },
   },
   archive: {
@@ -55,6 +53,34 @@ module.exports = {
   },
   getProject: {
     query: {
+      projectid: Joi.string().required(),
+    },
+  },
+  getProjects: {
+    query: {
+      limit: Joi.number(),
+      skip: Joi.number(),
+    },
+  },
+  deleteInvite: {
+    body: {
+      inviteid: Joi.string().required(),
+    },
+  },
+  deleteManager: {
+    body: {
+      managerid: Joi.string().required(),
+      projectid: Joi.string().required(),
+    },
+  },
+  deleteClient: {
+    body: {
+      projectid: Joi.string().required(),
+      clientid: Joi.string().required(),
+    },
+  },
+  leave: {
+    body: {
       projectid: Joi.string().required(),
     },
   },

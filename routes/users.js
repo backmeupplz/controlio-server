@@ -242,7 +242,7 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
 router.use(auth.checkToken);
 
 /** Method to remove the specified push notifications token */
-router.post('/logout', (req, res, next) => {
+router.post('/logout', validate(validation.logout), (req, res, next) => {
   const userId = req.get('userId');
   const iosPushToken = req.body.iosPushToken;
 

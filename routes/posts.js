@@ -27,9 +27,9 @@ router.post('/', validate(validation.post), (req, res, next) => {
 });
 
 /** Method to get a list of posts for the project */
-router.get('/', (req, res, next) => {
+router.get('/', validate(validation.get), (req, res, next) => {
   const userId = req.get('userId');
-  const projectId = req.query.projectId;
+  const projectId = req.query.projectid;
   const skip = parseInt(req.query.skip || 0, 10);
   const limit = parseInt(req.query.limit || 20, 10);
 

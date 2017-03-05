@@ -1,7 +1,8 @@
 /** Dependencies */
 const express = require('express');
-
 const router = express.Router();
+const validate = require('express-validation');
+const validation = require('../validation/main');
 
 /** A list of features to enable in iOS app */
 router.get('/feature_list', (req, res) => {
@@ -38,8 +39,8 @@ router.get('/apple-app-site-association', (req, res) => {
   });
 });
 
-/** Show magic link login pagem */
-router.get('/magic', (req, res) => {
+/** Show magic link login page */
+router.get('/magic', validate(validation.magic), (req, res) => {
   const userid = req.query.userid;
   const token = req.query.token;
   res.render('magic', { userid, token });
