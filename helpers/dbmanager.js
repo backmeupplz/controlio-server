@@ -912,50 +912,59 @@ function archiveProject(userId, projectId, archive) {
 function deleteProject(userId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
+    /** Get user and project */
       .then(user =>
         Project.findById(projectId)
-          .populate('clients manager owner')
+        .populate('clients managers')
           .then((project) => {
-            if (String(project.owner._id) !== String(user._id) &&
-                String(project.manager._id) !== String(user._id)) {
-              throw errors.notAuthorized();
+            if (!project) {
+              throw errors.noProjectFound();
             }
-
-            project.clients.forEach((client) => {
-              const index = client.projects.map(v => String(v)).indexOf(String(project._id));
-              if (index > -1) {
-                client.projects.splice(index, 1);
-                client.save();
-              }
-            });
-
-            let index = project.owner.projects.map(v => String(v)).indexOf(String(project._id));
-            if (index > -1) {
-              project.owner.projects.splice(index, 1);
-              if (!project.isArchived) {
-                project.owner.numberOfActiveProjects -= 1;
-              }
-              project.owner.save();
-            }
-            if (String(project.manager._id) !== String(project.owner._id)) {
-              index = project.manager.projects.map(v => String(v)).indexOf(String(project._id));
-              if (index > -1) {
-                project.manager.projects.splice(index, 1);
-                project.manager.save();
-              }
-            }
-
-            botReporter.reportDeleteProject(user, project);
-
-            project.remove((err) => {
-              if (err) {
-                throw err;
-              } else {
-                resolve();
-              }
-            });
+            return { user, project };
           })
       )
+      /** Check if user is an owner */
+      .then(({ user, project }) => {
+        if (!(project.owner && project.owner.equals(user._id))) {
+          throw errors.notAuthorized();
+        }
+        return { user, project };
+      })
+      /** Delete project */
+      .then(({ user, project }) => {
+        /** Remove project from owner */
+        user.projects = user.projects.filter(id => !id.equals(project._id));
+        /** Remove project from clients and managers */
+        project.clients.forEach((client) => {
+          client.projects = client.projects.filter(id => !id.equals(project._id));
+        });
+        project.managers.forEach((manager) => {
+          manager.projects = manager.projects.filter(id => !id.equals(project._id));
+        });
+        /** Remove all invites */
+        const invitePromises = [];
+        project.invites.forEach((id) => {
+          invitePromises.push(removeInvite(userId, String(id)));
+        });
+        /** Celan up the project */
+        project.clients = [];
+        project.managers = [];
+        project.owner = null;
+        return Promise.all(invitePromises)
+          .then(() => {
+            const promises = [];
+            promises.push(project.save());
+            promises.push(user.save());
+            project.clients.forEach((client) => {
+              promises.push(client.save());
+            });
+            project.managers.forEach((manager) => {
+              promises.push(manager.save());
+            });
+            return Promise.all(promises)
+              .then(resolve);
+          });
+      })
       .then(resolve)
       .catch(reject)
   );

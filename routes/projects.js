@@ -157,9 +157,7 @@ router.post('/leave', (req, res, next) => {
     .catch(err => next(err));
 });
 
-/** TODO: methods below need refactoring and testing */
-
-/** Method to delete a project */
+/** Method to delete project */
 router.delete('/', validate(validation.delete), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
@@ -168,6 +166,8 @@ router.delete('/', validate(validation.delete), (req, res, next) => {
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
+
+/** TODO: methods below need refactoring and testing */
 
 /** Method to archive the project */
 router.post('/archive', validate(validation.archive), (req, res, next) => {
