@@ -982,7 +982,7 @@ function leaveProject(userId, projectId) {
       )
       /** Check if user is not an owner */
       .then(({ user, project }) => {
-        if (project.owner.equals(user._id)) {
+        if (project.owner && project.owner.equals(user._id)) {
           throw errors.leaveAsOwner();
         }
         return { user, project };
@@ -1013,6 +1013,7 @@ function leaveProject(userId, projectId) {
         const promises = [user.save(), project.save()];
         return Promise.all(promises);
       })
+      .then(resolve)
       .catch(reject)
   );
 }
