@@ -553,6 +553,9 @@ function addManagers(userId, projectId, managers) {
             if (!project) {
               throw errors.noProjectFound();
             }
+            if (project.managers.length >= 100) {
+              throw errors.managersOverLimit();
+            }
             return { user, project };
           })
       )
@@ -685,6 +688,9 @@ function addClients(userId, projectId, clients) {
           .then((project) => {
             if (!project) {
               throw errors.noProjectFound();
+            }
+            if (project.clients.length >= 100) {
+              throw errors.usersOverLimit();
             }
             return { user, project };
           })
