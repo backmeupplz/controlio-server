@@ -57,10 +57,6 @@ module.exports = {
     },
   },
   getProjects: {
-    query: {
-      limit: Joi.number(),
-      skip: Joi.number(),
-    },
   },
   deleteInvite: {
     body: {

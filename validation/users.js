@@ -45,9 +45,4 @@ module.exports = {
       phone: Joi.string().max(20),
     },
   },
-  logout: {
-    body: {
-      iosPushToken: Joi.string().required(),
-    },
-  },
 };
