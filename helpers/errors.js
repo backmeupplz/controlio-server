@@ -103,7 +103,7 @@ function notEnoughProjectsOnPlan(maxNumberOfProjects) {
 function standardize(originalError) {
   const resultError = new Error();
   resultError.status = originalError.status || 500;
-  resultError.message = originalError.message;
+  resultError.message = originalError.message || 'Oops! Something went wrong';
   return resultError;
 }
 
