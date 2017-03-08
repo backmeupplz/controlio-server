@@ -6,7 +6,7 @@ const username = 'deploy';
 const tmpDir = `${appName}-${new Date().getTime()}`;
 
 /** Configuration */
-plan.target('contorlio', [
+plan.target('controlio', [
   {
     host: '162.243.76.239',
     username,
