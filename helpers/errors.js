@@ -92,6 +92,12 @@ function fieldNotFound(field) {
 function leaveAsOwner() {
   return error(403, 'You cannot leave the project as an owner');
 }
+function managersOverLimit() {
+  return error(403, 'This project has reached it\'s manager limits');
+}
+function usersOverLimit() {
+  return error(403, 'This project has reached it\'s users limits');
+}
 function notEnoughProjectsOnPlan(maxNumberOfProjects) {
   let projectWord = 'projects';
   if (maxNumberOfProjects === 1) {
