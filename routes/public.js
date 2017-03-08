@@ -4,17 +4,16 @@ const dbmanager = require('../helpers/dbmanager');
 const errors = require('../helpers/errors');
 const hash = require('../helpers/hash');
 const botReporter = require('../helpers/botReporter');
+const validate = require('express-validation');
+const validation = require('../validation/public');
 
 const router = express.Router();
 
 /** Method to return reset password web page */
-router.get('/resetPassword', (req, res) => {
+router.get('/resetPassword', validate(validation.getResetPassword), (req, res) => {
   const userId = req.query.userid;
   const token = req.query.token;
-  if (!token || !userId) {
-    res.render('error', { error: 'No token or user id provided' });
-    return;
-  }
+
   dbmanager.getUserById(userId)
     .then((user) => {
       if (!user) {
@@ -37,7 +36,7 @@ router.get('/resetPassword', (req, res) => {
 });
 
 /** Method to reset password */
-router.post('/resetPassword', (req, res) => {
+router.post('/resetPassword', validate(validation.postResetPassword), (req, res) => {
   const password = String(req.body.password);
   const userId = req.body.userid;
   const token = req.body.token;
