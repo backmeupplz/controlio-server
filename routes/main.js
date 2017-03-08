@@ -1,5 +1,6 @@
 /** Dependencies */
 const express = require('express');
+
 const router = express.Router();
 const validate = require('express-validation');
 const validation = require('../validation/main');
