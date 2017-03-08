@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "notify": "node ./scripts/gitNotification.js"
   },
   "dependencies": {
     "apn": "^2.1.1",
@@ -35,7 +36,6 @@
     "eslint-plugin-import": "^1.15.0",
     "eslint-plugin-jsx-a11y": "^2.2.2",
     "eslint-plugin-promise": "^2.0.1",
-    "eslint-plugin-react": "^6.2.2",
-    "flightplan": "^0.6.14"
+    "eslint-plugin-react": "^6.2.2"
   }
 }
