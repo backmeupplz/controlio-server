@@ -6,16 +6,7 @@ const username = 'deploy';
 const tmpDir = `${appName}-${new Date().getTime()}`;
 
 /** Configuration */
-plan.target('staging', [
-  {
-    host: '162.243.82.122',
-    username,
-    agent: process.env.SSH_AUTH_SOCK,
-    privateKey: '/Users/BackMeUpPlz/.ssh/id_rsa',
-  },
-]);
-
-plan.target('production', [
+plan.target('contorlio', [
   {
     host: '162.243.76.239',
     username,
