@@ -9,11 +9,13 @@ module.exports = {
   postSource: {
     body: {
       customerid: Joi.string().required(),
+      source: Joi.required(),
     },
   },
   defaultSource: {
     body: {
       customerid: Joi.string().required(),
+      source: Joi.required(),
     },
   },
   subscription: {

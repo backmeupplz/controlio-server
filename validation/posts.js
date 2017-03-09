@@ -22,8 +22,6 @@ module.exports = {
   get: {
     query: {
       projectid: Joi.string().required(),
-      limit: Joi.number(),
-      skip: Joi.number(),
     },
   },
 };
