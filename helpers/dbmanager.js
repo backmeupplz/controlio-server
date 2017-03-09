@@ -398,6 +398,11 @@ function getProject(userId, projectId) {
             canEdit = true;
           }
         });
+        project.invites.forEach((invite) => {
+          if (invite.invitee._id.equals(user._id)) {
+            canEdit = true;
+          }
+        });
         project.canEdit = canEdit;
         resolve(project);
       })
