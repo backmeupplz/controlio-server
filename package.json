@@ -28,7 +28,8 @@
     "scrypt": "^6.0.3",
     "sendgrid": "^4.4.0",
     "serve-favicon": "~2.3.0",
-    "stripe": "^4.11.0"
+    "stripe": "^4.11.0",
+    "validator": "^7.0.0"
   },
   "devDependencies": {
     "eslint": "^3.5.0",

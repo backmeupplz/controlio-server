@@ -29,6 +29,9 @@ function noAccess() {
 function authEmailNotRegistered() {
   return error(403, 'Email not registered');
 }
+function validManagerEmail() {
+  return error(403, 'Please provide a valid manager email');
+}
 function authWrongPassword() {
   return error(403, 'Wrong password');
 }
@@ -121,6 +124,7 @@ module.exports = {
   notFound,
   noAccess,
   authEmailNotRegistered,
+  validManagerEmail,
   authWrongPassword,
   authTokenFailed,
   authUserAlreadyExists,

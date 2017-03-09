@@ -4,6 +4,7 @@ module.exports = {
   post: {
     body: {
       title: Joi.string().required(),
+      type: Joi.string().valid('manager', 'client'),
     },
   },
   put: {

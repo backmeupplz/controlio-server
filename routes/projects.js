@@ -6,6 +6,7 @@ const validate = require('express-validation');
 const validation = require('../validation/projects');
 const errors = require('../helpers/errors');
 const _ = require('lodash');
+const validator = require('validator');
 
 const router = express.Router();
 
@@ -16,11 +17,16 @@ router.use(auth.checkToken);
 router.post('/', validate(validation.post), (req, res, next) => {
   const project = _.clone(req.body);
   project.userId = req.get('userId');
-  if (project.managerEmail) {
-    project.managerEmail = project.managerEmail.toLowerCase();
-  }
-  if (req.body.clientEmails) {
-    project.clientEmails = _.uniq(req.body.clientEmails.map(email => email.toLowerCase()));
+  if (project.type === 'client') {
+    if (validator.isEmail(project.managerEmail)) {
+      project.managerEmail = project.managerEmail.toLowerCase();
+    } else {
+      next(errors.validManagerEmail());
+      return;
+    }
+  } else if (project.type === 'manager') {
+    project.clientEmails = _.uniq(req.body.clientEmails.map(email => email.toLowerCase()))
+      .filter(email => validator.isEmail(email));
   }
   dbmanager.addProject(project)
     .then(dbproject => res.send(dbproject))
