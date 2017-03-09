@@ -134,7 +134,7 @@ function reportGetPosts(projectid, skip, limit) {
   sendMessage(`🚧 Somebody requested a list of posts for ${projectid} (${skip}, ${limit})`);
 }
 
-function reportEditPost(user, post) {
+function reportEditPost(user, post, project) {
   sendMessage(`🖊 *${user.email}* eddited post:\n${'```'}json\n${JSON.stringify(post, null, 2)}${'```'}`);
 }
 

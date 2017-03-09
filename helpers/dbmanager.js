@@ -1143,36 +1143,58 @@ function getPosts(userId, projectId, skip, limit) {
 /**
  * Function to edit the post
  * @param {Mongoose:ObjectId} userId Id of editting user
+ * @param {Mongoose:ObjectId} projectId Id of the project where post exists
  * @param {Mongoose:ObjectId} postId Id of the post to edit
  * @param {String} text New text
  * @param {[String]} attachments New attachments
  * @return {Promise(Mongoose:Post)} Resulting post
  */
-function editPost(userId, postId, text, attachments) {
-  return new Promise((resolve, reject) => {
+function editPost(userId, projectId, postId, text, attachments) {
+  return new Promise((resolve, reject) =>
     findUserById(userId)
-      .then((user) => {
+      /** Get user, post, project */
+      .then(user =>
         Post.findById(postId)
-          .populate('project')
-          .then((post) => {
-            if (String(post.project.owner) !== String(user._id) &&
-                String(post.project.manager) !== String(user._id)) {
-              reject(errors.notAuthorized());
-              return;
-            }
-            post.text = text;
-            post.attachments = attachments;
+          .then(post =>
+            Project.findById(projectId)
+              .then(project => ({ user, post, project }))
+          )
+      )
+      /** Verify access */
+      .then(({ user, post, project }) => {
+        if (!project) {
+          throw errors.noProjectFound();
+        }
+        if (!post) {
+          throw errors.noPostFound();
+        }
+        let authorized = false;
+        if (project.owner && project.owner.equals(user._id)) {
+          authorized = true;
+        }
+        project.managers.forEach((manager) => {
+          if (manager.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return { user, post, project };
+      })
+      /** Edit post */
+      .then(({ user, post, project }) => {
+        post.text = text;
+        post.attachments = attachments;
 
-            botReporter.reportEditPost(user, post);
+        botReporter.reportEditPost(user, post, project);
 
-            post.save()
-              .then(resolve)
-              .catch(reject);
-          })
+        return post.save()
+          .then(resolve)
           .catch(reject);
       })
-      .catch(reject);
-  });
+      .catch(reject)
+  );
 }
 
 /**

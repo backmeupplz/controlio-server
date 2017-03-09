@@ -10,6 +10,7 @@ module.exports = {
   },
   put: {
     body: {
+      projectid: Joi.string().required(),
       postid: Joi.string().required(),
       text: Joi.string().required(),
     },
