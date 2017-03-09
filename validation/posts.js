@@ -17,6 +17,7 @@ module.exports = {
   delete: {
     body: {
       postid: Joi.string().required(),
+      projectid: Joi.string().required(),
     },
   },
   get: {

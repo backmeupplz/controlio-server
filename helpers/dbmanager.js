@@ -1178,40 +1178,60 @@ function editPost(userId, postId, text, attachments) {
 /**
  * Function to dleete a post
  * @param {Mongoose:ObjectId} userId Id of deleting user
+ * @param {Mongoose:ObjectId} projectId Id of the project where post exists
  * @param {Mongoose:ObjectId} postId Id of the post to delete
  * @return {Promise()} Promise thart's resolved on success
  */
-function deletePost(userId, postId) {
-  return new Promise(resolve =>
+function deletePost(userId, projectId, postId) {
+  return new Promise((resolve, reject) =>
     findUserById(userId)
+      /** Get user, post, project */
       .then(user =>
         Post.findById(postId)
-          .populate('project')
-          .then((post) => {
-            if (String(post.project.owner) !== String(user._id) &&
-                String(post.project.manager) !== String(user._id)) {
-              throw errors.notAuthorized();
-            }
-            return { user, post };
-          })
+          .then(post =>
+            Project.findById(projectId)
+              .then(project => ({ user, post, project }))
+          )
       )
-      .then(({ user, post }) => {
-        const index = post.project.posts.map(v => String(v)).indexOf(String(post._id));
-        if (index > -1) {
-          post.project.posts.splice(index, 1);
+      /** Verify access */
+      .then(({ user, post, project }) => {
+        if (!project) {
+          throw errors.noProjectFound();
         }
-        post.project.save();
-
-        botReporter.reportDeletePost(user, post);
-
-        post.remove((err) => {
-          if (err) {
-            throw err;
-          } else {
-            resolve();
+        if (!post) {
+          throw errors.noPostFound();
+        }
+        let authorized = false;
+        if (project.owner && project.owner.equals(user._id)) {
+          authorized = true;
+        }
+        project.managers.forEach((manager) => {
+          if (manager.equals(user._id)) {
+            authorized = true;
           }
         });
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return { user, post, project };
       })
+      /** Delete post */
+      .then(({ user, post, project }) => {
+        project.posts = project.posts.filter(id => !id.equals(post.id));
+        return project.save()
+          .then(() => {
+            post.remove((err) => {
+              if (err) {
+                throw err;
+              } else {
+                botReporter.reportDeletePost(user, post, project);
+                resolve();
+              }
+            });
+          })
+          .catch(reject);
+      })
+      .catch(reject)
   );
 }
 

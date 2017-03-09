@@ -55,9 +55,10 @@ router.put('/', validate(validation.put), (req, res, next) => {
 /** Method to delete the post */
 router.delete('/', validate(validation.delete), (req, res, next) => {
   const userId = req.get('userId');
+  const projectId = req.body.projectid;
   const postId = req.body.postid;
 
-  dbmanager.deletePost(userId, postId)
+  dbmanager.deletePost(userId, projectId, postId)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });

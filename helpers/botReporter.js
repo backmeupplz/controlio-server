@@ -138,8 +138,8 @@ function reportEditPost(user, post) {
   sendMessage(`🖊 *${user.email}* eddited post:\n${'```'}json\n${JSON.stringify(post, null, 2)}${'```'}`);
 }
 
-function reportDeletePost(user, post) {
-  sendMessage(`👺 *${user.email}* deleted ${post.type} *${post.text}* from *${post.project.title}*`);
+function reportDeletePost(user, post, project) {
+  sendMessage(`👺 *${user.email}* deleted ${post.type} *${post.text}* from *${project.title}*`);
 }
 
 /** Payments.js */
