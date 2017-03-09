@@ -657,19 +657,21 @@ function removeManager(userId, managerId, projectId) {
         if (!authorized) {
           throw errors.notAuthorized();
         }
-        return { user, project };
+        return project;
       })
-      .then(({ user, project }) =>
+      .then(project =>
         findUserById(managerId)
           .then((manager) => {
-            manager.projects = manager.projects.filter(project => String(project) !== projectId);
+            manager.projects = manager.projects.filter(dbProject => String(dbProject) !== projectId);
             project.managers = project.managers.filter(pManager => !pManager.equals(manager._id));
             const promises = [manager.save(), project.save()];
-            return Promise.all(promises);
+            return Promise.all(promises)
+              .then(resolve)
+              .catch(reject);
           })
       )
       .catch(reject)
-  );  
+  );
 }
 
 /**
