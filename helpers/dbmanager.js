@@ -690,7 +690,7 @@ function addClients(userId, projectId, clients) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
     findUserById(userId)
-      .then(user => 
+      .then(user =>
         Project.findById(projectId)
           .then((project) => {
             if (!project) {
@@ -735,7 +735,7 @@ function addClients(userId, projectId, clients) {
 
         const filteredClientObjects = clientObjects.filter((clientObject) => {
           const id = String(clientObject._id);
-          const valid = true;
+          let valid = true;
           if (existingClients.includes(id)) {
             valid = false;
           }

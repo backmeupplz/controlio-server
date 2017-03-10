@@ -143,7 +143,7 @@ router.put('/', validate(validation.put), (req, res, next) => {
   const projectId = req.body.projectid;
   const title = req.body.title;
   let description = req.body.description;
-  if (description.length <= 0) {
+  if (description && description.length <= 0) {
     description = null;
   }
   const image = req.body.image;
