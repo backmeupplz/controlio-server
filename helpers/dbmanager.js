@@ -928,13 +928,14 @@ function deleteProject(userId, projectId) {
     /** Get user and project */
       .then(user =>
         Project.findById(projectId)
-        .populate('clients managers')
-          .then((project) => {
-            if (!project) {
-              throw errors.noProjectFound();
-            }
-            return { user, project };
-          })
+          .populate('clients managers')
+            .then((project) => {
+              if (!project) {
+                throw errors.noProjectFound();
+              }
+              console.log(project);
+              return { user, project };
+            })
       )
       /** Check if user is an owner */
       .then(({ user, project }) => {
