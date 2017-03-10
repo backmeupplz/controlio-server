@@ -9,7 +9,7 @@ Node.js backend for controlio.co.
 
 Create a .env file in the root directory of Controlio.
 
-Add these environment-specific variables:
+Add these environment variables:
 
 `API_KEY=api key for the app`
 `JWT_SECRET=secret used to generate JWT’s for users`
@@ -19,3 +19,5 @@ Add these environment-specific variables:
 `STRIPE_API_KEY=stripe.com secret key`
 `TELEGRAM_KEY=telegram bot token to send logs`
 `TELEGRAM_ID=id of the telegram chat where to send logs`
+
+And remove these environment variables from your ~/.bash_profile or other similar place in your system.
