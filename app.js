@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const fs = require('fs');
+const dotenv = require('dotenv').config();
 const config = require('./config');
 const botReporter = require('./helpers/botReporter');
 const errors = require('./helpers/errors');
