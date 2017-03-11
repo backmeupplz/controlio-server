@@ -14,7 +14,7 @@ router.get('/resetPassword', validate(validation.getResetPassword), (req, res) =
   const userId = req.query.userid;
   const token = req.query.token;
 
-  dbmanager.getUserById(userId)
+  dbmanager.findUserById(userId)
     .then((user) => {
       if (!user) {
         res.render('error', { error: errors.noUserFound().message });
@@ -46,7 +46,7 @@ router.post('/resetPassword', validate(validation.postResetPassword), (req, res)
     return;
   }
 
-  dbmanager.getUserById(userId)
+  dbmanager.findUserById(userId)
     .then((user) => {
       if (!user) {
         res.render('error', { error: errors.noUserFound().message });
