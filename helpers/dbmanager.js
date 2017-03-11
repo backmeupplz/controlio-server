@@ -1110,20 +1110,16 @@ function getPosts(userId, projectId, skip, limit) {
     findUserById(userId)
       .then(user =>
         Project.findById(projectId)
-          .populate({
+          .populate([{
             path: 'posts',
             populate: {
               path: 'author',
               model: 'user',
             },
-          })
-          .populate({
+          },
+          {
             path: 'invites',
-            populate: {
-              path: 'invitee',
-              model: 'user',
-            },
-          })
+          }])
           .then(project => ({ user, project }))
       )
       .then(({ user, project }) => {
