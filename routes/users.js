@@ -115,7 +115,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
   const webPushToken = req.body.webPushToken;
 
   dbmanager.findUser({ email })
-    .select('email password token isDemo isAdmin plan')
+    .select('email password token isDemo isAdmin plan iosPushTokens androidPushTokens webPushTokens')
     /** Check if user exists */
     .then((user) => {
       if (!user) {
