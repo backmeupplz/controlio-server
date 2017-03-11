@@ -1,4 +1,5 @@
 const Joi = require('joi');
+Joi.phone = require('joi-phone');
 
 module.exports = {
   login: {
@@ -42,7 +43,7 @@ module.exports = {
   editProfile: {
     body: {
       name: Joi.string().max(100),
-      phone: Joi.string().max(20),
+      phone: Joi.phone.e164().max(20),
     },
   },
 };
