@@ -52,7 +52,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
   const webPushToken = req.body.webPushToken;
 
   dbmanager.findUserById(userId)
-    .select('email token isDemo isAdmin plan magicToken')
+    .select('email token isDemo isAdmin plan magicToken iosPushTokens androidPushTokens webPushTokens')
     /** Check if user exists */
     .then((user) => {
       if (!user) {
@@ -71,36 +71,32 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
     })
     /** Add token if missing */
     .then((user) => {
-      const userCopy = _.clone(user);
-      if (!userCopy.token) {
-        userCopy.token = jwt.sign(userCopy.email, config.jwtSecret);
+      if (!user.token) {
+        user.token = jwt.sign(user.email, config.jwtSecret);
       }
-      return userCopy;
+      return user;
     })
     /** Add push tokens if provided */
     .then((user) => {
-      const userCopy = _.clone(user);
-      if (userCopy.isDemo) {
-        return userCopy;
+      if (user.isDemo) {
+        return user;
       }
       if (iosPushToken) {
-        userCopy.iosPushTokens.push(iosPushToken);
+        user.iosPushTokens.push(iosPushToken);
       }
       if (androidPushToken) {
-        userCopy.androidPushTokens.push(androidPushToken);
+        user.androidPushTokens.push(androidPushToken);
       }
       if (webPushToken) {
-        userCopy.webPushTokens.push(webPushToken);
+        user.webPushTokens.push(webPushToken);
       }
-      return userCopy;
+      return user;
     })
     /** Login */
     .then((user) => {
-      const userCopy = _.clone(user);
+      user.magicToken = null;
 
-      userCopy.magicToken = null;
-
-      return userCopy.save()
+      return user.save()
         .then((savedUser) => {
           const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan']);
           res.send(savedUserCopy);
