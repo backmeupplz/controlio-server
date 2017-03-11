@@ -84,12 +84,15 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
       if (iosPushToken) {
         user.iosPushTokens.push(iosPushToken);
       }
+      user.iosPushTokens = _.uniq(user.iosPushTokens);
       if (androidPushToken) {
         user.androidPushTokens.push(androidPushToken);
       }
+      user.androidPushTokens = _.uniq(user.androidPushTokens);
       if (webPushToken) {
         user.webPushTokens.push(webPushToken);
       }
+      user.webPushTokens = _.uniq(user.webPushTokens);
       return user;
     })
     /** Login */
@@ -145,20 +148,22 @@ router.post('/login', validate(validation.login), (req, res, next) => {
     })
     /** Add push tokens if provided */
     .then((user) => {
-      const userCopy = _.clone(user);
-      if (userCopy.isDemo) {
-        return userCopy;
+      if (user.isDemo) {
+        return user;
       }
       if (iosPushToken) {
-        userCopy.iosPushTokens.push(iosPushToken);
+        user.iosPushTokens.push(iosPushToken);
       }
+      user.iosPushTokens = _.uniq(user.iosPushTokens);
       if (androidPushToken) {
-        userCopy.androidPushTokens.push(androidPushToken);
+        user.androidPushTokens.push(androidPushToken);
       }
+      user.androidPushTokens = _.uniq(user.androidPushTokens);
       if (webPushToken) {
-        userCopy.webPushTokens.push(webPushToken);
+        user.webPushTokens.push(webPushToken);
       }
-      return userCopy;
+      user.webPushTokens = _.uniq(user.webPushTokens);
+      return user;
     })
     /** Save user and return without password */
     .then(user =>
