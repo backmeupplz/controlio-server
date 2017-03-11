@@ -1117,6 +1117,13 @@ function getPosts(userId, projectId, skip, limit) {
               model: 'user',
             },
           })
+          .populate({
+            path: 'invites',
+            populate: {
+              path: 'invitee',
+              model: 'user',
+            },
+          })
           .then(project => ({ user, project }))
       )
       .then(({ user, project }) => {
@@ -1134,6 +1141,11 @@ function getPosts(userId, projectId, skip, limit) {
         });
         project.clients.forEach((client) => {
           if (client.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        project.invites.forEach((invite) => {
+          if (invite.invitee.equals(user._id)) {
             authorized = true;
           }
         });
