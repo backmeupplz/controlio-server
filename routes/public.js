@@ -21,7 +21,7 @@ router.get('/resetPassword', validate(validation.getResetPassword), (req, res) =
       } else if (!user.tokenForPasswordResetIsFresh) {
         res.render('error', { error: 'You can only use reset link once.' });
       } else if (user.tokenForPasswordReset !== token) {
-        res.render('error', { error: 'You can only use reset link once.' });
+        res.render('error', { error: 'Not authorized (mismatched tokens).' });
       } else {
         user.tokenForPasswordResetIsFresh = false;
         user.save()

@@ -229,11 +229,10 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
     })
     /** Save tokens and send email */
     .then((user) => {
-      const userCopy = _.clone(user);
-      userCopy.tokenForPasswordReset = randomToken(24);
-      userCopy.tokenForPasswordResetIsFresh = true;
-      emailSender.sendResetPassword(userCopy);
-      return userCopy.save()
+      user.tokenForPasswordReset = randomToken(24);
+      user.tokenForPasswordResetIsFresh = true;
+      emailSender.sendResetPassword(user);
+      return user.save()
         .then(() => res.send({ success: true }));
     })
     .catch(err => next(err));
