@@ -15,6 +15,7 @@ router.get('/resetPassword', validate(validation.getResetPassword), (req, res) =
   const token = req.query.token;
 
   dbmanager.findUserById(userId)
+    .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
     .then((user) => {
       if (!user) {
         res.render('error', { error: errors.noUserFound().message });
@@ -47,6 +48,7 @@ router.post('/resetPassword', validate(validation.postResetPassword), (req, res)
   }
 
   dbmanager.findUserById(userId)
+  .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
     .then((user) => {
       if (!user) {
         res.render('error', { error: errors.noUserFound().message });

@@ -253,7 +253,7 @@ router.post('/logout', (req, res, next) => {
       botReporter.reportLogout(user.email);
 
       user.save()
-        .then(dbuser => res.send({ success: true }))
+        .then(() => res.send({ success: true }))
         .catch(err => next(err));
     })
     .catch(err => next(err));
