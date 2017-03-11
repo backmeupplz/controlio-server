@@ -1106,7 +1106,7 @@ function addPost(userId, projectId, text, attachments, type) {
  * @return {Promise([Mongoose:Post])} A list of requested posts
  */
 function getPosts(userId, projectId, skip, limit) {
-  return new Promise(resolve =>
+  return new Promise((resolve, reject) =>
     findUserById(userId)
       .then(user =>
         Project.findById(projectId)
@@ -1120,6 +1120,9 @@ function getPosts(userId, projectId, skip, limit) {
           .then(project => ({ user, project }))
       )
       .then(({ user, project }) => {
+        if (!project) {
+          throw errors.noProjectFound();
+        }
         let authorized = false;
         if (project.owner && project.owner.equals(user._id)) {
           authorized = true;
@@ -1143,6 +1146,7 @@ function getPosts(userId, projectId, skip, limit) {
         const slicedPosts = sortedPosts.slice(skip, skip + limit);
         resolve(slicedPosts);
       })
+      .catch(reject)
   );
 }
 
