@@ -127,7 +127,7 @@ router.post('/setPassword', validate(validation.postSetPassword), (req, res) => 
             user.save()
               .then(() => {
                 botReporter.reportSetPassword(user.email);
-                res.render('success', { message: 'Password was updated!' });
+                res.render('success', { message: 'Password has been set!' });
               })
               .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
           })
