@@ -19,6 +19,9 @@ const emailResetPasswordTemplate = hogan.compile(emailResetRawHtml);
 const emailMagicRawHtml = fs.readFileSync(path.join(__dirname, '../views/email-magic-link.hjs'), 'utf8');
 const emailMagicLinkTemplate = hogan.compile(emailMagicRawHtml);
 
+const emailSetRawHtml = fs.readFileSync(path.join(__dirname, '../views/email-set.hjs'), 'utf8');
+const emailSetPasswordTemplate = hogan.compile(emailSetRawHtml);
+
 /**
  * Function to send reset password email
  * @param {Mongo:User} user user that should get an email
@@ -28,6 +31,26 @@ function sendResetPassword(user) {
   const toEmail = new helper.Email(user.email);
   const subject = 'Controlio: reset your password';
   const content = new helper.Content('text/html', emailResetPasswordTemplate.render({ userid: user._id, token: user.tokenForPasswordReset }));
+  const mail = new helper.Mail(fromEmail, subject, toEmail, content);
+
+  const request = sg.emptyRequest({
+    method: 'POST',
+    path: '/v3/mail/send',
+    body: mail.toJSON(),
+  });
+
+  sg.API(request);
+}
+
+/**
+ * Function to send set password email
+ * @param {Mongo:User} user user that should get an email
+ */
+function sendSetPassword(user) {
+  const fromEmail = new helper.Email('noreply@controlio.co');
+  const toEmail = new helper.Email(user.email);
+  const subject = 'Controlio: set your password';
+  const content = new helper.Content('text/html', emailSetPasswordTemplate.render({ userid: user._id, token: user.tokenForPasswordReset }));
   const mail = new helper.Mail(fromEmail, subject, toEmail, content);
 
   const request = sg.emptyRequest({
@@ -62,5 +85,6 @@ function sendMagicLink(user) {
 /** Exports */
 module.exports = {
   sendResetPassword,
+  sendSetPassword,
   sendMagicLink,
 };

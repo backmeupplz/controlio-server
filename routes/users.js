@@ -123,6 +123,9 @@ router.post('/login', validate(validation.login), (req, res, next) => {
     .then((user) => {
       if (!user) {
         throw errors.authEmailNotRegistered();
+      } else if(!user.password) {
+        emailSender.sendSetPassword(user);
+        throw errors.passwordNotExist();
       } else {
         return user;
       }
@@ -232,6 +235,35 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
       user.tokenForPasswordReset = randomToken(24);
       user.tokenForPasswordResetIsFresh = true;
       emailSender.sendResetPassword(user);
+      return user.save()
+        .then(() => res.send({ success: true }));
+    })
+    .catch(err => next(err));
+});
+
+/** Method to send set password email */
+router.post('/setPassword', validate(validation.setPassword), (req, res, next) => {
+  const email = req.body.email;
+
+  botReporter.reportPasswordSetRequest(email);
+
+  dbmanager.findUser({ email })
+    .select('email password')
+    /** Check user existence */
+    .then((user) => {
+      if (!user) {
+        next(errors.authEmailNotRegistered());
+      } else if(user.password){
+        next(errors.passwordAlreadyExist());
+      } else {
+        return user;
+      }
+    })
+    /** Save tokens and send email */
+    .then((user) => {
+      user.tokenForPasswordReset = randomToken(24);
+      user.tokenForPasswordResetIsFresh = true;
+      emailSender.sendSetPassword(user);
       return user.save()
         .then(() => res.send({ success: true }));
     })
