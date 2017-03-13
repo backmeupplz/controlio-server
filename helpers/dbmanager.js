@@ -11,6 +11,7 @@ const errors = require('./errors');
 const _ = require('lodash');
 const payments = require('./payments');
 const botReporter = require('./botReporter');
+const emailSender = require('.emailSender');
 
 /** Get schemas */
 const User = mongoose.model('user');
@@ -93,7 +94,12 @@ function addUser(user) {
   return findUser({ email: user.email })
     .then((databaseUser) => {
       if (databaseUser) {
-        throw errors.authUserAlreadyExists();
+        if (!databaseUser.password) {
+          emailSender.sendSetPassword(user);
+          throw errors.passwordNotExist();
+        } else {
+          throw errors.authUserAlreadyExists();
+        }
       } else {
         return payments.createStripeCustomer(user.email)
           .then((stripeCustomer) => {
