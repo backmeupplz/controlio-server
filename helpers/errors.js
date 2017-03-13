@@ -47,6 +47,12 @@ function noApiKey() {
 function noUserFound() {
   return error(500, 'No user found');
 }
+function passwordAlreadyExist() {
+  return error(500, 'You already have a password');
+}
+function passwordNotExist() {
+  return error(500, 'You haven\'t set password yet. We sent you an email to set it.');
+}
 function noOwnerFound() {
   return error(500, 'No owner found');
 }
@@ -130,6 +136,8 @@ module.exports = {
   authUserAlreadyExists,
   noApiKey,
   noUserFound,
+  passwordAlreadyExist,
+  passwordNotExist,
   noOwnerFound,
   noManagerFound,
   noClientObjectsCreated,

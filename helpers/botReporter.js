@@ -54,6 +54,10 @@ function reportPasswordResetRequest(email) {
   sendMessage(`❓ *${email}* requested password reset`);
 }
 
+function reportPasswordSetRequest(email) {
+  sendMessage(`❓ *${email}* requested to set up password`);
+}
+
 function reportLogout(email) {
   sendMessage(`✋ *${email}* logged out`);
 }
@@ -88,6 +92,13 @@ function reportResetPassword(email) {
   sendMessage(`🗝 *${email}* has reset password`);
 }
 
+function reportGetSetPassword(email) {
+  sendMessage(`👀 Someone viewed set password page`);
+}
+
+function reportSetPassword(email) {
+  sendMessage(`🗝 Someone has set password`);
+}
 /** Projects.js */
 
 function reportCreateProject(user, project) {
@@ -167,7 +178,7 @@ function reportRedeemCoupon(user, couponid) {
 function sendMessage(msg) {
   if (config.telegramKey) {
     /** TODO: enable bot reporter */
-    // jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
+    jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
   }
 }
 
@@ -181,6 +192,7 @@ module.exports = {
   reportLogin,
   reportSignUp,
   reportPasswordResetRequest,
+  reportPasswordSetRequest,
   reportLogout,
   reportGetProfile,
   reportEditProfile,
@@ -190,6 +202,8 @@ module.exports = {
   /** Public.js */
   reportGetResetPassword,
   reportResetPassword,
+  reportGetSetPassword,
+  reportSetPassword,
   /** Projects.js */
   reportCreateProject,
   reportGetProjects,

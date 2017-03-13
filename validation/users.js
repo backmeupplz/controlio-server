@@ -29,6 +29,11 @@ module.exports = {
       email: Joi.string().email().required(),
     },
   },
+  setPassword: {
+    body: {
+      email: Joi.string().email().required(),
+    },
+  },
   magicLink: {
     body: {
       email: Joi.string().email().required(),
