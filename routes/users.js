@@ -124,6 +124,9 @@ router.post('/login', validate(validation.login), (req, res, next) => {
       if (!user) {
         throw errors.authEmailNotRegistered();
       } else if (!user.password) {
+        user.tokenForPasswordReset = randomToken(24);
+        user.tokenForPasswordResetIsFresh = true;
+        user.save();
         emailSender.sendSetPassword(user);
         throw errors.passwordNotExist();
       } else {
