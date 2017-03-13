@@ -117,7 +117,7 @@ router.post('/setPassword', validate(validation.postSetPassword), (req, res) => 
         res.render('error', { error: errors.noUserFound().message });
       } else if (user.tokenForPasswordReset !== token) {
         res.render('error', { error: 'Wrong token provided.' });
-      } else if(user.password) {
+      } else if (user.password) {
         res.sender('error', { error: errors.passwordAlreadyExist().message });
       } else {
         hash.hashPassword(password)
