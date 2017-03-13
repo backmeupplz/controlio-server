@@ -94,6 +94,7 @@ function getProfile(userId) {
  */
 function addUser(user) {
   return findUser({ email: user.email })
+    .select('password')
     .then((databaseUser) => {
       if (databaseUser) {
         if (!databaseUser.password) {
