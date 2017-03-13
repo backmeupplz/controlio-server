@@ -100,7 +100,7 @@ function addUser(user) {
           databaseUser.tokenForPasswordReset = randomToken(24);
           databaseUser.tokenForPasswordResetIsFresh = true;
           databaseUser.save();
-          emailSender.sendSetPassword(user);
+          emailSender.sendSetPassword(databaseUser);
           throw errors.passwordNotExist();
         } else {
           throw errors.authUserAlreadyExists();
