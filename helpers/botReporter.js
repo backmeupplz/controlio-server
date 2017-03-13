@@ -91,6 +91,7 @@ function reportGetResetPassword(email) {
 function reportResetPassword(email) {
   sendMessage(`🗝 *${email}* has reset password`);
 }
+
 function reportGetSetPassword(email) {
   sendMessage(`👀 Someone viewed set password page`);
 }
