@@ -891,39 +891,19 @@ function archiveProject(userId, projectId, archive) {
         Project.findById(projectId)
           .populate('owner')
           .then((project) => {
-            if (String(project.owner._id) !== String(user._id) &&
-                String(project.manager) !== String(user._id)) {
+            if (!project.owner || !project.owner._id.equals(user._id)) {
               throw errors.notAuthorized();
             }
             return { user, project };
           })
       )
       .then(({ user, project }) => {
-        const maxNumberOfProjects = user.maxNumberOfProjects(user.plan);
-        if (maxNumberOfProjects <= user.numberOfActiveProjects && !archive) {
-          throw errors.notEnoughProjectsOnPlan(maxNumberOfProjects);
-        }
-        return { user, project };
-      })
-      .then(({ user, project }) => {
-        const projectCopy = Object.create(project);
-        projectCopy.isArchived = archive;
+        project.isArchived = archive;
 
-        botReporter.reportArchiveProject(user, projectCopy, archive);
-        projectCopy.save()
-          .then((savedProject) => {
-            const populatedProjectCopy = Object.create(savedProject);
-            if (archive) {
-              populatedProjectCopy.owner.numberOfActiveProjects -= 1;
-            } else {
-              populatedProjectCopy.owner.numberOfActiveProjects += 1;
-            }
-            populatedProjectCopy.owner.save()
-              .then(() => resolve(populatedProjectCopy))
-              .catch(reject);
-          })
-          .catch(reject);
+        botReporter.reportArchiveProject(user, project, archive);
+        return project.save();
       })
+      .then(resolve)
       .catch(reject)
   );
 }
