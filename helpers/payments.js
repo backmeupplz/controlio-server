@@ -166,6 +166,28 @@ function applyStripeCoupon(user, coupon) {
   });
 }
 
+/**
+ * Method to delete bank card from a customer
+ * @param {Stripe:Id} customerId Id of the customer whos card to delete
+ * @param {Stripe:Id} cardId Id of the card to delete
+ * @return {Promise()} Promise that's called upon completion
+ */
+function deleteCard(customerId, cardId) {
+  return new Promise((resolve, reject) => {
+    stripe.customers.deleteCard(
+      customerId,
+      cardId,
+      (err, confirmation) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(confirmation);
+        }
+      }
+    );
+  });
+}
+
 /** Exports */
 module.exports = {
   createStripeCustomer,
@@ -174,4 +196,5 @@ module.exports = {
   setStripeDefaultSource,
   setSripeSubscription,
   applyStripeCoupon,
+  deleteCard,
 };

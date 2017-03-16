@@ -28,4 +28,10 @@ module.exports = {
       coupon: Joi.string().required(),
     },
   },
+  deleteCard: {
+    body: {
+      customerid: Joi.string().required(),
+      cardid: Joi.string().required(),
+    },
+  },
 };

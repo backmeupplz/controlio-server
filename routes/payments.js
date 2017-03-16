@@ -55,5 +55,14 @@ router.post('/customer/coupon', validate(validation.coupon), (req, res, next) =>
     .catch(err => next(err));
 });
 
+/** Proxy method to stripe servers to delete a card */
+router.delete('/customer/card', validate(validation.deleteCard), (req, res, next) => {
+  const customerid = req.body.customerid;
+  const cardid = req.body.cardid;
+  payments.setStripeDefaultSource(customerid, source)
+    .then(customer => res.send(customer))
+    .catch(err => next(err));
+});
+
 /** Export */
 module.exports = router;
