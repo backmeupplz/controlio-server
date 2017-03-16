@@ -59,8 +59,8 @@ router.post('/customer/coupon', validate(validation.coupon), (req, res, next) =>
 router.delete('/customer/card', validate(validation.deleteCard), (req, res, next) => {
   const customerid = req.body.customerid;
   const cardid = req.body.cardid;
-  payments.setStripeDefaultSource(customerid, source)
-    .then(customer => res.send(customer))
+  payments.deleteCard(customerid, cardid)
+    .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
 
