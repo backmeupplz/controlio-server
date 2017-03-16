@@ -94,7 +94,6 @@ function setStripeDefaultSource(customerid, source) {
  */
 function setSripeSubscription(user, planid) {
   return new Promise((resolve, reject) => {
-    const userCopy = Object.create(user);
     if (!user.stripeSubscriptionId) {
       stripe.subscriptions.create({
         customer: user.stripeId,
@@ -103,12 +102,12 @@ function setSripeSubscription(user, planid) {
         if (err) {
           reject(err);
         } else {
-          userCopy.stripeSubscriptionId = subscription.id;
-          userCopy.plan = planid;
+          user.stripeSubscriptionId = subscription.id;
+          user.plan = planid;
 
-          botReporter.reportChangeSubscription(userCopy, planid);
+          botReporter.reportChangeSubscription(user, planid);
 
-          userCopy.save()
+          user.save()
             .then(resolve)
             .catch(reject);
         }
@@ -121,11 +120,11 @@ function setSripeSubscription(user, planid) {
           if (err) {
             reject(err);
           } else {
-            userCopy.plan = planid;
+            user.plan = planid;
 
-            botReporter.reportChangeSubscription(userCopy, planid);
+            botReporter.reportChangeSubscription(user, planid);
 
-            userCopy.save()
+            user.save()
               .then(resolve)
               .catch(reject);
           }

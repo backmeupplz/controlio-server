@@ -1276,7 +1276,8 @@ function deletePost(userId, projectId, postId) {
  */
 function setSripeSubscription(userId, planid) {
   return new Promise((resolve, reject) =>
-    findUserById(userId, '+token')
+    findUserById(userId)
+      .select('token email isDemo isAdmin plan stripeId stripeSubscriptionId')
       .then((user) => {
         if (!user) {
           throw errors.noUserFound();
@@ -1297,7 +1298,8 @@ function setSripeSubscription(userId, planid) {
  */
 function applyStripeCoupon(userId, coupon) {
   return new Promise((resolve, reject) =>
-    findUserById(userId, '+token')
+    findUserById(userId)
+      .select('token email isDemo isAdmin plan stripeId stripeSubscriptionId')
       .then((user) => {
         if (!user) {
           throw errors.noUserFound();
