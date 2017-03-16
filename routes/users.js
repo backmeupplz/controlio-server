@@ -52,7 +52,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
   const webPushToken = req.body.webPushToken;
 
   dbmanager.findUserById(userId)
-    .select('email token isDemo isAdmin plan magicToken iosPushTokens androidPushTokens webPushTokens')
+    .select('email token isDemo isAdmin magicToken iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan')
     /** Check if user exists */
     .then((user) => {
       if (!user) {
@@ -118,7 +118,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
   const webPushToken = req.body.webPushToken;
 
   dbmanager.findUser({ email })
-    .select('email password token isDemo isAdmin plan iosPushTokens androidPushTokens webPushTokens')
+    .select('email password token isDemo isAdmin iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan')
     /** Check if user exists */
     .then((user) => {
       if (!user) {
@@ -208,7 +208,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
       }
       return dbmanager.addUser(user)
         .then((dbuser) => {
-          const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan']);
+          const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
           res.send(dbuserCopy);
 
           botReporter.reportSignUp(email);

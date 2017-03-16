@@ -19,7 +19,7 @@ router.get('/customer', validate(validation.customer), (req, res, next) => {
     .catch(err => next(err));
 });
 
-/** Proxy method to stripe servers to add payment sources of the customer */
+/** Proxy method to stripe servers to add payment sources to the customer */
 router.post('/customer/sources', validate(validation.postSource), (req, res, next) => {
   const customerid = req.body.customerid;
   const source = req.body.source;
@@ -28,7 +28,7 @@ router.post('/customer/sources', validate(validation.postSource), (req, res, nex
     .catch(err => next(err));
 });
 
-/** Proxy method to stripe servers to get the default payment source of the customer */
+/** Proxy method to stripe servers to change the default payment source of the customer */
 router.post('/customer/default_source', validate(validation.defaultSource), (req, res, next) => {
   const customerid = req.body.customerid;
   const source = req.body.source;

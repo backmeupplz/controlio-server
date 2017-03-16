@@ -7,7 +7,7 @@ const validation = require('../validation/main');
 
 /** A list of features to enable in iOS app */
 router.get('/feature_list', (req, res) => {
-  res.send({ 0: false, whatever: 'iwant' });
+  res.send({ 0: true, whatever: 'iwant' });
 });
 
 /** Allows iOS to use magic links */
