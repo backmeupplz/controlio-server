@@ -101,7 +101,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
 
       return user.save()
         .then((savedUser) => {
-          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan']);
+          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
           res.send(savedUserCopy);
           botReporter.reportMagicLinkLogin(savedUserCopy.email);
         });
@@ -175,7 +175,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
     .then(user =>
       user.save()
         .then((savedUser) => {
-          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan']);
+          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
           res.send(savedUserCopy);
         })
     )
