@@ -8,7 +8,6 @@ const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/users');
 const router = require('express').Router();
-const randomToken = require('random-token').create(config.randomTokenSalt);
 const botReporter = require('../helpers/botReporter');
 const emailSender = require('../helpers/emailSender');
 const _ = require('lodash');
@@ -123,8 +122,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
       if (!user) {
         throw errors.authEmailNotRegistered();
       } else if (!user.password) {
-        user.tokenForPasswordReset = randomToken(24);
-        user.tokenForPasswordResetIsFresh = true;
+        user.generateResetPasswordToken(user);
         user.save();
         emailSender.sendSetPassword(user);
         throw errors.passwordNotExist();
