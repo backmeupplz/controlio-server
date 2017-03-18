@@ -1,4 +1,7 @@
 const mongoose = require('mongoose');
+const config = require('../config');
+const randomToken = require('random-token').create(config.randomTokenSalt);
+const _ = require('lodash');
 
 const Schema = mongoose.Schema;
 
@@ -114,6 +117,15 @@ userSchema.methods.maxNumberOfProjects = (plan) => {
     return 50;
   }
   return 1;
+};
+
+userSchema.methods.generateResetPasswordToken = (user) => {
+  user.tokenForPasswordReset = randomToken(24);
+  user.tokenForPasswordResetIsFresh = true;
+};
+
+userSchema.methods.generateMagicToken = (user) => {
+  user.magicToken = randomToken(24);
 };
 
 mongoose.model('user', userSchema);

@@ -34,10 +34,9 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
       });
     })
     .then((user) => {
-      const userCopy = _.clone(user);
-      userCopy.magicToken = randomToken(24);
-      emailSender.sendMagicLink(userCopy);
-      return userCopy.save()
+      user.generateMagicToken(user)
+      emailSender.sendMagicLink(user);
+      return user.save()
         .then(() => res.send({ success: true }));
     })
     .catch(err => next(err));
@@ -235,8 +234,7 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
     })
     /** Save tokens and send email */
     .then((user) => {
-      user.tokenForPasswordReset = randomToken(24);
-      user.tokenForPasswordResetIsFresh = true;
+      user.generateResetPasswordToken(user);
       emailSender.sendResetPassword(user);
       return user.save()
         .then(() => res.send({ success: true }));
