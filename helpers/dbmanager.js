@@ -188,7 +188,7 @@ function addProjectAsClient(project, user) {
       /** Add invite to owner */
       .then(({ dbProject, dbUser, manager }) => {
         console.log(dbUser.email, 'was invited to project as OC');
-        emailSender.sendInviteAsOC(dbUser.email, dbProject);
+        emailSender.sendInvite(dbUser.email, dbProject);
         botReporter.reportSendInvite(dbUser.email, dbProject);
         const invite = new Invite({
           type: 'own',
@@ -201,7 +201,7 @@ function addProjectAsClient(project, user) {
             dbProject.invites.push(dbInvite._id);
             manager.invites.push(dbInvite._id);
             console.log(manager.email, 'was invited to project as M');
-            emailSender.sendInviteAsM(manager.email, dbProject);
+            emailSender.sendInvite(manager.email, dbProject);
             botReporter.reportSendInvite(manager.email, dbProject);
             const promises = [dbProject.save(), manager.save()];
             return Promise.all(promises)
@@ -271,11 +271,11 @@ function addProjectAsManager(project, user) {
       .then(({ dbUser, dbProject, clients }) => {
         const innerPromises = [];
         console.log(dbUser.email, 'was invited to project as OM');
-        emailSender.sendInviteAsOM(dbUser.email, dbProject);
+        emailSender.sendInvite(dbUser.email, dbProject);
         botReporter.reportSendInvite(dbUser.email, dbProject);
         clients.forEach((client) => {
           console.log(client.email, 'was invited to project as C');
-          emailSender.sendInviteAsC(client.email, dbProject);
+          emailSender.sendInvite(client.email, dbProject);
           botReporter.reportSendInvite(client.email, dbProject);
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
@@ -634,7 +634,7 @@ function addManagers(userId, projectId, managers) {
         const innerPromises = [];
         managerObjects.forEach((manager) => {
           console.log(manager.email, 'was ADDED to project as M');
-          emailSender.sendInviteAsM(manager.email, project);
+          emailSender.sendInvite(manager.email, project);
           botReporter.reportSendInvite(manager.email, project);
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
@@ -781,7 +781,7 @@ function addClients(userId, projectId, clients) {
         const innerPromises = [];
         clientObjects.forEach((client) => {
           console.log(client.email, 'was ADDED to project as C');
-          emailSender.sendInviteAsC(client.email, project);
+          emailSender.sendInvite(client.email, project);
           botReporter.reportSendInvite(client.email, project);
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
