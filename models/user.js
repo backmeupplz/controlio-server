@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const config = require('../config');
 const randomToken = require('random-token').create(config.randomTokenSalt);
-const _ = require('lodash');
 
 const Schema = mongoose.Schema;
 
@@ -106,26 +105,13 @@ const userSchema = new Schema({
   },
 });
 
-userSchema.methods.maxNumberOfProjects = (plan) => {
-  if (plan === 0) {
-    return 1;
-  } else if (plan === 1) {
-    return 5;
-  } else if (plan === 2) {
-    return 20;
-  } else if (plan === 3) {
-    return 50;
-  }
-  return 1;
+userSchema.methods.generateResetPasswordToken = function generateResetPasswordToken() {
+  this.tokenForPasswordReset = randomToken(24);
+  this.tokenForPasswordResetIsFresh = true;
 };
 
-userSchema.methods.generateResetPasswordToken = (user) => {
-  user.tokenForPasswordReset = randomToken(24);
-  user.tokenForPasswordResetIsFresh = true;
-};
-
-userSchema.methods.generateMagicToken = (user) => {
-  user.magicToken = randomToken(24);
+userSchema.methods.generateMagicToken = function generateMagicToken() {
+  this.magicToken = randomToken(24);
 };
 
 mongoose.model('user', userSchema);

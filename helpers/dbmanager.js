@@ -12,8 +12,6 @@ const _ = require('lodash');
 const payments = require('./payments');
 const botReporter = require('./botReporter');
 const emailSender = require('./emailSender');
-const config = require('../config');
-const randomToken = require('random-token').create(config.randomTokenSalt);
 
 /** Get schemas */
 const User = mongoose.model('user');
@@ -98,8 +96,7 @@ function addUser(user) {
     .then((databaseUser) => {
       if (databaseUser) {
         if (!databaseUser.password) {
-          databaseUser.tokenForPasswordReset = randomToken(24);
-          databaseUser.tokenForPasswordResetIsFresh = true;
+          databaseUser.generateResetPasswordToken();
           databaseUser.save();
           emailSender.sendSetPassword(databaseUser);
           throw errors.passwordNotExist();
