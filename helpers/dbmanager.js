@@ -496,10 +496,12 @@ function acceptInvite(userId, inviteId, accept) {
           user.projects.push(project._id);
         }
         // Remove invite from DB
-        invite.remove();
-        const promises = [user.save(), project.save()];
-        return Promise.all(promises)
-          .then(() => resolve());
+        return invite.remove()
+          .then(() => {
+            const promises = [user.save(), project.save()];
+            return Promise.all(promises)
+              .then(() => resolve());
+          });
       })
       .catch(err => reject(err))
   );
