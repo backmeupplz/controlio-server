@@ -8,7 +8,6 @@ const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/users');
 const router = require('express').Router();
-const randomToken = require('random-token').create(config.randomTokenSalt);
 const botReporter = require('../helpers/botReporter');
 const emailSender = require('../helpers/emailSender');
 const _ = require('lodash');
@@ -34,10 +33,9 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
       });
     })
     .then((user) => {
-      const userCopy = _.clone(user);
-      userCopy.magicToken = randomToken(24);
-      emailSender.sendMagicLink(userCopy);
-      return userCopy.save()
+      user.generateMagicToken(user);
+      emailSender.sendMagicLink(user);
+      return user.save()
         .then(() => res.send({ success: true }));
     })
     .catch(err => next(err));
@@ -124,8 +122,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
       if (!user) {
         throw errors.authEmailNotRegistered();
       } else if (!user.password) {
-        user.tokenForPasswordReset = randomToken(24);
-        user.tokenForPasswordResetIsFresh = true;
+        user.generateResetPasswordToken(user);
         user.save();
         emailSender.sendSetPassword(user);
         throw errors.passwordNotExist();
@@ -235,8 +232,7 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
     })
     /** Save tokens and send email */
     .then((user) => {
-      user.tokenForPasswordReset = randomToken(24);
-      user.tokenForPasswordResetIsFresh = true;
+      user.generateResetPasswordToken(user);
       emailSender.sendResetPassword(user);
       return user.save()
         .then(() => res.send({ success: true }));
