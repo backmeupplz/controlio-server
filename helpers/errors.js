@@ -81,7 +81,7 @@ function noInviteFound() {
   return error(400, 'No invite found');
 }
 function errorInitialStatus() {
-  return error(400, 'Initial status maximum 250 symbols');
+  return error(400, 'Initial status should be less than 250 symbols');
 }
 function notAuthorized() {
   return error(403, 'Not authorized');
