@@ -495,6 +495,8 @@ function acceptInvite(userId, inviteId, accept) {
           project.clients.push(user._id);
           user.projects.push(project._id);
         }
+        // Remove invite from DB
+        invite.remove();
         const promises = [user.save(), project.save()];
         return Promise.all(promises)
           .then(() => resolve());
