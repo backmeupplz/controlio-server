@@ -10,7 +10,8 @@ module.exports = {
   put: {
     body: {
       projectid: Joi.string().required(),
-      title: Joi.string().required(),
+      title: Joi.string().max(250).required(),
+      description: Joi.string().max(1000).required(),
     },
   },
   postInvite: {

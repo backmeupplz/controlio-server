@@ -80,6 +80,9 @@ function noPostFound() {
 function noInviteFound() {
   return error(400, 'No invite found');
 }
+function errorInitialStatus() {
+  return error(400, 'Initial status maximum 250 symbols');
+}
 function notAuthorized() {
   return error(403, 'Not authorized');
 }
@@ -148,6 +151,7 @@ module.exports = {
   noPostFound,
   noInviteFound,
   notAuthorized,
+  errorInitialStatus,
   magicLinkOnlyOnce,
   addDemoAsClient,
   addDemoAsManager,
