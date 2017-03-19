@@ -33,7 +33,7 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
       });
     })
     .then((user) => {
-      user.generateMagicToken(user)
+      user.generateMagicToken(user);
       emailSender.sendMagicLink(user);
       return user.save()
         .then(() => res.send({ success: true }));

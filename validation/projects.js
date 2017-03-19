@@ -3,15 +3,16 @@ const Joi = require('joi');
 module.exports = {
   post: {
     body: {
-      title: Joi.string().required(),
+      title: Joi.string().max(250).required(),
       type: Joi.string().valid('manager', 'client'),
+      description: Joi.string().max(1000),
     },
   },
   put: {
     body: {
       projectid: Joi.string().required(),
       title: Joi.string().max(250).required(),
-      description: Joi.string().max(1000).required(),
+      description: Joi.string().max(1000),
     },
   },
   postInvite: {
