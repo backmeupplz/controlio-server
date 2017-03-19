@@ -80,6 +80,7 @@ app.use((req, res, next) => {
   const err = new Error();
   err.status = 404;
   err.message = 'Not found';
+  err.type = 'NOT_FOUND_ERROR';
   next(err);
 });
 
