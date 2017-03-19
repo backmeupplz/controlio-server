@@ -1,21 +1,13 @@
 # Node.js backend for Controlio #
 
 * `https://api.controlio.co` — production instance
+* [API documentaion](API.md)
 
 ### How do I get set up? ###
 
 Create a .env file in the root directory of Controlio.
 
 Add these environment variables:
-
-API_KEY — любой
-JWT_SECRET — любой
-MONGO_URL — адрес монго (mongodb://localhost:3333/controlio, например)
-SENDGRID_API_KEY — это для посыла имейлов (можешь юзать мой )
-TOKEN_SALT — любой
-STRIPE_API_KEY — можешь заюзать мой (sk_test_t4v531gxDQirk1hxuRb1PUOM)
-TELEGRAM_KEY — любой токен телеграм бота (для посылки логов, сейчас отключен)
-TELEGRAM_ID — id, кому слать логи
 
 * `API_KEY` — any string, you will sign all the requests with it
 * `JWT_SECRET` — any string, server will use it to salt users' JWT
