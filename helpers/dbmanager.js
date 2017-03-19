@@ -139,7 +139,7 @@ function addProject(project) {
  * @return {Promise(Mongoose:Project)} Promise with the Project that should be created
  */
 function addProjectAsClient(project, user) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (user.email === project.managerEmail) {
       throw errors.addSelfAsManager();
     }
@@ -162,6 +162,9 @@ function addProjectAsClient(project, user) {
             text: project.initialStatus,
             author: user,
           });
+          if (initialStatus.text.length >= 250) {
+            throw errors.errorInitialStatus();
+          }
           return initialStatus.save()
             .then((dbInitialStatus) => {
               projectCopyCopy.posts = [dbInitialStatus];
@@ -200,7 +203,8 @@ function addProjectAsClient(project, user) {
                 resolve({ success: true });
               });
           });
-      });
+      })
+      .catch(err => reject(err));;
   });
 }
 
@@ -211,7 +215,7 @@ function addProjectAsClient(project, user) {
  * @return {Promise(Mongoose:Project)} Promise with the Project that should be created
  */
 function addProjectAsManager(project, user) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (!project.clientEmails) {
       throw errors.fieldNotFound('clientEmails');
     }
@@ -238,6 +242,9 @@ function addProjectAsManager(project, user) {
             text: project.initialStatus,
             author: user,
           });
+          if (initialStatus.text.length >= 250) {
+            throw errors.errorInitialStatus();
+          }
           return initialStatus.save()
             .then((dbInitialStatus) => {
               projectCopyCopy.posts = [dbInitialStatus];
@@ -285,7 +292,8 @@ function addProjectAsManager(project, user) {
             return dbProject.save()
               .then(() => resolve({ success: true }));
           });
-      });
+      })
+      .catch(err => reject(err));
   });
 }
 

@@ -5,7 +5,7 @@ module.exports = {
     body: {
       projectid: Joi.string().required(),
       type: Joi.string().valid('post', 'status'),
-      text: Joi.string().required(),
+      text: Joi.string().when('type', { is: 'status', then: Joi.string().max(250).required(), otherwise: Joi.string().required() }),
     },
   },
   put: {
