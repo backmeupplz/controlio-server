@@ -8,6 +8,7 @@ const router = express.Router();
 /** Method to test email */
 router.get('/email', (req, res) => {
   res.render('templates/magic-link/html', {
+    title: 'Lorem the ipsum',
     button_title: 'Lorem ipsum',
     button_url: 'https://google.ca',
     texts: [
