@@ -25,15 +25,42 @@
 ---
 ### Доступные методы
 * [Login / SignUp](#login--signup)
-  * [POST /users/login](#post-userslogin)
-  * [POST /users/signUp](#post-userssignup)
-  * [POST /users/requestMagicLink](#post-usersrequestmagiclink)
-  * [POST /users/loginMagicLink](#post-loginmagiclink)
+  * [POST /users/login](#post-userslogin-public)
+  * [POST /users/signUp](#post-userssignup-public)
+  * [POST /users/requestMagicLink](#post-usersrequestmagiclink-public)
+  * [POST /users/loginMagicLink](#post-loginmagiclink-public)
   * [POST /users/logout](#post-userslogout)
 * [Users](#users)
   * [GET /users/profile](#get-usersprofile)
   * [POST /users/profile](#post-usersprofile)
 * [Projects](#projects)
+  * [POST /projects](#post-projects)
+  * [GET /projects](#get-projects)
+  * [GET /invites](#get-invites)
+  * [GET /projects/project](#get-projectsproject)
+  * [POST /projects/clients](#post-projectsclients)
+  * [DELETE /projects/client](#delete-projectsclient)
+  * [POST /projects/managers](#post-projectsmanagers)
+  * [DELETE /projects/manager](#delete-projectsmanager)
+  * [PUT /projects/](#put-projects)
+  * [POST /projects/archive](#post-projectsarchive)
+  * [POST /projects/unarchive](#post-projectsunarchive)
+  * [POST /projects/leave](#post-projectsleave)
+  * [DELETE /projects/](#delete-projects)
+  * [POST /projects/invite](#post-projectsinvite)
+  * [DELETE /projects/invite](#delete-projectsinvite)
+* [Posts](#posts)
+  * [POST /posts](#post-posts)
+  * [GET /posts](#get-posts)
+  * [PUT /posts](#put-posts)
+  * [DELETE /posts](#delete-posts)
+* [Payments](#payments)
+  * [GET /payments/customer](#get-paymentscustomer)
+  * [POST /payments/customer/sources](#post-paymentscustomersources)
+  * [POST /payments/customer/default_source](#post-paymentscustomerdefault_source)
+  * [POST /payments/customer/subscription](#post-paymentscustomersubscription)
+  * [POST /payments/customer/coupon](#post-paymentscustomercoupon)
+  * [DELETE /payments/customer/card](#delete-paymentscustomercard)
 
 ---
 ### Login / SignUp
@@ -161,7 +188,7 @@ Returns json data about a single [Project](./models/project.js).
 * <= [Project](./models/project.js)
 
 ---
-### DELETE /projects/manager `Private`
+### DELETE /projects/manager
 
 Удаление менеджера из проекта
 
@@ -250,7 +277,7 @@ Edit [Post](./models/post.js).
 * <= [Post](./models/post.js)
 
 ---
-### Delete /posts
+### DELETE /posts
 
 Удаление поста.
 
@@ -300,7 +327,7 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 * <= OK
 
 ---
-### Delete /customer/card
+### DELETE /payments/customer/card
 
 Удаление карточки оплаты у пользователя
 
