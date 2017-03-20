@@ -12,7 +12,7 @@ Add these environment variables:
 * `API_KEY` — any string, you will sign all the requests with it
 * `JWT_SECRET` — any string, server will use it to salt users' JWT
 * `MONGO_URL` — address of the mongo db you're using
-* `SENDGRID_API_KEY` — api key for Sendgrid used to send emails, you can use our test one: `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`
+* `SENDGRID_API_KEY` — api key for Sendgrid used to send emails, you can use our test one: `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`
 * `TOKEN_SALT` — any string, server will use id to salt random tokens we need for magic links and reset password 
 * `STRIPE_API_KEY` — api key for Stripe, you can use our test one: `sk_test_YHIgl0QMnM5p0XI6YEPFdhmd`
 * `(Optional) TELEGRAM_KEY` — Telegram bot token to send logs
