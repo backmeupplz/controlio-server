@@ -116,7 +116,7 @@ function usersOverLimit() {
   return error(403, 'This project has reached it\'s users limits', 'USER_LIMIT_ERROR');
 }
 function projectIsArchived() {
-  return error(403, 'This project has archived.', 'ARCHIVED_ERROR');
+  return error(403, 'This project was archived.', 'ARCHIVED_ERROR');
 }
 function notEnoughProjectsOnPlan(maxNumberOfProjects) {
   let projectWord = 'projects';
