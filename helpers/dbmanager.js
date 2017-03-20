@@ -200,6 +200,7 @@ function addProjectAsClient(project, user) {
             const promises = [dbProject.save(), manager.save()];
             return Promise.all(promises)
               .then(() => {
+                emailSender.sendInvite(manager.email, dbProject, 'owner');
                 resolve({ success: true });
               });
           });
@@ -269,6 +270,7 @@ function addProjectAsManager(project, user) {
       .then(({ dbUser, dbProject, clients }) => {
         const innerPromises = [];
         clients.forEach((client) => {
+          emailSender.sendInvite(client.email, dbProject, 'client');
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'client',
@@ -522,7 +524,7 @@ function removeInvite(userId, inviteId) {
   return new Promise((resolve, reject) =>
     /** Find user and invite */
     findUserById(userId)
-      .then(user => 
+      .then(user =>
         Invite.findById(inviteId)
           .populate('project invitee')
           .then((invite) => {
@@ -573,7 +575,7 @@ function addManagers(userId, projectId, managers) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
     findUserById(userId)
-      .then(user => 
+      .then(user =>
         Project.findById(projectId)
           .then((project) => {
             if (!project) {
@@ -612,7 +614,7 @@ function addManagers(userId, projectId, managers) {
         const owner = String(project.owner);
         const filteredManagerObjects = managerObjects.filter((managerObject) => {
           const id = String(managerObject._id);
-          const valid = true;
+          let valid = true;
           if (existingClients.includes(id)) {
             valid = false;
           }
@@ -626,7 +628,7 @@ function addManagers(userId, projectId, managers) {
         });
         return { managerObjects: filteredManagerObjects, project, user };
       })
-      /** Add client invites */
+      /** Add manager invites */
       .then(({ managerObjects, project, user }) => {
         const innerPromises = [];
         managerObjects.forEach((manager) => {
@@ -642,6 +644,7 @@ function addManagers(userId, projectId, managers) {
                 manager.invites.push(dbInvite);
                 return manager.save()
                   .then(() => {
+                    emailSender.sendInvite(manager.email, project, 'manager');
                     resolve(dbInvite._id);
                   });
               });
@@ -774,6 +777,7 @@ function addClients(userId, projectId, clients) {
       .then(({ clientObjects, project, user }) => {
         const innerPromises = [];
         clientObjects.forEach((client) => {
+          emailSender.sendInvite(client.email, project, 'client');
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'client',
@@ -934,7 +938,6 @@ function deleteProject(userId, projectId) {
               if (!project) {
                 throw errors.noProjectFound();
               }
-              console.log(project);
               return { user, project };
             })
       )

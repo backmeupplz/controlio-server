@@ -38,6 +38,7 @@ function reportMagicLinkRequest(email) {
   sendMessage(`🎩 *${email}* requested magic link`);
 }
 
+
 function reportMagicLinkLogin(email) {
   sendMessage(`🎩 *${email}* logged in with magic link`);
 }
@@ -130,6 +131,10 @@ function reportDeleteProject(user, project) {
   sendMessage(`☠️ *${user.email}* deleted *${project.title}*`);
 }
 
+function reportSendInvite(email, project) {
+  sendMessage(`🎩 *${email}* was invited to project *${project.title}*`);
+}
+
 /** Posts.js */
 
 function reportAddPost(user, project, post) {
@@ -212,6 +217,7 @@ module.exports = {
   reportEditProject,
   reportArchiveProject,
   reportDeleteProject,
+  reportSendInvite,
   /** Posts.js */
   reportAddPost,
   reportGetPosts,
