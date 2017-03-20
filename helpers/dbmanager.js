@@ -310,8 +310,8 @@ function getProjects(userId, skip, limit, type, query) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
       .then((user) => {
-        if (type === 'all' || !type || type === "") {
-          return Project.find({ title: {'$regex': query}, $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
+        if (type === 'all' || !type || type === '') {
+          return Project.find({ title: { '$regex': query }, $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
             .sort({ updatedAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -319,7 +319,7 @@ function getProjects(userId, skip, limit, type, query) {
             .populate('lastStatus lastPost')
             .then(projects => ({ user, projects }));
         } else if (type === 'archived') {
-          return Project.find({ title: {'$regex': query}, isArchived: true, $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
+          return Project.find({ title: { '$regex': query }, isArchived: true, $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
             .sort({ updatedAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -327,7 +327,7 @@ function getProjects(userId, skip, limit, type, query) {
             .populate('lastStatus lastPost')
             .then(projects => ({ user, projects }));
         } else if (type === 'live') {
-          return Project.find({ title: {'$regex': query}, isArchived: false, $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
+          return Project.find({ title: { '$regex': query }, isArchived: false, $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
             .sort({ updatedAt: -1 })
             .skip(skip)
             .limit(limit)
