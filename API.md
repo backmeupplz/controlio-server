@@ -1,53 +1,33 @@
-# Server API #
+# Controlio server API
 
-## Важная информация: ##
+### Важная информация:
 
-Все запросы идут с базовым URL: <https://api.controlio.co>
-
-Коллекция в `Postman` для примера:https://www.getpostman.com/collections/a1022f5ec37de87107f6
-
-Со всеми моделями данных на сервере можно ознакомиться в папке [ models в репозитории сервера](./models).
-
-* **Payments:**
-  * Оплата проходит через `Stripe`, все нужные для интеграции методы тут.
-    * Test secret key:  `sk_test_YHIgl0QMnM5p0XI6YEPFdhmd`
-    * Test publishable key: `pk_test_MybaaRNvH9ndvmA5ty1atlGO`
-
-
-* **Return OK**
-  * Если метод не требует параметров, значит ему достаточно информации из хедеров. Если ответ метода описан, как **OK**, значит он может вернуть либо OK, либо ошибку.
-
-
-* **Skip & Limit**
-  * В некоторых методах есть пагинация типа `skip & limit`. 
-    * *Skip* – сколько объектов надо пропустить перед началом списка, 
-    * *Limit* – максимальное количество объектов в выдаче.
-
-
-* **Amazon S3**
-  * Все картинки хранятся в виде ключей (`keys`) для `Amazon S3`, не URL. Там с этим сервисом черт ногу сломит, для ознакомления могу посоветовать файлик `S3.swift` в iOS проекте.
-
-
-* **Headers Params**
-
-   **Required for All requests:**
-
+* Все запросы идут на базовый URL: <https://api.controlio.co> — либо на ваш локальный сервер, например: <http://localhost:3000>.
+* Коллекция в `Postman` с примерами всех запросов: <https://www.getpostman.com/collections/a1022f5ec37de87107f6>.
+* Со всеми моделями данных на сервере можно ознакомиться в папке [models в репозитории сервера](./models).
+* Оплата проходит через `Stripe`, большинство методов на сервере — просто прокси на сервера Stripe.
+* Если метод не требует параметров, значит ему достаточно информации из хедеров. Если ответ метода описан, как **OK**, значит он может вернуть либо `{ success: true }`, либо ошибку.
+* В некоторых методах есть пагинация типа `skip & limit`:
+    * `Skip` – сколько объектов надо пропустить перед началом списка
+    * `Limit` – максимальное количество объектов в выдаче.
+* Все картинки хранятся в виде ключей (`keys`) для `Amazon S3`, не URL. Там с этим сервисом черт ногу сломит, для ознакомления могу посоветовать файлик `S3.swift` в iOS проекте.
+* Headers Parameters
+   * Required for All requests:
    ```
-  apiKey: string    
+  apiKey: String
+   ```
+   * Required for Private requests:
+   ```
+  token: String
+  userId: String 
    ```
 
-   **Required for Private requests:**
+### Доступные методы
+* [Login / SignUp](#login_/_signup)
 
-   ```
-  token: string   
-  userId: string 
-   ```
+### Login / SignUp
 
-
-
-## Login / SignUp ##
-
-### POST /users/login ###
+#### POST /users/login
 
 Returns json data about a single user. [Model User](./models/user.js)
 
