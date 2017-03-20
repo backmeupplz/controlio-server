@@ -79,8 +79,8 @@ function reportSetPassword(user) {
 
 /** Projects.js */
 
-function reportGetProjects(user, skip, limit) {
-  sendMessage(`📄 *${user.email}* requested a list of projects (${skip}, ${limit})`);
+function reportGetProjects(user, skip, limit, type, query) {
+  sendMessage(`📄 *${user.email}* requested a list of projects (${skip}, ${limit}, ${type}, ${query})`);
 }
 
 function reportEditProject(project) {
