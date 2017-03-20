@@ -23,10 +23,13 @@
    ```
 
 ### Доступные методы
-* [Login / SignUp](#login_/_signup)
+* [Login / SignUp](#login-and-signup)
+   * [POST /users/login](#post-users-login)
 
+<a name="login-and-signup"/>
 ### Login / SignUp
 
+<a name="post-users-login"/>
 #### POST /users/login
 
 Returns json data about a single user. [Model User](./models/user.js)
