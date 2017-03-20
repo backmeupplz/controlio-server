@@ -3,8 +3,6 @@ const express = require('express');
 
 const router = express.Router();
 
-// const path.join(__dirname, 'templates', 'pasta-dinner')
-
 /** Method to test email */
 router.get('/email', (req, res) => {
   res.render('templates/magic-link/html', {
