@@ -201,7 +201,7 @@ function addProjectAsClient(project, user) {
             return Promise.all(promises)
               .then(() => {
                 emailSender.sendInvite(manager.email, dbProject, 'owner');
-                resolve({ success: true });
+                resolve(dbProject);
               });
           });
       })
@@ -292,7 +292,7 @@ function addProjectAsManager(project, user) {
           .then((invites) => {
             dbProject.invites = dbProject.invites.concat(invites);
             return dbProject.save()
-              .then(() => resolve({ success: true }));
+              .then(() => resolve(dbProject));
           });
       })
       .catch(err => reject(err));
