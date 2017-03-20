@@ -14,1334 +14,262 @@
 * Headers Parameters
    * Required for All requests:
    ```
-  apiKey: String
+  apiKey: string
    ```
    * Required for Private requests:
    ```
-  token: String
-  userId: String 
+  token: string
+  userId: string 
    ```
 
+---
 ### Доступные методы
-* [Login / SignUp](#login-and-signup)
-   * [POST /users/login](#post-users-login)
+* [Login / SignUp](#login--signup)
+  * [POST /users/login](#post-userslogin)
+  * [POST /users/signUp](#post-userssignup)
+  * [POST /users/requestMagicLink](#post-usersrequestmagiclink)
+  * [POST /users/loginMagicLink](#post-loginmagiclink)
+  * [POST /users/logout](#post-userslogout)
+* [Users](#users)
+  * [GET /users/profile](#get-usersprofile)
+  * [POST /users/profile](#post-usersprofile)
+* [Projects](#projects)
 
-<a name="login-and-signup"/>
+---
 ### Login / SignUp
+---
+#### POST /users/login `Public`
 
-<a name="post-users-login"/>
-#### POST /users/login
+[User](./models/user.js) login.
 
-Returns json data about a single user. [Model User](./models/user.js)
+#####=> email, password, (iosPushToken), (androidPushToken), (webPushToken)
+#####<= [User](./models/user.js)
+---
+#### POST /users/signUp `Public`
 
-* **Method:**
+[User](./models/user.js) signup.
 
-  `POST /users/login`
-
-* **Headers Params**
-
-   *Required*:
-
-   ```
-  apiKey: string      
-   ```
-
-* **Body Params**
-
-   *Required*:
-
-   ```
-  email: string      
-  password: string (length > 6)
-   ```
-
-   *Optional*:
-
-   ```
-  iosPushToken: string
-  androidPushToken: string
-  webPushToken: string
-   ```
-
-* **Success Response:**
-
-  *Code*: **200**
-  Content: 
-  ```json
-  { "message": "Add sample content" }
-  ```
-
-* **Error Response:** (**Sample**)
-
-  *Code*: **401** UNAUTHORIZED
-  Content: 
-  ```json
-  { "error": "Log in" }
-  ```
-  OR
-
-  *Code*: **422** UNPROCESSABLE ENTRY
-  Content: 
-  ```json
-  { "error": "Email Invalid" }
-  ```
-
-
-
-### POST /users/signUp ###
-
-Returns json data about a single user. [Model User](./models/user.js)
-
-* **Method:**
-
-  `POST /users/signUp`
-
-* **Headers Params**
-
-   *Required*:
-
-   ```
-  apiKey: string      
-   ```
-
-* **Body Params**
-
-   *Required*:
-
-   ```
-  email: string      
-  password: string (length > 6)
-   ```
-
-   *Optional*:
-
-   ```
-  iosPushToken: string
-  androidPushToken: string
-  webPushToken: string
-   ```
-
-* **Success Response:**
-
-  *Code*: **200**
-  Content: 
-  ```json
-  User Model
-  ```
-
-
-
-
-### POST /users/recoverPassword
-
-Return OK. 
+#####=> email, password, (iosPushToken), (androidPushToken), (webPushToken)
+#####<= [User](./models/user.js)
+---
+#### POST /users/recoverPassword `Public`
 
 Нужно просто сделать запрос – дальше юзеру придет email на почту и в веб форме он меняет пароль. Все уже сделано, от клиента нужно только сделать запрос в нужное время, все остальное делается на сервере, в том числе и формы ресета пароля.
 
-- **Method:**
-
-  `POST /users/recoverPassword`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string      
-  ```
-
-- **Body Params**
-
-   *Required*:
-
-  ```
-  email: string      
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  OK
-  ```
-
-
-
-
-### POST /users/requestMagicLink
-
-Return OK. 
+#####=> email
+#####<= OK
+---
+#### POST /users/requestMagicLink `Public`
 
 Можно посмотреть, как работают Magic Links, например, в приложении Slack. Вызов этого метода присылает юзеру на имеил линк формата `example.com/magic?userid=12345&token=6789`. Благодаря существованию `Universal links` в iOS, ссылка сразу ведет в приложение Controlio, передает ему `userId` и `token`, нужные для следующего метода.
 
-- **Method:**
+#####=> email
+#####<= OK
+---
+#### POST /users/loginMagicLink `Public`
 
-  `POST /users/requestMagicLink`
+[User](./models/user.js) login with magic link. Вызывается уже внутри приложения, после открытия с `userid` и `token` из магической ссылки.
 
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string      
-  ```
-
-- **Body Params**
-
-   *Required*:
-
-  ```
-  email: string      
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  OK
-  ```
-
-
-
-
-### POST /users/loginMagicLink
-
-Returns json data about a single user. [Model User](./models/user.js)
-
-Вызывается уже внутри приложения, после открытия при помощи magic link.
-
-- **Method:**
-
-  `POST /users/loginMagicLink`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string      
-  ```
-
-- **Body Params**
-
-   *Required*:
-
-  ```
-  token: string   
-  userId: string 
-  ```
-
-   *Optional*:
-
-   ```
-  iosPushToken: string
-  androidPushToken: string
-  webPushToken: string
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  User Model
-  ```
-
-  ​
-
-
-
-### POST /users/logout `Private`
-
-Returns json data about a single user. [Model User](./models/user.js)
+#####=> userid, token, (iosPushToken), (androidPushToken), (webPushToken)
+#####<= [User](./models/user.js)
+---
+#### POST /users/logout
 
 Используется для стирания пуш токенов. Вызывать, конечно, не обязательно при логауте, но желательно. Главное, незаметно для пользователя.
 
-- **Method:**
+#####=> (iosPushToken), (androidPushToken), (webPushToken)
+#####<= OK
+---
+### Users
+---
+#### GET /users/profile
 
-  `POST /users/loginMagicLink`
+Returns json data about a single [User](./models/user.js). Нужен, чтобы получить профиль любого юзера (или себя, если id не указан).
 
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-   *Optional*:
-
-   ```
-  iosPushToken: string
-  androidPushToken: string
-  webPushToken: string
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  User Model
-  ```
-
-
-
-## User
-### GET /users/profile `Private`
-
-Returns json data about a single user. [Model User](./models/user.js)
-
-Нужен, чтобы получить профиль любого юзера (или себя, если id не указан)
-
-- **Method:**
-
-  `GET /users/profile`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-   *Optional*:
-
-   ```
-  id: string
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  User Model
-  ```
-
-
-### POST /users/profile `Private`
-
-Returns json data about a single user. [Model User](./models/user.js)
+#####=> (id)
+#####<= [User](./models/user.js)
+---
+#### POST /users/profile
 
 Простое редактирование профиля пользователя. Нужно отсылать все три поля, даже те, что не отредактированы (можно отсылать пустые значения)
 
-- **Method:**
+#####=> name, phone, photo
+#####<= [User](./models/user.js)
+---
+### Projects
+---
+#### POST /projects
 
-  `POST /users/profile`
+Create a [Project](./models/project.js). Создание проекта. Либо его создает клиент — тогда указывает один managerEmail, либо менеджер — тогда он указывает массив имейлов клиентов.
+#####=> title, type [`manager`, `client`], (image), (status), (description), (managerEmail), (clientEmails)
+#####<= [Project](./models/project.js)
+---
+#### GET /projects
 
-- **Headers Params**
+Возвращает все [Project](./models/project.js) юзера.
 
-   *Required*:
+#####=> (skip), (limit)
+#####<= [[Project](./models/project.js)]
+---
+#### GET /invites
 
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
+Получение списка [Invite](./models/invite.js) юзера.
 
-- **Body Params**
+#####<= [[Invite](./models/invite.js)]
+---
+#### GET /projects/project
 
-   Required:
+Returns json data about a single [Project](./models/project.js).
 
-  ```
-  name: string  
-  phone: string   
-  photo: string (Key Amazon S3)
-  ```
-   *Optional*:
+#####=> projectid
+#####<= [Project](./models/project.js)
+---
+#### POST /projects/clients
 
-   ```
-  id: string
-   ```
+Добавление новых клиентов по email.
 
-- **Success Response:**
+#####=> projectid, clients
+#####<= [Project](./models/project.js)
+---
+#### DELETE /projects/client
 
-  *Code*: **200**
-  Content: 
+Удаление клиента из проекта.
 
-  ```json
-  User Model
-  ```
+#####=> projectid, clientid
+#####<= [Project](./models/project.js)
+---
+#### POST /projects/managers
 
+Добавление новых менеджеров по email.
 
+#####=> projectid, managers
+#####<= [Project](./models/project.js)
+---
+#### DELETE /projects/manager `Private`
 
+Удаление менеджера из проекта
 
-## Projects
+#####=> projectid, managerid
+#####<= [Project](./models/project.js)
+---
+#### PUT /projects
 
-### POST /projects `Private`
+Редактирование [Project](./models/project.js).
 
-Create project. [Model Project](./models/project.js)
+#####=> projectid, title, (description), (image)
+#####<= [Project](./models/project.js)
+---
+#### POST /projects/archive
 
-Создание проекта. Либо его создает клиент — тогда указывает один managerEmail, либо менеджер — тогда он указывает массив имейлов клиентов.
+Archive [Project](./models/project.js).
 
-- **Method:**
+#####=> projectid
+#####<= [Project](./models/project.js)
+---
+#### POST /projects/unarchive
 
-  `POST /projects`
+Unarchive [Project](./models/project.js).
 
-- **Headers Params**
+#####=> projectid
+#####<= [Project](./models/project.js)
+---
+#### POST /projects/leave
 
-   *Required*:
+Leave [Project](./models/project.js).
+#####=> projectid
+#####<= OK
+---
+#### DELETE /projects
 
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
+Delete [Project](./models/project.js).
 
-- **Body Params**
-   *Required*:
+#####=> projectid
+#####<= OK
+---
+#### POST /projects/invite
 
-  ```
-  title: string  
-  type: string (value: "manager" OR "client")
-  ```
-   *Optional*:
+Accept or reject an [Invite](./models/invite.js).
 
-   ```
-  image: string (Key Amazon S3)
-  status: string
-  description: string
-  managerEmail: string 
-   ```
+#####=> inviteid, accept
+#####<= OK
+---
+#### DELETE /projects/invite
 
-- **Success Response:**
+Delete [Invite](./models/invite.js).
 
-  *Code*: **200**
-  Content: 
+#####=> inviteid
+#####<= OK
+---
+### Posts
+---
+#### POST /posts
 
-  ```json
-  Project
-  ```
+Create a [Post](./models/post.js). Добавление поста в проект либо смена статуса проекта. Attachments – массив объектов класса String, ключи для Amazon S3.
 
+#####=> projectid, (text), (attachments), type [`post`, `status`]
+#####<= [Post](./models/post.js)
+---
+#### GET /posts
 
+Получение списка [Post](./models/post.js) проекта.
 
+#####=> projectid
+#####<= [[Post](./models/post.js)]
+---
+#### PUT /posts
 
-### GET /projects `Private`
+Edit [Post](./models/post.js).
 
-Returns json data about projects. [Model Project](./models/project.js)
+#####=> projectid, postid, (text), (attachments)
+#####<= [Post](./models/post.js)
+---
+#### Delete /posts
 
-Простое редактирование профиля пользователя. Нужно отсылать все три поля, даже те, что не отредактированы (можно отсылать пустые значения)
+Удаление поста.
 
-- **Method:**
+#####=> projectid, postid
+#####<= OK
+---
+### Payments
+---
+#### GET /payments/customer
 
-  `GET /projects`
+Returns json data about a [Stipe Customer](https://stripe.com/docs/api#customers).
 
-- **Headers Params**
+#####=> customerid
+#####<= [Stipe Customer](https://stripe.com/docs/api#customers)
+---
+#### POST /payments/customer/sources 
 
-   *Required*:
+Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-   *Optional*:
-
-   ```
-  skip: number
-  limit: number
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  [Project]
-  ```
-
-
-
-
-### GET /invites `Private`
-
-Returns json data about invites. [Model Invite](./models/invite.js)
-
-Получение списка инвайтов.
-
-- **Method:**
-
-  `GET /invites`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  [Invite]
-  ```
-
-
-
-### GET /projects/project `Private`
-
-Returns json data about a single project. [Model Project](./models/project.js)
-
-Получение проекта по id.
-
-- **Method:**
-
-  `GET /projects/project`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-   *Required*:
-
-   ```
-  projectid: string
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  [Project]
-  ```
-
-
-
-
-### POST /projects/clients `Private`
-
-Returns json data about a single project. [Model Project](./models/project.js)
-
-Добавление новых клиентов.
-
-- **Method:**
-
-  `POST /projects/clients`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-   *Required*:
-
-   ```
-  projectid: string
-  clients: [string] (array email)
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  [Project]
-  ```
-
-### DELETE /projects/client `Private`
-
-Return OK.
-
-Удаление клиента из проекта
-
-- **Method:**
-
-  `DELETE /projects/client`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-   *Required*:
-
-   ```
-  projectid: string
-  clientid: string
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  OK
-  ```
-
-
-
-
-### POST /projects/managers `Private`
-
-Returns json data about a single project. [Model Project](./models/project.js)
-
-Добавление новых менеджеров.
-
-- **Method:**
-
-  `POST /projects/managers`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-   *Required*:
-
-   ```
-  projectid: string
-  managers: [string] (array email)
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  [Project]
-  ```
-
-### DELETE /projects/manager `Private`
-
-Returns json data about a single project. [Model Project](./models/project.js)
-
-Удаление клиента из проекта
-
-- **Method:**
-
-  `DELETE /projects/manager`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-   *Required*:
-
-   ```
-  projectid: string
-  managerid: string
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  OK
-  ```
-
-
-### PUT /projects `Private`
-
-Edit project. [Model Project](./models/project.js)
-
-Создание проекта. Либо его создает клиент — тогда указывает один managerEmail, либо менеджер — тогда он указывает массив имейлов клиентов.
-
-- **Method:**
-
-  `PUT /projects`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  projectid: string
-  title: string  
-  type: string (value: "manager" OR "client")
-  image: string (Key Amazon S3)
-  description: string
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  Project
-  ```
-
-### POST /projects/archive `Private`
-
-Archive project. [Model Project](./models/project.js)
-
-Архивирование проекта
-
-- **Method:**
-
-  `POST /projects/archive`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  projectid: string
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  Project
-  ```
-
-### POST /projects/unarchive `Private`
-
-Unarchive project. [Model Project](./models/project.js)
-
-Разархивирование проекта
-
-- **Method:**
-
-  `POST /projects/unarchive`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  projectid: string
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  Project
-  ```
-### POST /projects/leave `Private`
-
-leave project. [Model Project](./models/project.js)
-
-Выйти из проекта
-
-- **Method:**
-
-  `POST /projects/leave`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  projectid: string
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  OK
-  ```
-
-### DELETE /projects `Private`
-
-Delete project. [Model Project](./models/project.js)
-
-Удаление проекта
-
-- **Method:**
-
-  `DELETE /projects`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  projectid: string
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  OK
-  ```
-
-### POST /projects/invite `Private`
-
-Accept or reject invite. [Model Invite](./models/invite.js)
-
-Принять или отклонить инвайт
-
-- **Method:**
-
-  `POST /projects/invite`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  inviteid: string 
-  accept: boolean
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  OK
-  ```
-
-### DELETE /projects/invite `Private`
-
-Delete invite. [Model Invite](./models/invite.js)
-
-Удаление полученного инвайта
-
-- **Method:**
-
-  `DELETE /projects/invite`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  inviteid: string
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  OK
-  ```
-
-## Post ##
-### POST /posts `Private`
-
-Create post. [Model Post](./models/post.js)
-
-Добавление поста в проект либо смена статуса проекта. Attachments – массив объектов класса String, ключи для Amazon S3
-
-- **Method:**
-
-  `POST /posts`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  projectid: string
-  text: string
-  attachments: [string] (Keys Amazon S3)
-  type: string (value: "post" or "status")
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  Post
-  ```
-
-### GET /posts `Private`
-
-Returns json data about posts.  [Model Post](./models/post.js)
-
-Получение списка постов на проект
-
-- **Method:**
-
-  `GET /posts`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-
-  *Required*:
-
-  ```
-  projectid: string
-  ```
-
-   *Optional*:
-
-   ```
-  skip: number
-  limit: number
-   ```
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  [Post]
-  ```
-
-### PUT /posts `Private`
-
-Edit post. [Model Post](./models/post.js)
-
-Редактирование поста
-
-- **Method:**
-
-  `PUT /posts`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  projectid: string
-  text: string
-  attachments: [string] (Keys Amazon S3)
-  type: string (value: "post" or "status")
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  Post
-  ```
-
-### Delete /posts `Private`
-
-Return OK.
-
-Удаление поста
-
-- **Method:**
-
-  `Delete /posts`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-   *Required*:
-
-   ```
-  projectid: string
-  postid: string
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  OK
-  ```
-
-## Payments ##
-### GET /payments/customer `Private`
-
-Returns json data about a ` StripeCustomer`.  API Stripe: [Stipe Customer](https://stripe.com/docs/api#customers)
-
-Получение юзера stripe по customerid из strip’а
-
-- **Method:**
-
-  `GET /payments/customer`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-
-  *Required*:
-
-  ```
-  customerid: string
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  StripeCustomer
-  ```
-
-### POST /payments/customer/sources `Private`
-
-Returns json data about a ` StripeSource`.  API Stripe: [Stipe API](https://stripe.com/docs/api)
-
-Добавление способа оплаты в страйпе
-
-- **Method:**
-
-  `POST /payments/customer/sources`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  customerid: string
-  source: StripeSource
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  StripeSource
-  ```
-
-### POST /payments/customer/default_source `Private`
-
-Create post. [Model Post](./models/post.js)
+#####=> customerid, source
+#####<= StripeSource
+---
+#### POST /payments/customer/default_source
 
 Метод для установки дефолтного платежного метода юзера Stripe
 
-- **Method:**
-
-  `POST /payments/customer/default_source`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  customerid: string
-  source: StripeSource
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  StripeCustomer
-  ```
-
-### POST /payments/customer/subscription `Private`
+#####=> customerid, source
+#####<= [Stipe Customer](https://stripe.com/docs/api#customers)
+---
+#### POST /payments/customer/subscription
 
 Подписка юзера на определенный план. 
 
-* Plans: 
-  * 0: free
-  * 1:  $20 
-  * 2:  $50
-  * 3: $100
-
-
-
-* **Method:**
-
-  `POST /payments/customer/subscription`
-
-* **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-* **Body Params**
-   *Required*:
-
-  ```
-  coupon: number (value is one of [0, 1, 2, 3])
-  ```
-
-* **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  User
-  ```
-
-### POST /payments/customer/coupon `Private`
+#####=> userid, planid ['0', '1', '2', '3']
+#####<= OK
+---
+#### POST /payments/customer/coupon
 
 Применение к юзеру купона.
 
-- **Method:**
-
-  `POST /payments/customer/coupon`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-   *Required*:
-
-  ```
-  coupon: string (ID coupon)
-  ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  Post
-  ```
-
-
-### Delete /customer/card `Private`
-
-Return OK.
+#####=> userid, coupon
+#####<= OK
+---
+#### Delete /customer/card
 
 Удаление карточки оплаты у пользователя
 
-- **Method:**
-
-  `Delete /customer/card`
-
-- **Headers Params**
-
-   *Required*:
-
-  ```
-  apiKey: string  
-  token: string   
-  userId: string 
-  ```
-
-- **Body Params**
-
-   *Required*:
-
-   ```
-  customerid: string
-  cardid: string
-   ```
-
-- **Success Response:**
-
-  *Code*: **200**
-  Content: 
-
-  ```json
-  OK
-  ```
+#####=> customerid, cardid
+#####<= OK

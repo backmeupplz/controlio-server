@@ -204,7 +204,7 @@ function addProjectAsClient(project, user) {
               });
           });
       })
-      .catch(err => reject(err));;
+      .catch(err => reject(err));
   });
 }
 
