@@ -21,8 +21,9 @@ html(xmlns='http://www.w3.org/1999/xhtml')
                     each text in texts
                       tr
                         td.content-block= text
+                    if button_url && button_title
+                      tr
+                        td.content-block
+                          a.btn-primary(href='/#{button_url}') #{button_title}
                     tr
-                      td.content-block
-                        a.btn-primary(href='/#{button_url}') #{button_title}
-                    tr
-                      td.content-block Thanks for choosing Controlio.
+                      td.content-block Thanks for choosing Controlio!

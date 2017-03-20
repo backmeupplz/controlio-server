@@ -187,9 +187,6 @@ function addProjectAsClient(project, user) {
       })
       /** Add invite to owner */
       .then(({ dbProject, dbUser, manager }) => {
-        console.log(dbUser.email, 'was invited to project as OC');
-        emailSender.sendInvite(dbUser.email, dbProject);
-        botReporter.reportSendInvite(dbUser.email, dbProject);
         const invite = new Invite({
           type: 'own',
           sender: dbUser._id,
@@ -200,12 +197,10 @@ function addProjectAsClient(project, user) {
           .then((dbInvite) => {
             dbProject.invites.push(dbInvite._id);
             manager.invites.push(dbInvite._id);
-            console.log(manager.email, 'was invited to project as M');
-            emailSender.sendInvite(manager.email, dbProject);
-            botReporter.reportSendInvite(manager.email, dbProject);
             const promises = [dbProject.save(), manager.save()];
             return Promise.all(promises)
               .then(() => {
+                emailSender.sendInvite(manager.email, dbProject, 'owner');
                 resolve({ success: true });
               });
           });
@@ -270,13 +265,8 @@ function addProjectAsManager(project, user) {
       /** Add invites to clients */
       .then(({ dbUser, dbProject, clients }) => {
         const innerPromises = [];
-        console.log(dbUser.email, 'was invited to project as OM');
-        emailSender.sendInvite(dbUser.email, dbProject);
-        botReporter.reportSendInvite(dbUser.email, dbProject);
         clients.forEach((client) => {
-          console.log(client.email, 'was invited to project as C');
-          emailSender.sendInvite(client.email, dbProject);
-          botReporter.reportSendInvite(client.email, dbProject);
+          emailSender.sendInvite(client.email, dbProject, 'client');
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'client',
@@ -525,7 +515,7 @@ function removeInvite(userId, inviteId) {
   return new Promise((resolve, reject) =>
     /** Find user and invite */
     findUserById(userId)
-      .then(user => 
+      .then(user =>
         Invite.findById(inviteId)
           .populate('project invitee')
           .then((invite) => {
@@ -576,7 +566,7 @@ function addManagers(userId, projectId, managers) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
     findUserById(userId)
-      .then(user => 
+      .then(user =>
         Project.findById(projectId)
           .then((project) => {
             if (!project) {
@@ -615,7 +605,7 @@ function addManagers(userId, projectId, managers) {
         const owner = String(project.owner);
         const filteredManagerObjects = managerObjects.filter((managerObject) => {
           const id = String(managerObject._id);
-          const valid = true;
+          let valid = true;
           if (existingClients.includes(id)) {
             valid = false;
           }
@@ -629,13 +619,10 @@ function addManagers(userId, projectId, managers) {
         });
         return { managerObjects: filteredManagerObjects, project, user };
       })
-      /** Add client invites */
+      /** Add manager invites */
       .then(({ managerObjects, project, user }) => {
         const innerPromises = [];
         managerObjects.forEach((manager) => {
-          console.log(manager.email, 'was ADDED to project as M');
-          emailSender.sendInvite(manager.email, project);
-          botReporter.reportSendInvite(manager.email, project);
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'manage',
@@ -648,6 +635,7 @@ function addManagers(userId, projectId, managers) {
                 manager.invites.push(dbInvite);
                 return manager.save()
                   .then(() => {
+                    emailSender.sendInvite(manager.email, project, 'manager');
                     resolve(dbInvite._id);
                   });
               });
@@ -780,9 +768,7 @@ function addClients(userId, projectId, clients) {
       .then(({ clientObjects, project, user }) => {
         const innerPromises = [];
         clientObjects.forEach((client) => {
-          console.log(client.email, 'was ADDED to project as C');
-          emailSender.sendInvite(client.email, project);
-          botReporter.reportSendInvite(client.email, project);
+          emailSender.sendInvite(client.email, project, 'client');
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'client',
