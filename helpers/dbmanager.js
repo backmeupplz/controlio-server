@@ -1146,9 +1146,12 @@ function getPosts(userId, projectId, skip, limit) {
           {
             path: 'invites',
           }])
+
           .then(project => ({ user, project }))
       )
       .then(({ user, project }) => {
+        botReporter.reportGetPosts(user, project);
+
         if (!project) {
           throw errors.noProjectFound();
         }

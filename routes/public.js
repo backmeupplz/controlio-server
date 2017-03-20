@@ -27,7 +27,7 @@ router.get('/resetPassword', validate(validation.getResetPassword), (req, res) =
         user.tokenForPasswordResetIsFresh = false;
         user.save()
           .then(() => {
-            botReporter.reportGetResetPassword(user.email);
+            botReporter.reportGetResetPassword(user);
             res.render('reset-password', { userid: userId, token });
           })
           .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
@@ -61,7 +61,7 @@ router.post('/resetPassword', validate(validation.postResetPassword), (req, res)
             user.password = result;
             user.save()
               .then(() => {
-                botReporter.reportResetPassword(user.email);
+                botReporter.reportResetPassword(user);
                 res.render('success', { message: 'Password was updated!' });
               })
               .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
@@ -90,7 +90,7 @@ router.get('/setPassword', validate(validation.getSetPassword), (req, res) => {
         user.tokenForPasswordResetIsFresh = false;
         user.save()
           .then(() => {
-            botReporter.reportGetSetPassword(user.email);
+            botReporter.reportGetSetPassword(user);
             res.render('set-password', { userid: userId, token });
           })
           .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
@@ -126,7 +126,7 @@ router.post('/setPassword', validate(validation.postSetPassword), (req, res) => 
             user.password = result;
             user.save()
               .then(() => {
-                botReporter.reportSetPassword(user.email);
+                botReporter.reportSetPassword(user);
                 res.render('success', { message: 'Password has been set!' });
               })
               .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));

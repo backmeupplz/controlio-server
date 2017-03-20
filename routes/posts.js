@@ -33,8 +33,6 @@ router.get('/', validate(validation.get), (req, res, next) => {
   const skip = parseInt(req.query.skip || 0, 10);
   const limit = parseInt(req.query.limit || 20, 10);
 
-  botReporter.reportGetPosts(projectId, skip, limit);
-
   dbmanager.getPosts(userId, projectId, skip, limit)
     .then(posts => res.send(posts))
     .catch(err => next(err));
