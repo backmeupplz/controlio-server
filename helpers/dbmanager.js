@@ -598,6 +598,13 @@ function addManagers(userId, projectId, managers) {
         }
         return { project, user };
       })
+      /** Check if archived */
+      .then(({ user, project }) => {
+        if (project.isArchived) {
+          throw errors.projectIsArchived();
+        }
+        return { project, user };
+      })
       /** Get clients objects */
       .then(({ project, user }) => {
         const promises = [];
@@ -739,6 +746,13 @@ function addClients(userId, projectId, clients) {
         });
         if (!authorized) {
           throw errors.notAuthorized();
+        }
+        return { project, user };
+      })
+      /** Check if archived */
+      .then(({ user, project }) => {
+        if (project.isArchived) {
+          throw errors.projectIsArchived();
         }
         return { project, user };
       })
@@ -1063,6 +1077,7 @@ function addPost(userId, projectId, text, attachments, type) {
         Project.findById(projectId)
           .then(project => ({ user, project }))
       )
+      /** Check if owner */
       .then(({ user, project }) => {
         let authorized = false;
         if (project.owner.equals(user._id)) {
@@ -1077,6 +1092,13 @@ function addPost(userId, projectId, text, attachments, type) {
           throw errors.notAuthorized();
         }
         return { user, project };
+      })
+      /** Check if archived */
+      .then(({ user, project }) => {
+        if (project.isArchived) {
+          throw errors.projectIsArchived();
+        }
+        return { project, user };
       })
       .then(({ user, project }) => {
         const post = new Post({
