@@ -29,7 +29,7 @@ function noAccess() {
   return error(403, 'No access', 'NO_ACCESS_ERROR');
 }
 function authEmailNotRegistered() {
-  return error(403, 'Email not registered', 'EMAIL_NOT_REGISTERED');
+  return error(403, 'Email not registered', 'EMAIL_NOT_REGISTERED_ERROR');
 }
 function validManagerEmail() {
   return error(403, 'Please provide a valid manager email', 'INVALID_MANAGER_EMAIL_ERROR');
@@ -65,7 +65,7 @@ function noClientObjectsCreated() {
   return error(500, 'No client objects created', 'CLIENT_OBJECT_NOT_CREATED_ERROR');
 }
 function addSelfAsManager() {
-  return error(400, 'You cannot add yourself as a manager'), 'ADD_SELF_AS_MANAGER_ERROR';
+  return error(400, 'You cannot add yourself as a manager', 'ADD_SELF_AS_MANAGER_ERROR');
 }
 function addSelfAsClient() {
   return error(400, 'You cannot add yourself as a client', 'ADD_SELF_AS_CLIENT_ERROR');
@@ -110,7 +110,7 @@ function leaveAsOwner() {
   return error(403, 'You cannot leave the project as an owner', 'LEAVE_AS_OWNER_ERROR');
 }
 function managersOverLimit() {
-  return error(403, 'This project has reached it\'s manager limits','MANAGER_LIMIT_ERROR');
+  return error(403, 'This project has reached it\'s manager limits', 'MANAGER_LIMIT_ERROR');
 }
 function usersOverLimit() {
   return error(403, 'This project has reached it\'s users limits', 'USER_LIMIT_ERROR');
