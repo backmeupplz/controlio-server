@@ -7,11 +7,13 @@
 
 /** Dependencies */
 const helper = require('sendgrid').mail;
-const sg = require('sendgrid')('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');
+const config = require('../config');
+const sg = require('sendgrid')(config.sendgridApiKey);
 const path = require('path');
 const EmailTemplate = require('email-templates').EmailTemplate;
+const juice = require('juice');
 
-const templateDir = path.join(__dirname, '..', 'templates', 'email');
+const templateDir = path.join(__dirname, '..', 'views', 'templates', 'email');
 const emailTemplate = new EmailTemplate(templateDir);
 
 /**
@@ -110,17 +112,20 @@ function sendEmail(data, subject, receiver) {
 
   emailTemplate.render(data, (err, result) => {
     /** todo: handle error */
+    juice.juiceResources(result.html, {}, (error, html) => {
+      /** todo: handle error */
+      result.html = html;
+      const content = new helper.Content('text/html', result.html);
+      const mail = new helper.Mail(fromEmail, subject, toEmail, content);
 
-    const content = new helper.Content('text/html', result);
-    const mail = new helper.Mail(fromEmail, subject, toEmail, content);
+      const request = sg.emptyRequest({
+        method: 'POST',
+        path: '/v3/mail/send',
+        body: mail.toJSON(),
+      });
 
-    const request = sg.emptyRequest({
-      method: 'POST',
-      path: '/v3/mail/send',
-      body: mail.toJSON(),
+      sg.API(request);
     });
-
-    sg.API(request);
   });
 }
 
