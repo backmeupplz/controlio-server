@@ -8,38 +8,27 @@
 /** Dependencies */
 const helper = require('sendgrid').mail;
 const sg = require('sendgrid')('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');
-const hogan = require('hogan.js');
 const path = require('path');
-const fs = require('fs');
+const EmailTemplate = require('email-templates').EmailTemplate;
 
-/** Load email templates */
-const emailResetRawHtml = fs.readFileSync(path.join(__dirname, '../views/email-reset.hjs'), 'utf8');
-const emailResetPasswordTemplate = hogan.compile(emailResetRawHtml);
-
-const emailMagicRawHtml = fs.readFileSync(path.join(__dirname, '../views/email-magic-link.hjs'), 'utf8');
-const emailMagicLinkTemplate = hogan.compile(emailMagicRawHtml);
-
-const emailSetRawHtml = fs.readFileSync(path.join(__dirname, '../views/email-set.hjs'), 'utf8');
-const emailSetPasswordTemplate = hogan.compile(emailSetRawHtml);
+const templateDir = path.join(__dirname, '..', 'templates', 'email');
+const emailTemplate = new EmailTemplate(templateDir);
 
 /**
  * Function to send reset password email
  * @param {Mongo:User} user user that should get an email
  */
 function sendResetPassword(user) {
-  const fromEmail = new helper.Email('noreply@controlio.co');
-  const toEmail = new helper.Email(user.email);
-  const subject = 'Controlio: reset your password';
-  const content = new helper.Content('text/html', emailResetPasswordTemplate.render({ userid: user._id, token: user.tokenForPasswordReset }));
-  const mail = new helper.Mail(fromEmail, subject, toEmail, content);
+  const data = {
+    button_title: 'Set new password',
+    button_url: `https://api.controlio.co/public/resetPassword?userid=${user._id}&token=${user.tokenForPasswordReset}`,
+    texts: [
+      'Hello there! Somebody requested us to send you the link to reset your password at Controlio. Please hit the button below to set new password.',
+      'If it wasn\'t you who requested reset, please ignore this email.',
+    ],
+  };
 
-  const request = sg.emptyRequest({
-    method: 'POST',
-    path: '/v3/mail/send',
-    body: mail.toJSON(),
-  });
-
-  sg.API(request);
+  sendEmail(data, 'Controlio: reset your password', user.email);
 }
 
 /**
@@ -47,19 +36,15 @@ function sendResetPassword(user) {
  * @param {Mongo:User} user user that should get an email
  */
 function sendSetPassword(user) {
-  const fromEmail = new helper.Email('noreply@controlio.co');
-  const toEmail = new helper.Email(user.email);
-  const subject = 'Controlio: set your password';
-  const content = new helper.Content('text/html', emailSetPasswordTemplate.render({ userid: user._id, token: user.tokenForPasswordReset }));
-  const mail = new helper.Mail(fromEmail, subject, toEmail, content);
+  const data = {
+    button_title: 'Set new password',
+    button_url: `https://api.controlio.co/public/setPassword?userid=${user._id}&token=${user.tokenForPasswordReset}`,
+    texts: [
+      'Hello there! Somebody has invited you to Controlio and you need to set the password for your account. Please do so by clicking the button below.',
+    ],
+  };
 
-  const request = sg.emptyRequest({
-    method: 'POST',
-    path: '/v3/mail/send',
-    body: mail.toJSON(),
-  });
-
-  sg.API(request);
+  sendEmail(data, 'Controlio: set your password', user.email);
 }
 
 /**
@@ -67,19 +52,76 @@ function sendSetPassword(user) {
  * @param {Mongo:User} user user that should get an email
  */
 function sendMagicLink(user) {
+  const data = {
+    button_title: 'Login to Controlio',
+    button_url: `https://api.controlio.co/magic?userid=${user._id}&token=${user.magicToken}`,
+    texts: [
+      'Click the button below to login to Controlio. Yeah, we know, as simple as that.',
+    ],
+  };
+
+  sendEmail(data, 'Controlio: your magic link', user.email);
+}
+
+/**
+ * Function to send invite to client
+ * @param {Mongo:User} user user that should get an email
+ * @param {String} type Type of invite ('client', 'manager' or 'owner')
+ */
+function sendInvite(email, project, type) {
+  let inviteMessage;
+  switch (type) {
+    case 'client':
+      inviteMessage = `Somebody has invited you to "${project.name}" as a client.`;
+      break;
+    case 'manager':
+      inviteMessage = `Somebody has invited you to "${project.name}" as a manager.`;
+      break;
+    default:
+      inviteMessage = `Somebody has invited you to "${project.name}" as an owner.`;
+      break;
+  }
+
+  const data = {
+    button_title: 'Install Controlio',
+    button_url: 'https://itunes.apple.com/ca/app/controlio/id997857994',
+    texts: [
+      'Congratulations!',
+      inviteMessage,
+      `${project.title}:`,
+      project.description,
+      'You can install Controlio following the link below.',
+    ],
+  };
+
+  sendEmail(data, 'Controlio: your magic link', email);
+}
+
+/**
+ * Function to send email
+ * @param {Object} data Object with all required data to render email
+ * @param {String} subject Subject of the email
+ * @param {String(Email)} receiver Email of the receiver
+ */
+function sendEmail(data, subject, receiver) {
   const fromEmail = new helper.Email('noreply@controlio.co');
-  const toEmail = new helper.Email(user.email);
-  const subject = 'Controlio: your magic link';
-  const content = new helper.Content('text/html', emailMagicLinkTemplate.render({ userid: user._id, token: user.magicToken }));
-  const mail = new helper.Mail(fromEmail, subject, toEmail, content);
+  const toEmail = new helper.Email(receiver);
+  data.title = subject;
 
-  const request = sg.emptyRequest({
-    method: 'POST',
-    path: '/v3/mail/send',
-    body: mail.toJSON(),
+  emailTemplate.render(data, (err, result) => {
+    /** todo: handle error */
+
+    const content = new helper.Content('text/html', result);
+    const mail = new helper.Mail(fromEmail, subject, toEmail, content);
+
+    const request = sg.emptyRequest({
+      method: 'POST',
+      path: '/v3/mail/send',
+      body: mail.toJSON(),
+    });
+
+    sg.API(request);
   });
-
-  sg.API(request);
 }
 
 /** Exports */
@@ -87,4 +129,5 @@ module.exports = {
   sendResetPassword,
   sendSetPassword,
   sendMagicLink,
+  sendInvite,
 };
