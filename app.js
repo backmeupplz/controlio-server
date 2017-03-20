@@ -40,6 +40,7 @@ const posts = require('./routes/posts');
 const publicRoute = require('./routes/public');
 const main = require('./routes/main');
 const payments = require('./routes/payments');
+const test = require('./routes/test');
 
 /** View engine setup */
 app.set('views', path.join(__dirname, 'views'));
@@ -65,6 +66,7 @@ app.use(cors());
 /** Redirect public routes */
 app.use('/public/', publicRoute);
 app.use('/', main);
+app.use('/test/', test);
 
 /** Check api token */
 app.use(auth.checkApiKey);
