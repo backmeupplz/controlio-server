@@ -18,8 +18,6 @@ const _ = require('lodash');
 router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next) => {
   const email = req.body.email.toLowerCase();
 
-  botReporter.reportMagicLinkRequest(email);
-
   dbmanager.findUser({ email })
     .select('email')
     /** If user doesn't exist, we create one */
@@ -34,6 +32,7 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
     })
     .then((user) => {
       user.generateMagicToken(user);
+      botReporter.reportMagicLinkRequest(user);
       emailSender.sendMagicLink(user);
       return user.save()
         .then(() => res.send({ success: true }));
@@ -101,7 +100,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
         .then((savedUser) => {
           const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
           res.send(savedUserCopy);
-          botReporter.reportMagicLinkLogin(savedUserCopy.email);
+          botReporter.reportMagicLinkLogin(savedUserCopy);
         });
     })
     .catch(err => next(err));
@@ -208,7 +207,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
           const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
           res.send(dbuserCopy);
 
-          botReporter.reportSignUp(email);
+          botReporter.reportSignUp(user);
         });
     })
     .catch(err => next(err));
@@ -217,8 +216,6 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
 /** Method to send restore email password */
 router.post('/recoverPassword', validate(validation.resetPassword), (req, res, next) => {
   const email = req.body.email;
-
-  botReporter.reportPasswordResetRequest(email);
 
   dbmanager.findUser({ email })
     .select('email')
@@ -233,6 +230,7 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
     /** Save tokens and send email */
     .then((user) => {
       user.generateResetPasswordToken(user);
+      botReporter.reportPasswordResetRequest(user);
       emailSender.sendResetPassword(user);
       return user.save()
         .then(() => res.send({ success: true }));
@@ -252,7 +250,7 @@ router.post('/logout', (req, res, next) => {
     .then((user) => {
       user.iosPushTokens.filter(v => v !== iosPushToken);
 
-      botReporter.reportLogout(user.email);
+      botReporter.reportLogout(user);
 
       user.save()
         .then(() => res.send({ success: true }))

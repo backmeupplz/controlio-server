@@ -34,128 +34,79 @@ function checkIfBanned(fullURL, bannedURLs) {
 
 /** Users.js */
 
-function reportMagicLinkRequest(email) {
-  sendMessage(`🎩 *${email}* requested magic link`);
+function reportMagicLinkRequest(user) {
+  sendMessage(`🎩 *${user.email}* requested magic link. \n\n \`${JSON.stringify(user, null, 2)}\``);
 }
 
 
-function reportMagicLinkLogin(email) {
-  sendMessage(`🎩 *${email}* logged in with magic link`);
+function reportMagicLinkLogin(user) {
+  sendMessage(`🎩 *${user.email}* logged in with magic link. \n\n \`${JSON.stringify(user, null, 2)}\``);
 }
 
-function reportLogin(email) {
-  sendMessage(`🔑 *${email}* logged in`);
+function reportSignUp(user) {
+  sendMessage(`➕ *${user.email}* signed up. \n\n \`${JSON.stringify(user, null, 2)}\``);
 }
 
-function reportSignUp(email) {
-  sendMessage(`➕ *${email}* signed up`);
+function reportPasswordResetRequest(user) {
+  sendMessage(`❓ *${user.email}* requested password reset. \n\n \`${JSON.stringify(user, null, 2)}\``);
 }
 
-function reportPasswordResetRequest(email) {
-  sendMessage(`❓ *${email}* requested password reset`);
-}
-
-function reportPasswordSetRequest(email) {
-  sendMessage(`❓ *${email}* requested to set up password`);
-}
-
-function reportLogout(email) {
-  sendMessage(`✋ *${email}* logged out`);
-}
-
-function reportGetProfile(email) {
-  sendMessage(`👤 Somebody requested profile of *${email}*`);
+function reportLogout(user) {
+  sendMessage(`✋ *${user.email}* logged out. \n\n \`${JSON.stringify(user, null, 2)}\``);
 }
 
 function reportEditProfile(user) {
-  sendMessage(`✏️ *${user.email}* edited profile:\n${'```'}json\n${JSON.stringify(user, null, 2)}${'```'}`);
-}
-
-function reportAddManager(owner, manager) {
-  sendMessage(`👷 *${owner.email}* added *${manager.email}* as a manager`);
-}
-
-function reportGetManagers(email) {
-  sendMessage(`🐝 *${email}* requested a list of managers`);
-}
-
-function reportDeleteManager(owner, manager) {
-  sendMessage(`❌ *${owner.email}* deleted *${manager.email}* as a manager`);
+  sendMessage(`✏️ *${user.email}* edited profile:\n\n \`${JSON.stringify(user, null, 2)}\``);
 }
 
 /** Public.js */
 
-function reportGetResetPassword(email) {
-  sendMessage(`👀 *${email}* viewed reset password page`);
+function reportGetResetPassword(user) {
+  sendMessage(`👀 *${user.email}* viewed reset password page. \n\n \`${JSON.stringify(user, null, 2)}\``);
 }
 
-function reportResetPassword(email) {
-  sendMessage(`🗝 *${email}* has reset password`);
+function reportResetPassword(user) {
+  sendMessage(`🗝 *${user.email}* has reset password. \n\n \`${JSON.stringify(user, null, 2)}\``);
 }
 
-function reportGetSetPassword(email) {
-  sendMessage(`👀 Someone viewed set password page`);
+function reportGetSetPassword(user) {
+  sendMessage(`👀 *${user.email}* has viewed set password page. \n\n \`${JSON.stringify(user, null, 2)}\``);
 }
 
-function reportSetPassword(email) {
-  sendMessage(`🗝 Someone has set password`);
+function reportSetPassword(user) {
+  sendMessage(`🗝 *${user.email}* has set password. \n\n \`${JSON.stringify(user, null, 2)}\``);
 }
+
 /** Projects.js */
 
-function reportCreateProject(user, project) {
-  const clientEmailsString = project.clients.map(client => client.email).join(', ');
-  sendMessage(`📝 *${user.email}* created project: *${project.title}* with clients:\n${clientEmailsString}`);
-}
-
-function reportGetProjects(user, skip, limit) {
-  sendMessage(`📄 *${user.email}* requested a list of projects (${skip}, ${limit})`);
-}
-
-function reportChangeClients(project) {
-  sendMessage(`👨‍👨‍👦 Clients have changed:\n${'```'}json\n${JSON.stringify(project, null, 2)}${'```'}`);
+function reportGetProjects(user, skip, limit, type, query) {
+  sendMessage(`📄 *${user.email}* requested a list of projects (${skip}, ${limit}, ${type}, ${query})`);
 }
 
 function reportEditProject(project) {
-  sendMessage(`✒️ Project has been editted:\n${'```'}json\n${JSON.stringify(project, null, 2)}${'```'}`);
+  sendMessage(`✒️ Project has been editted:\n\n \`${JSON.stringify(project, null, 2)}\``);
 }
 
 function reportArchiveProject(user, project, archived) {
   if (archived) {
-    sendMessage(`💩 *${user.email}* archived *${project.title}*`);
+    sendMessage(`💩 *${user.email}* archived *${project.title}*. \n\n \`${JSON.stringify(project, null, 2)}\``);
   } else {
-    sendMessage(`💩 *${user.email}* unarchived *${project.title}*`);
+    sendMessage(`💩 *${user.email}* unarchived *${project.title}*. \n\n \`${JSON.stringify(project, null, 2)}\``);
   }
-}
-
-function reportDeleteProject(user, project) {
-  sendMessage(`☠️ *${user.email}* deleted *${project.title}*`);
-}
-
-function reportSendInvite(email, project) {
-  sendMessage(`🎩 *${email}* was invited to project *${project.title}*`);
 }
 
 /** Posts.js */
 
-function reportAddPost(user, project, post) {
-  const attachmentsString = post.attachments.join(', ');
-  sendMessage(`🙌 *${user.email}* added post to *${project.title}*:\n*${post.text}*\n${attachmentsString}`);
-}
-
-function reportChangeStatus(user, project, post) {
-  sendMessage(`✈️ *${user.email}* changed status of *${project.title}* to *${post.text}*`);
-}
-
-function reportGetPosts(projectid, skip, limit) {
-  sendMessage(`🚧 Somebody requested a list of posts for ${projectid} (${skip}, ${limit})`);
+function reportGetPosts(user, project) {
+  sendMessage(`🚧 *${user.email}* requested a list of posts for ${project.title}. \n\n \`${JSON.stringify(project, null, 2)}\``);
 }
 
 function reportEditPost(user, post, project) {
-  sendMessage(`🖊 *${user.email}* eddited post:\n${'```'}json\n${JSON.stringify(post, null, 2)}${'```'}`);
+  sendMessage(`🖊 *${user.email}* eddited post:\n\n \`${JSON.stringify(post, null, 2)}\`\n\n in project *${project.title}*`);
 }
 
 function reportDeletePost(user, post, project) {
-  sendMessage(`👺 *${user.email}* deleted ${post.type} *${post.text}* from *${project.title}*`);
+  sendMessage(`👺 *${user.email}* deleted ${post.type} *${post.text}* from *${project.title}*. \n\n \`${JSON.stringify(post, null, 2)}\``);
 }
 
 /** Payments.js */
@@ -174,8 +125,8 @@ function reportChangeSubscription(user, planid) {
   sendMessage(`💰 *${user.email}* changed subscription to *${planTitle}*`);
 }
 
-function reportRedeemCoupon(user, couponid) {
-  sendMessage(`💎 *${user.email}* redeemed coupon *${couponid}*`);
+function reportRedeemCoupon(user, coupon) {
+  sendMessage(`💎 *${user.email}* redeemed coupon *${coupon}*. \n\n \`${JSON.stringify(user, null, 2)}\``);
 }
 
 /** General functions */
@@ -183,7 +134,7 @@ function reportRedeemCoupon(user, couponid) {
 function sendMessage(msg) {
   if (config.telegramKey) {
     /** TODO: enable bot reporter */
-    // jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
+    jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
   }
 }
 
@@ -194,32 +145,20 @@ module.exports = {
   /** Users.js */
   reportMagicLinkRequest,
   reportMagicLinkLogin,
-  reportLogin,
   reportSignUp,
   reportPasswordResetRequest,
-  reportPasswordSetRequest,
   reportLogout,
-  reportGetProfile,
   reportEditProfile,
-  reportAddManager,
-  reportGetManagers,
-  reportDeleteManager,
   /** Public.js */
   reportGetResetPassword,
   reportResetPassword,
   reportGetSetPassword,
   reportSetPassword,
   /** Projects.js */
-  reportCreateProject,
   reportGetProjects,
-  reportChangeStatus,
-  reportChangeClients,
   reportEditProject,
   reportArchiveProject,
-  reportDeleteProject,
-  reportSendInvite,
   /** Posts.js */
-  reportAddPost,
   reportGetPosts,
   reportEditPost,
   reportDeletePost,

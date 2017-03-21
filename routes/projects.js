@@ -48,8 +48,10 @@ router.get('/', validate(validation.getProjects), (req, res, next) => {
   const userId = req.get('userId');
   const skip = parseInt(req.query.skip || 0, 10);
   const limit = parseInt(req.query.limit || 20, 10);
+  const type = req.query.type || 'all';
+  const query = req.query.query || '';
 
-  dbmanager.getProjects(userId, skip, limit)
+  dbmanager.getProjects(userId, skip, limit, type, query)
     .then(projects => res.send(projects))
     .catch(err => next(err));
 });

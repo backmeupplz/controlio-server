@@ -60,6 +60,10 @@ module.exports = {
     },
   },
   getProjects: {
+    query: {
+      type: Joi.string(),
+      query: Joi.string(),
+    },
   },
   deleteInvite: {
     body: {

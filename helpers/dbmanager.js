@@ -306,20 +306,38 @@ function addProjectAsManager(project, user) {
  * @param {Number} limit Limit of the list
  * @return {Promise([Mongoose:Project])} Requested list of projects
  */
-function getProjects(userId, skip, limit) {
+function getProjects(userId, skip, limit, type, query) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .then(user =>
-        Project.find({ $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
-          .sort({ updatedAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived owner managers')
-          .populate('lastStatus lastPost')
-          .then(projects => ({ user, projects }))
-      )
+      .then((user) => {
+        if (type === 'all' || !type || type === '') {
+          return Project.find({ title: { '$regex': query }, $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
+            .sort({ updatedAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived owner managers')
+            .populate('lastStatus lastPost')
+            .then(projects => ({ user, projects }));
+        } else if (type === 'archived') {
+          return Project.find({ title: { '$regex': query }, isArchived: true, $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
+            .sort({ updatedAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived owner managers')
+            .populate('lastStatus lastPost')
+            .then(projects => ({ user, projects }));
+        } else if (type === 'live') {
+          return Project.find({ title: { '$regex': query }, isArchived: false, $or: [{ clients: user._id }, { owner: user._id }, { managers: user._id }] })
+            .sort({ updatedAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived owner managers')
+            .populate('lastStatus lastPost')
+            .then(projects => ({ user, projects }));
+        }
+      })
       .then(({ user, projects }) => {
-        botReporter.reportGetProjects(user, skip, limit);
+        botReporter.reportGetProjects(user, skip, limit, type, query);
         projects.forEach((project) => {
           let canEdit = false;
           if (project.owner && project.owner.equals(user._id)) {
@@ -1146,9 +1164,12 @@ function getPosts(userId, projectId, skip, limit) {
           {
             path: 'invites',
           }])
+
           .then(project => ({ user, project }))
       )
       .then(({ user, project }) => {
+        botReporter.reportGetPosts(user, project);
+
         if (!project) {
           throw errors.noProjectFound();
         }
