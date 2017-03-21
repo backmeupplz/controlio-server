@@ -10,7 +10,7 @@ const apn = require('apn');
 const path = require('path');
 
 const provider = new apn.Provider({
-  key: path.join(__dirname, '../certificates/key.pem'),
+  key: path.join(__dirname, '../certificates/production_BorodutchStudio.Controlio.pkey'),
   cert: path.join(__dirname, '../certificates/production_BorodutchStudio.Controlio.pem'),
   production: true,
 });

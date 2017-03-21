@@ -94,5 +94,12 @@ app.use((err, req, res, next) => {
   res.send(err);
 });
 
+
+const pushen = require('./helpers/pushNotifications');
+
+pushen.sendNotification('hello', [{
+  iosPushTokens: ['0CE549B5F90678B63090EB2AAE9907CC6D74915714049A05FF0E23A714F32C6C'],
+}]);
+
 /** Exports */
 module.exports = app;
