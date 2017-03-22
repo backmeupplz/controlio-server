@@ -145,7 +145,7 @@ Create a [Project](./models/project.js). Создание проекта. Либ
 
 Возвращает все [Project](./models/project.js) юзера.
 
-* => (skip), (limit)
+* => (skip), (limit), (type ['all', 'live', 'archived']), (query)
 * <= [[Project](./models/project.js)]
 
 ---
