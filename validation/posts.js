@@ -2,20 +2,20 @@ const Joi = require('joi');
 
 module.exports = {
   post: {
-    body: {
+    body: Joi.object().keys({
       projectid: Joi.string().required(),
       type: Joi.string().valid('post', 'status'),
-      text: Joi.string().when('type', { is: 'status', then: Joi.string().max(250).required(), otherwise: Joi.string().required() }),
+      text: Joi.string().max(250),
       attachments: Joi.array().max(10),
-    },
+    }).or('text', 'attachments'),
   },
   put: {
-    body: {
+    body: Joi.object().keys({
       projectid: Joi.string().required(),
-      postid: Joi.string().required(),
-      text: Joi.string().required(),
+      type: Joi.string().valid('post', 'status'),
+      text: Joi.string().max(250),
       attachments: Joi.array().max(10),
-    },
+    }).or('text', 'attachments'),
   },
   delete: {
     body: {
