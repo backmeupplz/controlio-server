@@ -91,6 +91,9 @@ function notAuthorized() {
 function magicLinkOnlyOnce() {
   return error(403, 'Magic link can be used only once', 'MAGIC_LINK_ALREADY_USED_ERROR');
 }
+function addDemoAsOwner() {
+  return error(403, 'You cannot create project using a demo account', 'ADD_DEMO_AS_CLIENT_ERROR');
+}
 function addDemoAsClient() {
   return error(403, 'You cannot add demo account as a client', 'ADD_DEMO_AS_CLIENT_ERROR');
 }
@@ -108,6 +111,9 @@ function fieldNotFound(field) {
 }
 function leaveAsOwner() {
   return error(403, 'You cannot leave the project as an owner', 'LEAVE_AS_OWNER_ERROR');
+}
+function leaveAsDemo() {
+  return error(403, 'You cannot leave the project using demo account', 'LEAVE_AS_DEMO_ERROR');
 }
 function managersOverLimit() {
   return error(403, 'This project has reached it\'s manager limits', 'MANAGER_LIMIT_ERROR');
@@ -159,11 +165,13 @@ module.exports = {
   notAuthorized,
   errorInitialStatus,
   magicLinkOnlyOnce,
+  addDemoAsOwner,
   addDemoAsClient,
   addDemoAsManager,
   removeYourselfAsManager,
   userNotManager,
   leaveAsOwner,
+  leaveAsDemo,
   notEnoughProjectsOnPlan,
   fieldNotFound,
   projectIsArchived,

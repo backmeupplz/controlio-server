@@ -127,6 +127,8 @@ function addProject(project) {
     .then((user) => {
       if (project.type === 'client') {
         return addProjectAsClient(project, user);
+      } else if (user.isDemo) {
+        throw errors.addDemoAsOwner();
       }
       return addProjectAsManager(project, user);
     });
@@ -1027,10 +1029,12 @@ function leaveProject(userId, projectId) {
             return { user, project };
           })
       )
-      /** Check if user is not an owner */
+      /** Check if user is not an owner or demo */
       .then(({ user, project }) => {
         if (project.owner && project.owner.equals(user._id)) {
           throw errors.leaveAsOwner();
+        } else if (user.isDemo) {
+          throw errors.leaveAsDemo();
         }
         return { user, project };
       })
