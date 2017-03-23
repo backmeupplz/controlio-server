@@ -61,6 +61,40 @@
   * [POST /payments/customer/subscription](#post-paymentscustomersubscription)
   * [POST /payments/customer/coupon](#post-paymentscustomercoupon)
   * [DELETE /payments/customer/card](#delete-paymentscustomercard)
+* [Error types](#errortypes)
+  * [NOT_FOUND_ERROR](#notfounderror)
+  * [NO_ACCESS_ERROR](#noaccesserror)
+  * [EMAIL_NOT_REGISTERED_ERROR](#emailnotregisterederror)
+  * [INVALID_MANAGER_EMAIL_ERROR](#invalidmanageremailerror)
+  * [WRONG_PASSWORD_ERROR](#wrongpassworderror)
+  * [AUTH_TOKEN_FAILED_ERROR](#authtokenfailederror)
+  * [USER_ALREADY_EXIST_ERROR](#useralreadyexisterror)
+  * [NO_API_KEY_ERROR](#noapikeyerror)
+  * [USER_NOT_FOUND_ERROR](#usernotfounderror)
+  * [PASSWORD_ALREADY_EXIST_ERROR](#passwordalreadyexisterror)
+  * [PASSWORD_NOT_FOUND_ERROR](#passwordnotfounderror)
+  * [OWNER_NOT_FOUND_ERROR](#ownernotfounderror)
+  * [MANAGER_NOT_FOUND_ERROR](#managernotfounderror)
+  * [CLIENT_OBJECT_NOT_CREATED_ERROR](#clientobjectnotcreatederror)
+  * [ADD_SELF_AS_MANAGER_ERROR](#addselfasmanagererror)
+  * [ADD_SELF_AS_CLIENT_ERROR](#addselfasclienterror)
+  * [USER_ALREADY_MANAGER_ERROR](#useralreadymanagererror)
+  * [PROJECT_NOT_FOUND_ERROR](#projectnotfounderror)
+  * [POST_NOT_FOUND_ERROR](#postnotfounderror)
+  * [INVITE_NOT_FOUND_ERROR](#invitenotfounderror)
+  * [INITIAL_STATUS_ERROR](#initialstatuserror)
+  * [NOT_AUTHORIZED_ERROR](#notauthorizederror)
+  * [MAGIC_LINK_ALREADY_USED_ERROR](#magiclinkalreadyuserderror)
+  * [ADD_DEMO_AS_CLIENT_ERROR](#adddemoasclienterror)
+  * [ADD_DEMO_AS_MANAGER_ERROR](#adddemoasmanagererror)
+  * [REMOVE_YOURSELF_AS_MANAGER_ERROR](#removeyourselfasmanagererror)
+  * [NOT_YOUR_MANAGER_ERROR](#notyourmanagererror)
+  * [FIELD_NOT_FOUND_ERROR](#fieldnotfounderror)
+  * [LEAVE_AS_OWNER_ERROR](#leaveasownererror)
+  * [MANAGER_LIMIT_ERROR](#managerlimiterror)
+  * [USER_LIMIT_ERROR](#userlimiterr)
+  * [ARCHIVED_ERROR](#archivederror)
+  * [NOT_ENOUGH_PROJECTS_ERROR](#notenoughprojectserror)
 
 ---
 ### Login / SignUp
@@ -333,3 +367,238 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 
 * => customerid, cardid
 * <= OK
+
+---
+### Error types
+---
+### NOT_FOUND_ERROR
+
+* status => 404
+* message => Not found
+* type => NOT_FOUND_ERROR
+
+---
+### NO_ACCESS_ERROR
+
+* status => 403
+* message => No access
+* type => NO_ACCESS_ERROR
+
+---
+### EMAIL_NOT_REGISTERED_ERROR
+
+* status => 403
+* message => Email not registered
+* type => EMAIL_NOT_REGISTERED_ERROR
+
+---
+### INVALID_MANAGER_EMAIL_ERROR
+
+* status => 403
+* message => Please provide a valid manager email
+* type => INVALID_MANAGER_EMAIL_ERROR
+
+---
+### WRONG_PASSWORD_ERROR
+
+* status => 403
+* message => Wrong password
+* type => WRONG_PASSWORD_ERROR
+
+---
+### AUTH_TOKEN_FAILED_ERROR
+
+* status => 403
+* message => Failed to authenticate token
+* type => AUTH_TOKEN_FAILED_ERROR
+
+---
+### USER_ALREADY_EXIST_ERROR
+
+* status => 403
+* message => User already exists
+* type => USER_ALREADY_EXIST_ERROR
+
+---
+### NO_API_KEY_ERROR
+
+* status => 403
+* message => No API key provided
+* type => NO_API_KEY_ERROR
+
+---
+### USER_NOT_FOUND_ERROR
+
+* status => 500
+* message => No user found
+* type => USER_NOT_FOUND_ERROR
+
+---
+### PASSWORD_ALREADY_EXIST_ERROR
+
+* status => 500
+* message => You already have a password
+* type => PASSWORD_ALREADY_EXIST_ERROR
+
+---
+### PASSWORD_NOT_FOUND_ERROR
+
+* status => 500
+* message => You haven't set password yet. We sent you an email to set it.
+* type => PASSWORD_NOT_FOUND_ERROR
+
+---
+### OWNER_NOT_FOUND_ERROR
+
+* status => 500
+* message => No owner found
+* type => OWNER_NOT_FOUND_ERROR
+
+---
+### MANAGER_NOT_FOUND_ERROR
+
+* status => 500
+* message => No manager found
+* type => MANAGER_NOT_FOUND_ERROR
+
+---
+### CLIENT_OBJECT_NOT_CREATED_ERROR
+
+* status => 500
+* message => No client objects created
+* type => CLIENT_OBJECT_NOT_CREATED_ERROR
+
+---
+### ADD_SELF_AS_MANAGER_ERROR
+
+* status => 400
+* message => You cannot add yourself as a manager
+* type => ADD_SELF_AS_MANAGER_ERROR
+
+---
+### ADD_SELF_AS_CLIENT_ERROR
+
+* status => 400
+* message => You cannot add yourself as a client
+* type => ADD_SELF_AS_CLIENT_ERROR
+
+---
+### USER_ALREADY_MANAGER_ERROR
+
+* status => 400
+* message => This user is already a manager
+* type => USER_ALREADY_MANAGER_ERROR
+
+---
+### PROJECT_NOT_FOUND_ERROR
+
+* status => 400
+* message => No project found
+* type => PROJECT_NOT_FOUND_ERROR
+
+---
+### POST_NOT_FOUND_ERROR
+
+* status => 400
+* message => No post found
+* type => POST_NOT_FOUND_ERROR
+
+---
+### INVITE_NOT_FOUND_ERROR
+
+* status => 400
+* message => No invite found
+* type => INVITE_NOT_FOUND_ERROR
+
+---
+### INITIAL_STATUS_ERROR
+
+* status => 400
+* message => Initial status should be less than 250 symbols
+* type => INITIAL_STATUS_ERROR
+
+---
+### NOT_AUTHORIZED_ERROR
+
+* status => 403
+* message => Not authorized
+* type => NOT_AUTHORIZED_ERROR
+
+---
+### MAGIC_LINK_ALREADY_USED_ERROR
+
+* status => 403
+* message => Magic link can be used only once
+* type => MAGIC_LINK_ALREADY_USED_ERROR
+
+---
+### ADD_DEMO_AS_CLIENT_ERROR
+
+* status => 403
+* message => You cannot add demo account as a client
+* type => ADD_DEMO_AS_CLIENT_ERROR
+
+---
+### ADD_DEMO_AS_MANAGER_ERROR
+
+* status => 403
+* message => You cannot add demo account as a manager
+* type => ADD_DEMO_AS_MANAGER_ERROR
+
+---
+### REMOVE_YOURSELF_AS_MANAGER_ERROR
+
+* status => 403
+* message => You cannot remove yourself as a manager
+* type => REMOVE_YOURSELF_AS_MANAGER_ERROR
+
+---
+### NOT_YOUR_MANAGER_ERROR
+
+* status => 403
+* message => This user is not your manager
+* type => NOT_YOUR_MANAGER_ERROR
+
+---
+### FIELD_NOT_FOUND_ERROR
+
+* status => 403
+* message => Field <field> not found
+* type => FIELD_NOT_FOUND_ERROR
+
+---
+### LEAVE_AS_OWNER_ERROR
+
+* status => 403
+* message => You cannot leave the project as an owner
+* type => LEAVE_AS_OWNER_ERROR
+
+---
+### MANAGER_LIMIT_ERROR
+
+* status => 403
+* message => This project has reached it's manager limits
+* type => MANAGER_LIMIT_ERROR
+
+---
+### USER_LIMIT_ERROR
+
+* status => 403
+* message => This project has reached it's users limits
+* type => USER_LIMIT_ERROR
+
+---
+### ARCHIVED_ERROR
+
+* status => 403
+* message => This project was archived
+* type => ARCHIVED_ERROR
+
+---
+### NOT_ENOUGH_PROJECTS_ERROR
+
+* status => 403
+* message => Your plan only includes <maxNumberOfProjects> <projectWord>. Please upgrade your plan in settings or archive or delete older projects.
+* type => NOT_ENOUGH_PROJECTS_ERROR
+
+---
