@@ -6,6 +6,7 @@ module.exports = {
       projectid: Joi.string().required(),
       type: Joi.string().valid('post', 'status'),
       text: Joi.string().when('type', { is: 'status', then: Joi.string().max(250).required(), otherwise: Joi.string().required() }),
+      attachments: Joi.array().max(10),
     },
   },
   put: {
@@ -13,6 +14,7 @@ module.exports = {
       projectid: Joi.string().required(),
       postid: Joi.string().required(),
       text: Joi.string().required(),
+      attachments: Joi.array().max(10),
     },
   },
   delete: {
