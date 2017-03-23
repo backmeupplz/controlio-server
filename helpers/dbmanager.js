@@ -311,11 +311,15 @@ function getProjects(userId, skip, limit, type, query) {
     findUserById(userId)
       .then((user) => {
         const orQuery = [{ clients: user._id }, { owner: user._id }, { managers: user._id }];
-        const searchQuery = { title: { $regex: query }, $or: orQuery };
+        const regexpQuery = { $regex: new RegExp(query.toLowerCase(), 'i') };
+        const searchQuery = { $or: orQuery };
         if (type === 'live') {
           searchQuery.isArchived = false;
         } else if (type === 'archived') {
           searchQuery.isArchived = true;
+        }
+        if (query) {
+          searchQuery.title = regexpQuery;
         }
         return Project.find(searchQuery)
           .sort({ updatedAt: -1 })
