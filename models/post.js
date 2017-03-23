@@ -9,6 +9,11 @@ const postSchema = new Schema({
     default: 'post',
     required: true,
   },
+  isEdited: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
   text: String,
   author: {
     type: Schema.ObjectId,
