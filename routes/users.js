@@ -206,7 +206,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
         .then((dbuser) => {
           const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
           res.send(dbuserCopy);
-
+          emailSender.sendSignup(user.email);
           botReporter.reportSignUp(user);
         });
     })
