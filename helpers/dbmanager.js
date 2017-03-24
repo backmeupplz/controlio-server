@@ -125,6 +125,9 @@ function addUser(user) {
 function addProject(project) {
   return findUserById(project.userId)
     .then((user) => {
+      if (user.isDemo) {
+        throw errors.addDemoAsOwner();
+      }
       if (project.type === 'client') {
         return addProjectAsClient(project, user);
       }
@@ -348,6 +351,7 @@ function getProjects(userId, skip, limit, type, query) {
       .catch(err => reject(err))
   );
 }
+
 /**
  * Function to get project by id
  * @param {Mongoose:ObjectId} userId Id of the user who is requesting the project
@@ -1031,10 +1035,12 @@ function leaveProject(userId, projectId) {
             return { user, project };
           })
       )
-      /** Check if user is not an owner */
+      /** Check if user is not an owner or demo */
       .then(({ user, project }) => {
         if (project.owner && project.owner.equals(user._id)) {
           throw errors.leaveAsOwner();
+        } else if (user.isDemo) {
+          throw errors.leaveAsDemo();
         }
         return { user, project };
       })
@@ -1206,7 +1212,7 @@ function getPosts(userId, projectId, skip, limit) {
  * @param {[String]} attachments New attachments
  * @return {Promise(Mongoose:Post)} Resulting post
  */
-function editPost(userId, projectId, postId, text, attachments) {
+function editPost(userId, projectId, postId, text, attachments, edited) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
       /** Get user, post, project */
@@ -1241,6 +1247,8 @@ function editPost(userId, projectId, postId, text, attachments) {
       })
       /** Edit post */
       .then(({ user, post, project }) => {
+        post.isEdited = edited;
+        console.log(post.isEdited);
         post.text = text;
         post.attachments = attachments;
 
