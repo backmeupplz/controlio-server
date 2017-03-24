@@ -100,6 +100,20 @@ function sendInvite(email, project, type) {
 }
 
 /**
+ * Function to send signup email
+ * @param {String} email Email where to send signup message
+ */
+function sendSignup(email) {
+  const data = {
+    texts: [
+      'We would like to thank you for signing up at Controlio! Welcome to our friendly family.',
+    ],
+  };
+
+  sendEmail(data, 'Controlio: welcome to the family', email);
+}
+
+/**
  * Function to send email
  * @param {Object} data Object with all required data to render email
  * @param {String} subject Subject of the email
@@ -135,4 +149,5 @@ module.exports = {
   sendSetPassword,
   sendMagicLink,
   sendInvite,
+  sendSignup,
 };
