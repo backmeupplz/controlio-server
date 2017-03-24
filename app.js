@@ -12,7 +12,7 @@ require('dotenv').config({
   path: path.join(__dirname, '/.env'),
 });
 const config = require('./config');
-const botReporter = require('./helpers/botReporter');
+const reporter = require('./helpers/reporter');
 const errors = require('./helpers/errors');
 
 /** Change default promises to bluebird */
@@ -89,7 +89,7 @@ app.use((req, res, next) => {
 /** Error handler */
 app.use((err, req, res, next) => {
   err = errors.standardize(err);
-  botReporter.reportError(err, req);
+  reporter.reportError(err, req);
   res.status(err.status || 500);
   res.send(err);
 });

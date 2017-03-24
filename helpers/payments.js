@@ -8,7 +8,7 @@
 /** Dependencies */
 const config = require('../config');
 const stripe = require('stripe')(config.stripeApiKey);
-const botReporter = require('./botReporter');
+const reporter = require('./reporter');
 
 /**
  * Proxy method to create a customer at Stripe
@@ -105,7 +105,7 @@ function setSripeSubscription(user, planid) {
           user.stripeSubscriptionId = subscription.id;
           user.plan = planid;
 
-          botReporter.reportChangeSubscription(user, planid);
+          reporter.reportChangeSubscription(user, planid);
 
           user.save()
             .then(resolve)
@@ -122,7 +122,7 @@ function setSripeSubscription(user, planid) {
           } else {
             user.plan = planid;
 
-            botReporter.reportChangeSubscription(user, planid);
+            reporter.reportChangeSubscription(user, planid);
 
             user.save()
               .then(resolve)
@@ -154,7 +154,7 @@ function applyStripeCoupon(user, coupon) {
             if (inErr) {
               reject(inErr);
             } else {
-              botReporter.reportRedeemCoupon(user, coupon);
+              reporter.reportRedeemCoupon(user, coupon);
 
               resolve(customer);
             }

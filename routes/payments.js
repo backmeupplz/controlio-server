@@ -4,7 +4,7 @@ const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/payments');
 const payments = require('../helpers/payments');
-const dbmanager = require('../helpers/dbmanager');
+const db = require('../helpers/db');
 
 const router = express.Router();
 
@@ -41,7 +41,7 @@ router.post('/customer/default_source', validate(validation.defaultSource), (req
 router.post('/customer/subscription', validate(validation.subscription), (req, res, next) => {
   const planid = req.body.planid;
   const userId = req.get('userId');
-  dbmanager.setSripeSubscription(userId, planid)
+  db.setSripeSubscription(userId, planid)
     .then(user => res.send(user))
     .catch(err => next(err));
 });
@@ -50,7 +50,7 @@ router.post('/customer/subscription', validate(validation.subscription), (req, r
 router.post('/customer/coupon', validate(validation.coupon), (req, res, next) => {
   const coupon = req.body.coupon;
   const userId = req.get('userId');
-  dbmanager.applyStripeCoupon(userId, coupon)
+  db.applyStripeCoupon(userId, coupon)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });

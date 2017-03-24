@@ -1,7 +1,7 @@
 /**
  * Module to send out ush notifications
  *
- * @module pushNotifications
+ * @module push
  * @license MIT
  */
 

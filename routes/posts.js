@@ -1,10 +1,10 @@
 /** Dependencies */
 const express = require('express');
-const dbmanager = require('../helpers/dbmanager');
+const db = require('../helpers/db');
 const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/posts');
-const botReporter = require('../helpers/botReporter');
+const reporter = require('../helpers/reporter');
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.post('/', validate(validation.post), (req, res, next) => {
   const attachments = req.body.attachments;
   const type = req.body.type || 'post';
 
-  dbmanager.addPost(userId, projectId, text, attachments, type)
+  db.addPost(userId, projectId, text, attachments, type)
     .then((post) => {
       res.send(post);
     })
@@ -33,7 +33,7 @@ router.get('/', validate(validation.get), (req, res, next) => {
   const skip = parseInt(req.query.skip || 0, 10);
   const limit = parseInt(req.query.limit || 20, 10);
 
-  dbmanager.getPosts(userId, projectId, skip, limit)
+  db.getPosts(userId, projectId, skip, limit)
     .then(posts => res.send(posts))
     .catch(err => next(err));
 });
@@ -46,7 +46,7 @@ router.put('/', validate(validation.put), (req, res, next) => {
   const text = req.body.text;
   const attachments = req.body.attachments;
 
-  dbmanager.editPost(userId, projectId, postId, text, attachments)
+  db.editPost(userId, projectId, postId, text, attachments)
     .then(post => res.send(post))
     .catch(err => next(err));
 });
@@ -57,7 +57,7 @@ router.delete('/', validate(validation.delete), (req, res, next) => {
   const projectId = req.body.projectid;
   const postId = req.body.postid;
 
-  dbmanager.deletePost(userId, projectId, postId)
+  db.deletePost(userId, projectId, postId)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
