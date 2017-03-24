@@ -308,7 +308,7 @@ Create a [Post](./models/post.js). Добавление поста в проек
 
 Edit [Post](./models/post.js).
 
-* => projectid, postid, (text), (attachments)
+* => projectid, postid, (text), (attachments), (type [`post`, `status`])
 * <= [Post](./models/post.js)
 
 ---
