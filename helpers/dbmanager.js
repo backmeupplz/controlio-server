@@ -1212,7 +1212,7 @@ function getPosts(userId, projectId, skip, limit) {
  * @param {[String]} attachments New attachments
  * @return {Promise(Mongoose:Post)} Resulting post
  */
-function editPost(userId, projectId, postId, text, attachments, edited) {
+function editPost(userId, projectId, postId, text, attachments) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
       /** Get user, post, project */
@@ -1247,8 +1247,7 @@ function editPost(userId, projectId, postId, text, attachments, edited) {
       })
       /** Edit post */
       .then(({ user, post, project }) => {
-        post.isEdited = edited;
-        console.log(post.isEdited);
+        post.isEdited = true;
         post.text = text;
         post.attachments = attachments;
 
