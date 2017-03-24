@@ -125,10 +125,11 @@ function addUser(user) {
 function addProject(project) {
   return findUserById(project.userId)
     .then((user) => {
+      if (user.isDemo) {
+        throw errors.addDemoAsOwner();
+      }
       if (project.type === 'client') {
         return addProjectAsClient(project, user);
-      } else if (user.isDemo) {
-        throw errors.addDemoAsOwner();
       }
       return addProjectAsManager(project, user);
     });
@@ -346,6 +347,7 @@ function getProjects(userId, skip, limit, type, query) {
       .catch(err => reject(err))
   );
 }
+
 /**
  * Function to get project by id
  * @param {Mongoose:ObjectId} userId Id of the user who is requesting the project
