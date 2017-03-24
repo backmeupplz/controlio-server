@@ -46,7 +46,7 @@ router.put('/', validate(validation.put), (req, res, next) => {
   const text = req.body.text;
   const attachments = req.body.attachments;
 
-  dbmanager.editPost(userId, projectId, postId, text, attachments, true)
+  dbmanager.editPost(userId, projectId, postId, text, attachments)
     .then(post => res.send(post))
     .catch(err => next(err));
 });
