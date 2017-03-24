@@ -1,7 +1,7 @@
 /**
  * Manager to encapsulate all actions on database
  *
- * @module dbmanager
+ * @module db
  * @license MIT
  */
 
@@ -10,8 +10,8 @@ const mongoose = require('mongoose');
 const errors = require('./errors');
 const _ = require('lodash');
 const payments = require('./payments');
-const botReporter = require('./botReporter');
-const emailSender = require('./emailSender');
+const reporter = require('./reporter');
+const mailer = require('./mailer');
 
 /** Get schemas */
 const User = mongoose.model('user');
@@ -98,7 +98,7 @@ function addUser(user) {
         if (!databaseUser.password) {
           databaseUser.generateResetPasswordToken();
           databaseUser.save();
-          emailSender.sendSetPassword(databaseUser);
+          mailer.sendSetPassword(databaseUser);
           throw errors.passwordNotExist();
         } else {
           throw errors.authUserAlreadyExists();
@@ -203,7 +203,7 @@ function addProjectAsClient(project, user) {
             const promises = [dbProject.save(), manager.save()];
             return Promise.all(promises)
               .then(() => {
-                emailSender.sendInvite(manager.email, dbProject, 'owner');
+                mailer.sendInvite(manager.email, dbProject, 'owner');
                 resolve(dbProject);
               });
           });
@@ -273,7 +273,7 @@ function addProjectAsManager(project, user) {
       .then(({ dbUser, dbProject, clients }) => {
         const innerPromises = [];
         clients.forEach((client) => {
-          emailSender.sendInvite(client.email, dbProject, 'client');
+          mailer.sendInvite(client.email, dbProject, 'client');
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'client',
@@ -333,7 +333,7 @@ function getProjects(userId, skip, limit, type, query) {
           .then(projects => ({ user, projects }));
       })
       .then(({ user, projects }) => {
-        botReporter.reportGetProjects(user, skip, limit, type, query);
+        reporter.reportGetProjects(user, skip, limit, type, query);
         projects.forEach((project) => {
           let canEdit = false;
           if (project.owner && project.owner.equals(user._id)) {
@@ -665,7 +665,7 @@ function addManagers(userId, projectId, managers) {
                 manager.invites.push(dbInvite);
                 return manager.save()
                   .then(() => {
-                    emailSender.sendInvite(manager.email, project, 'manager');
+                    mailer.sendInvite(manager.email, project, 'manager');
                     resolve(dbInvite._id);
                   });
               });
@@ -805,7 +805,7 @@ function addClients(userId, projectId, clients) {
       .then(({ clientObjects, project, user }) => {
         const innerPromises = [];
         clientObjects.forEach((client) => {
-          emailSender.sendInvite(client.email, project, 'client');
+          mailer.sendInvite(client.email, project, 'client');
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'client',
@@ -908,7 +908,7 @@ function editProject(userId, projectId, title, description, image) {
         project.description = description;
         project.image = image;
 
-        botReporter.reportEditProject(project);
+        reporter.reportEditProject(project);
 
         return project.save()
         .then(resolve)
@@ -941,7 +941,7 @@ function archiveProject(userId, projectId, archive) {
       .then(({ user, project }) => {
         project.isArchived = archive;
 
-        botReporter.reportArchiveProject(user, project, archive);
+        reporter.reportArchiveProject(user, project, archive);
         return project.save();
       })
       .then(resolve)
@@ -1166,7 +1166,7 @@ function getPosts(userId, projectId, skip, limit) {
           .then(project => ({ user, project }))
       )
       .then(({ user, project }) => {
-        botReporter.reportGetPosts(user, project);
+        reporter.reportGetPosts(user, project);
 
         if (!project) {
           throw errors.noProjectFound();
@@ -1258,7 +1258,7 @@ function editPost(userId, projectId, postId, text, attachments) {
         post.text = text;
         post.attachments = attachments;
 
-        botReporter.reportEditPost(user, post, project);
+        reporter.reportEditPost(user, post, project);
 
         return post.save()
           .then(resolve)
@@ -1317,7 +1317,7 @@ function deletePost(userId, projectId, postId) {
               if (err) {
                 throw err;
               } else {
-                botReporter.reportDeletePost(user, post, project);
+                reporter.reportDeletePost(user, post, project);
                 resolve();
               }
             });

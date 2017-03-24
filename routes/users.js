@@ -1,5 +1,5 @@
 /** Dependencies */
-const dbmanager = require('../helpers/dbmanager');
+const db = require('../helpers/db');
 const hash = require('../helpers/hash');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
@@ -8,8 +8,8 @@ const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/users');
 const router = require('express').Router();
-const botReporter = require('../helpers/botReporter');
-const emailSender = require('../helpers/emailSender');
+const reporter = require('../helpers/reporter');
+const mailer = require('../helpers/mailer');
 const _ = require('lodash');
 
 /** Public API */
@@ -18,22 +18,22 @@ const _ = require('lodash');
 router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next) => {
   const email = req.body.email.toLowerCase();
 
-  dbmanager.findUser({ email })
+  db.findUser({ email })
     .select('email')
     /** If user doesn't exist, we create one */
     .then((user) => {
       if (user) {
         return user;
       }
-      return dbmanager.addUser({
+      return db.addUser({
         email,
         token: jwt.sign(email, config.jwtSecret),
       });
     })
     .then((user) => {
       user.generateMagicToken(user);
-      botReporter.reportMagicLinkRequest(user);
-      emailSender.sendMagicLink(user);
+      reporter.reportMagicLinkRequest(user);
+      mailer.sendMagicLink(user);
       return user.save()
         .then(() => res.send({ success: true }));
     })
@@ -48,7 +48,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
   const androidPushToken = req.body.androidPushToken;
   const webPushToken = req.body.webPushToken;
 
-  dbmanager.findUserById(userId)
+  db.findUserById(userId)
     .select('email token isDemo isAdmin magicToken iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan')
     /** Check if user exists */
     .then((user) => {
@@ -100,7 +100,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
         .then((savedUser) => {
           const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
           res.send(savedUserCopy);
-          botReporter.reportMagicLinkLogin(savedUserCopy);
+          reporter.reportMagicLinkLogin(savedUserCopy);
         });
     })
     .catch(err => next(err));
@@ -114,7 +114,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
   const androidPushToken = req.body.androidPushToken;
   const webPushToken = req.body.webPushToken;
 
-  dbmanager.findUser({ email })
+  db.findUser({ email })
     .select('email password token isDemo isAdmin iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan')
     /** Check if user exists */
     .then((user) => {
@@ -123,7 +123,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
       } else if (!user.password) {
         user.generateResetPasswordToken(user);
         user.save();
-        emailSender.sendSetPassword(user);
+        mailer.sendSetPassword(user);
         throw errors.passwordNotExist();
       } else {
         return user;
@@ -202,12 +202,12 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
       if (webPushToken) {
         user.webPushTokens = [webPushToken];
       }
-      return dbmanager.addUser(user)
+      return db.addUser(user)
         .then((dbuser) => {
           const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
           res.send(dbuserCopy);
-          emailSender.sendSignup(user.email);
-          botReporter.reportSignUp(user);
+          mailer.sendSignup(user.email);
+          reporter.reportSignUp(user);
         });
     })
     .catch(err => next(err));
@@ -217,7 +217,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
 router.post('/recoverPassword', validate(validation.resetPassword), (req, res, next) => {
   const email = req.body.email;
 
-  dbmanager.findUser({ email })
+  db.findUser({ email })
     .select('email')
     /** Check user existence */
     .then((user) => {
@@ -230,8 +230,8 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
     /** Save tokens and send email */
     .then((user) => {
       user.generateResetPasswordToken(user);
-      botReporter.reportPasswordResetRequest(user);
-      emailSender.sendResetPassword(user);
+      reporter.reportPasswordResetRequest(user);
+      mailer.sendResetPassword(user);
       return user.save()
         .then(() => res.send({ success: true }));
     })
@@ -246,11 +246,11 @@ router.post('/logout', (req, res, next) => {
   const userId = req.get('userId');
   const iosPushToken = req.body.iosPushToken;
 
-  dbmanager.findUserById(userId)
+  db.findUserById(userId)
     .then((user) => {
       user.iosPushTokens.filter(v => v !== iosPushToken);
 
-      botReporter.reportLogout(user);
+      reporter.reportLogout(user);
 
       user.save()
         .then(() => res.send({ success: true }))
@@ -263,7 +263,7 @@ router.post('/logout', (req, res, next) => {
 router.get('/profile', (req, res, next) => {
   const userId = req.query.id || req.get('userId');
 
-  dbmanager.getProfile(userId)
+  db.getProfile(userId)
     .then(user => res.send(user))
     .catch(err => next(err));
 });
@@ -276,7 +276,7 @@ router.post('/profile', validate(validation.editProfile), (req, res, next) => {
   const phone = req.body.phone;
   const photo = req.body.photo;
 
-  dbmanager.findUserById(userId)
+  db.findUserById(userId)
     .select('token email name phone photo')
     .then((user) => {
       const userCopy = _.clone(user);
@@ -285,7 +285,7 @@ router.post('/profile', validate(validation.editProfile), (req, res, next) => {
       userCopy.photo = photo;
       return userCopy.save()
         .then((savedUser) => {
-          botReporter.reportEditProfile(savedUser);
+          reporter.reportEditProfile(savedUser);
 
           res.send(savedUser);
         });

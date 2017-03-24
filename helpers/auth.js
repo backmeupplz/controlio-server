@@ -7,7 +7,7 @@
 
 /** Dependencies */
 const errors = require('./errors');
-const dbmanager = require('./dbmanager');
+const db = require('./db');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const validate = require('express-validation');
@@ -26,7 +26,7 @@ function checkToken(req, res, next) {
     if (err) {
       return next(err);
     }
-    dbmanager.findUserById(userId)
+    db.findUserById(userId)
       .select('token')
       .then((user) => {
         if (!user) {

@@ -1,6 +1,6 @@
 /** Dependencies */
 const express = require('express');
-const dbmanager = require('../helpers/dbmanager');
+const db = require('../helpers/db');
 const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/projects');
@@ -28,7 +28,7 @@ router.post('/', validate(validation.post), (req, res, next) => {
     project.clientEmails = _.uniq(req.body.clientEmails.map(email => email.toLowerCase()))
       .filter(email => validator.isEmail(email));
   }
-  dbmanager.addProject(project)
+  db.addProject(project)
     .then(dbproject => res.send(dbproject))
     .catch(err => next(err));
 });
@@ -38,7 +38,7 @@ router.get('/project', validate(validation.getProject), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.query.projectid;
 
-  dbmanager.getProject(userId, projectId)
+  db.getProject(userId, projectId)
     .then(project => res.send(project))
     .catch(err => next(err));
 });
@@ -51,7 +51,7 @@ router.get('/', validate(validation.getProjects), (req, res, next) => {
   const type = req.query.type || 'all';
   const query = req.query.query || '';
 
-  dbmanager.getProjects(userId, skip, limit, type, query)
+  db.getProjects(userId, skip, limit, type, query)
     .then(projects => res.send(projects))
     .catch(err => next(err));
 });
@@ -59,7 +59,7 @@ router.get('/', validate(validation.getProjects), (req, res, next) => {
 /** Method to get invites to projects for user */
 router.get('/invites', (req, res, next) => {
   const userId = req.get('userId');
-  dbmanager.getInvites(userId)
+  db.getInvites(userId)
     .then(invites => res.send(invites))
     .catch(err => next(err));
 });
@@ -70,7 +70,7 @@ router.post('/invite', validate(validation.postInvite), (req, res, next) => {
   const inviteId = req.body.inviteid;
   const accept = req.body.accept;
 
-  dbmanager.acceptInvite(userId, inviteId, accept)
+  db.acceptInvite(userId, inviteId, accept)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
@@ -80,7 +80,7 @@ router.delete('/invite', validate(validation.deleteInvite), (req, res, next) => 
   const userId = req.get('userId');
   const inviteId = req.body.inviteid;
 
-  dbmanager.removeInvite(userId, inviteId)
+  db.removeInvite(userId, inviteId)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
@@ -96,7 +96,7 @@ router.post('/managers', validate(validation.postManagers), (req, res, next) => 
     return;
   }
 
-  dbmanager.addManagers(userId, projectId, managers)
+  db.addManagers(userId, projectId, managers)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
@@ -107,7 +107,7 @@ router.delete('/manager', validate(validation.deleteManager), (req, res, next) =
   const managerId = req.body.managerid;
   const projectId = req.body.projectid;
 
-  dbmanager.removeManager(userId, managerId, projectId)
+  db.removeManager(userId, managerId, projectId)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
@@ -118,7 +118,7 @@ router.delete('/client', validate(validation.deleteClient), (req, res, next) => 
   const clientId = req.body.clientid;
   const projectId = req.body.projectid;
 
-  dbmanager.removeClient(userId, clientId, projectId)
+  db.removeClient(userId, clientId, projectId)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
@@ -134,7 +134,7 @@ router.post('/clients', validate(validation.postClients), (req, res, next) => {
     return;
   }
 
-  dbmanager.addClients(userId, projectId, clients)
+  db.addClients(userId, projectId, clients)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
@@ -150,7 +150,7 @@ router.put('/', validate(validation.put), (req, res, next) => {
   }
   const image = req.body.image;
 
-  dbmanager.editProject(userId, projectId, title, description, image)
+  db.editProject(userId, projectId, title, description, image)
     .then(project => res.send(project))
     .catch(err => next(err));
 });
@@ -160,7 +160,7 @@ router.post('/leave', validate(validation.leave), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
 
-  dbmanager.leaveProject(userId, projectId)
+  db.leaveProject(userId, projectId)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
@@ -170,7 +170,7 @@ router.delete('/', validate(validation.delete), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
 
-  dbmanager.deleteProject(userId, projectId)
+  db.deleteProject(userId, projectId)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
@@ -182,7 +182,7 @@ router.post('/archive', validate(validation.archive), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
 
-  dbmanager.archiveProject(userId, projectId, true)
+  db.archiveProject(userId, projectId, true)
     .then(project => res.send(project))
     .catch(err => next(err));
 });
@@ -192,7 +192,7 @@ router.post('/unarchive', validate(validation.unarchive), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
 
-  dbmanager.archiveProject(userId, projectId, false)
+  db.archiveProject(userId, projectId, false)
     .then(project => res.send(project))
     .catch(err => next(err));
 });

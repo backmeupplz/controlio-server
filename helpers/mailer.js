@@ -1,7 +1,7 @@
 /**
  * Module to send out emails
  *
- * @module emailSender
+ * @module mailer
  * @license MIT
  */
 

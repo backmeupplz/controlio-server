@@ -1,9 +1,9 @@
 /** Dependencies */
 const express = require('express');
-const dbmanager = require('../helpers/dbmanager');
+const db = require('../helpers/db');
 const errors = require('../helpers/errors');
 const hash = require('../helpers/hash');
-const botReporter = require('../helpers/botReporter');
+const reporter = require('../helpers/reporter');
 const validate = require('express-validation');
 const validation = require('../validation/public');
 
@@ -14,7 +14,7 @@ router.get('/resetPassword', validate(validation.getResetPassword), (req, res) =
   const userId = req.query.userid;
   const token = req.query.token;
 
-  dbmanager.findUserById(userId)
+  db.findUserById(userId)
     .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
     .then((user) => {
       if (!user) {
@@ -27,7 +27,7 @@ router.get('/resetPassword', validate(validation.getResetPassword), (req, res) =
         user.tokenForPasswordResetIsFresh = false;
         user.save()
           .then(() => {
-            botReporter.reportGetResetPassword(user);
+            reporter.reportGetResetPassword(user);
             res.render('reset-password', { userid: userId, token });
           })
           .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
@@ -47,7 +47,7 @@ router.post('/resetPassword', validate(validation.postResetPassword), (req, res)
     return;
   }
 
-  dbmanager.findUserById(userId)
+  db.findUserById(userId)
   .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
     .then((user) => {
       if (!user) {
@@ -61,7 +61,7 @@ router.post('/resetPassword', validate(validation.postResetPassword), (req, res)
             user.password = result;
             user.save()
               .then(() => {
-                botReporter.reportResetPassword(user);
+                reporter.reportResetPassword(user);
                 res.render('success', { message: 'Password was updated!' });
               })
               .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
@@ -77,7 +77,7 @@ router.get('/setPassword', validate(validation.getSetPassword), (req, res) => {
   const userId = req.query.userid;
   const token = req.query.token;
 
-  dbmanager.findUserById(userId)
+  db.findUserById(userId)
     .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
     .then((user) => {
       if (!user) {
@@ -90,7 +90,7 @@ router.get('/setPassword', validate(validation.getSetPassword), (req, res) => {
         user.tokenForPasswordResetIsFresh = false;
         user.save()
           .then(() => {
-            botReporter.reportGetSetPassword(user);
+            reporter.reportGetSetPassword(user);
             res.render('set-password', { userid: userId, token });
           })
           .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
@@ -110,7 +110,7 @@ router.post('/setPassword', validate(validation.postSetPassword), (req, res) => 
     return;
   }
 
-  dbmanager.findUserById(userId)
+  db.findUserById(userId)
   .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
     .then((user) => {
       if (!user) {
@@ -126,7 +126,7 @@ router.post('/setPassword', validate(validation.postSetPassword), (req, res) => 
             user.password = result;
             user.save()
               .then(() => {
-                botReporter.reportSetPassword(user);
+                reporter.reportSetPassword(user);
                 res.render('success', { message: 'Password has been set!' });
               })
               .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
