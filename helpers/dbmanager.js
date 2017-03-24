@@ -1245,6 +1245,13 @@ function editPost(userId, projectId, postId, text, attachments) {
         }
         return { user, post, project };
       })
+      /** Check if archived */
+      .then(({ user, post, project }) => {
+        if (project.isArchived) {
+          throw errors.projectIsArchived();
+        }
+        return { user, post, project };
+      })
       /** Edit post */
       .then(({ user, post, project }) => {
         post.isEdited = true;
