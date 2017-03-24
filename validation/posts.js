@@ -5,7 +5,7 @@ module.exports = {
     body: Joi.object().keys({
       projectid: Joi.string().required(),
       type: Joi.string().valid('post', 'status'),
-      text: Joi.string().max(250),
+      text: Joi.string().when('type', { is: 'post', then: Joi.string().max(1000), otherwise: Joi.string().max(250) }),
       attachments: Joi.array().max(10),
     }).or('text', 'attachments'),
   },
