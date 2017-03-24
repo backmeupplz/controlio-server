@@ -205,7 +205,7 @@ function addProjectAsClient(project, user) {
             return Promise.all(promises)
               .then(() => {
                 mailer.sendInvite(manager.email, dbProject, 'owner');
-                push.pushInvite(manager, dbProject.title, 'owner');
+                push.pushInvite(manager, dbProject, 'owner');
                 resolve(dbProject);
               });
           });
@@ -1133,7 +1133,7 @@ function addPost(userId, projectId, text, attachments, type) {
           .then(dbpost => ({ project, dbpost }));
       })
       .then(({ project, dbpost }) => {
-        push.pushNewMessageToClients(project);
+        push.pushNewPostToClients(project, dbpost);
         project.posts.push(dbpost);
         if (dbpost.type === 'status') {
           project.lastStatus = dbpost._id;

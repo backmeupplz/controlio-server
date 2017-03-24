@@ -17,24 +17,27 @@ const provider = new apn.Provider({
 
 /** Push notification methods */
 
+/**
+ * Used to send push notification about invite message
+ * @param {[Mongoose:User]]} users A list of users that need to receive push
+ * @param {Mongoose:Project} project Project which is the subject of the push
+ * @param {String} type Enum: 'owner', 'client' or 'manager', type of invite
+ */
 function pushInvite(users, project, type) {
-  let text;
-  switch (type) {
-    case 'client':
-      text = `You has invited to "${project}" as a client.`;
-      break;
-    case 'manager':
-      text = `You has invited to "${project}" as a manager.`;
-      break;
-    default:
-      text = `You has invited to "${project}" as an owner.`;
-      break;
-  }
+  const article = (type === 'owner') ? 'an' : 'a';
+  const text = `You were invited to "${project.title}" as ${article} ${type}`;
   sendNotification(text, users);
 }
 
-function pushNewMessageToClients(project) {
-  const text = `New message in "${project.title}"!`;
+/**
+ * Used to push project's new message to clients
+ * @param {Mongoose:Project} project Project with new message
+ * @param {Mongoose:Post} post New post
+ */
+function pushNewPostToClients(project, post) {
+  const message = (post.text && post.text.length > 0) ?
+    post.text : 'New message';
+  const text = `"${project.title}": ${message}`;
   sendNotification(text, project.clients);
 }
 
@@ -67,5 +70,5 @@ function sendNotification(text, users) {
 module.exports = {
   sendNotification,
   pushInvite,
-  pushNewMessageToClients,
+  pushNewPostToClients,
 };
