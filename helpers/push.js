@@ -15,6 +15,29 @@ const provider = new apn.Provider({
   production: true,
 });
 
+/** Push notification methods */
+
+function pushInvite(users, project, type) {
+  let text;
+  switch (type) {
+    case 'client':
+      text = `You has invited to "${project}" as a client.`;
+      break;
+    case 'manager':
+      text = `You has invited to "${project}" as a manager.`;
+      break;
+    default:
+      text = `You has invited to "${project}" as an owner.`;
+      break;
+  }
+  sendNotification(text, users);
+}
+
+function pushNewMessageToClients(project) {
+  const text = `New message in "${project.title}"!`;
+  sendNotification(text, project.clients);
+}
+
 /**
  * Method to send push notification
  * @param {String} text Text to send
@@ -43,4 +66,6 @@ function sendNotification(text, users) {
 /** Exports */
 module.exports = {
   sendNotification,
+  pushInvite,
+  pushNewMessageToClients,
 };

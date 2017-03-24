@@ -12,6 +12,7 @@ const _ = require('lodash');
 const payments = require('./payments');
 const reporter = require('./reporter');
 const mailer = require('./mailer');
+const push = require('./push');
 
 /** Get schemas */
 const User = mongoose.model('user');
@@ -204,6 +205,7 @@ function addProjectAsClient(project, user) {
             return Promise.all(promises)
               .then(() => {
                 mailer.sendInvite(manager.email, dbProject, 'owner');
+                push.pushInvite(manager, dbProject.title, 'owner');
                 resolve(dbProject);
               });
           });
@@ -274,6 +276,7 @@ function addProjectAsManager(project, user) {
         const innerPromises = [];
         clients.forEach((client) => {
           mailer.sendInvite(client.email, dbProject, 'client');
+          push.pushInvite(client, dbProject.title, 'client');
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'client',
@@ -666,6 +669,7 @@ function addManagers(userId, projectId, managers) {
                 return manager.save()
                   .then(() => {
                     mailer.sendInvite(manager.email, project, 'manager');
+                    push.pushInvite(manager, project, 'manager');
                     resolve(dbInvite._id);
                   });
               });
@@ -806,6 +810,7 @@ function addClients(userId, projectId, clients) {
         const innerPromises = [];
         clientObjects.forEach((client) => {
           mailer.sendInvite(client.email, project, 'client');
+          push.pushInvite(client, project, 'client');
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'client',
@@ -1091,6 +1096,7 @@ function addPost(userId, projectId, text, attachments, type) {
     findUserById(userId)
       .then(user =>
         Project.findById(projectId)
+          .populate('clients')
           .then(project => ({ user, project }))
       )
       /** Check if owner */
@@ -1127,6 +1133,7 @@ function addPost(userId, projectId, text, attachments, type) {
           .then(dbpost => ({ project, dbpost }));
       })
       .then(({ project, dbpost }) => {
+        push.pushNewMessageToClients(project);
         project.posts.push(dbpost);
         if (dbpost.type === 'status') {
           project.lastStatus = dbpost._id;
