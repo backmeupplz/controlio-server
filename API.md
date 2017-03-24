@@ -85,6 +85,7 @@
   * [INITIAL_STATUS_ERROR](#initialstatuserror)
   * [NOT_AUTHORIZED_ERROR](#notauthorizederror)
   * [MAGIC_LINK_ALREADY_USED_ERROR](#magiclinkalreadyuserderror)
+  * [DEMO_ERROR](#demoerror)
   * [ADD_DEMO_AS_CLIENT_ERROR](#adddemoasclienterror)
   * [ADD_DEMO_AS_MANAGER_ERROR](#adddemoasmanagererror)
   * [REMOVE_YOURSELF_AS_MANAGER_ERROR](#removeyourselfasmanagererror)
@@ -530,6 +531,13 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 * status => 403
 * message => Magic link can be used only once
 * type => MAGIC_LINK_ALREADY_USED_ERROR
+
+---
+### DEMO_ERROR
+
+* status => 403
+* message => You cannot do this as a demo account
+* type => ADD_DEMO_AS_CLIENT_ERROR
 
 ---
 ### ADD_DEMO_AS_CLIENT_ERROR
