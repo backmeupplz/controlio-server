@@ -73,7 +73,7 @@ app.use(auth.checkApiKey);
 
 /** Redirect routes */
 app.use('/users/', users);
-app.use('/projects', projects);
+app.use('/projects/', projects);
 app.use('/posts/', posts);
 app.use('/payments/', payments);
 
