@@ -16,6 +16,8 @@ const juice = require('juice');
 const templateDir = path.join(__dirname, '..', 'views', 'templates', 'email');
 const emailTemplate = new EmailTemplate(templateDir);
 
+const baseURL = config.url;
+
 /**
  * Function to send reset password email
  * @param {Mongo:User} user user that should get an email
@@ -23,7 +25,7 @@ const emailTemplate = new EmailTemplate(templateDir);
 function sendResetPassword(user) {
   const data = {
     button_title: 'Set new password',
-    button_url: `https://api.controlio.co/public/resetPassword?userid=${user._id}&token=${user.tokenForPasswordReset}`,
+    button_url: `${baseURL}/public/resetPassword?userid=${user._id}&token=${user.tokenForPasswordReset}`,
     texts: [
       'Hello there! Somebody requested us to send you the link to reset your password at Controlio. Please hit the button below to set new password.',
       'If it wasn\'t you who requested reset, please ignore this email.',
@@ -40,7 +42,7 @@ function sendResetPassword(user) {
 function sendSetPassword(user) {
   const data = {
     button_title: 'Set new password',
-    button_url: `https://api.controlio.co/public/setPassword?userid=${user._id}&token=${user.tokenForPasswordReset}`,
+    button_url: `${baseURL}/public/setPassword?userid=${user._id}&token=${user.tokenForPasswordReset}`,
     texts: [
       'Hello there! Somebody has invited you to Controlio and you need to set the password for your account. Please do so by clicking the button below.',
     ],
@@ -56,7 +58,7 @@ function sendSetPassword(user) {
 function sendMagicLink(user) {
   const data = {
     button_title: 'Login to Controlio',
-    button_url: `https://api.controlio.co/magic?userid=${user._id}&token=${user.magicToken}`,
+    button_url: `${baseURL}/magic?userid=${user._id}&token=${user.magicToken}`,
     texts: [
       'Click the button below to login to Controlio. Yeah, we know, as simple as that.',
     ],

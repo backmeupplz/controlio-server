@@ -17,5 +17,6 @@ Add these environment variables:
 * `STRIPE_API_KEY` — api key for Stripe, you can use our test one: `sk_test_YHIgl0QMnM5p0XI6YEPFdhmd`
 * `(Optional) TELEGRAM_KEY` — Telegram bot token to send logs
 * `(Optional) TELEGRAM_ID` — id of the telegram chat where to send logs
+* `(Optional) SERVER_URL` — base url of your server (used in emails). Defaults to `https://api.controlio.co`
 
 Make sure you don't have conflicts with the environment variables from the ~/.bash_profile or other similar places in the system.
