@@ -49,7 +49,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
   const webPushToken = req.body.webPushToken;
 
   db.findUserById(userId)
-    .select('email token isDemo isAdmin magicToken iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan')
+    .select('email token isDemo isAdmin magicToken iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan name photo')
     /** Check if user exists */
     .then((user) => {
       if (!user) {
@@ -115,7 +115,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
   const webPushToken = req.body.webPushToken;
 
   db.findUser({ email })
-    .select('email password token isDemo isAdmin iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan')
+    .select('email password token isDemo isAdmin iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan name photo')
     /** Check if user exists */
     .then((user) => {
       if (!user) {
@@ -171,7 +171,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
     .then(user =>
       user.save()
         .then((savedUser) => {
-          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
+          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId', 'name', 'photo']);
           res.send(savedUserCopy);
         })
     )
@@ -204,7 +204,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
       }
       return db.addUser(user)
         .then((dbuser) => {
-          const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
+          const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId', 'name', 'photo']);
           res.send(dbuserCopy);
           mailer.sendSignup(user.email);
           reporter.reportSignUp(user);

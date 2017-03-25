@@ -332,7 +332,20 @@ function getProjects(userId, skip, limit, type, query) {
           .skip(skip)
           .limit(limit)
           .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived owner managers')
-          .populate('lastStatus lastPost')
+          .populate([{
+            path: 'lastStatus',
+            populate: [{
+              path: 'author',
+              model: 'user',
+            }],
+          },
+          {
+            path: 'lastPost',
+            populate: [{
+              path: 'author',
+              model: 'user',
+            }],
+          }])
           .then(projects => ({ user, projects }));
       })
       .then(({ user, projects }) => {
