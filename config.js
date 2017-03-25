@@ -7,4 +7,5 @@ module.exports = {
   stripeApiKey: process.env.STRIPE_API_KEY,
   telegramKey: process.env.TELEGRAM_KEY,
   telegramLogsId: process.env.TELEGRAM_ID,
+  url: process.env.SERVER_URL || 'https://api.controlio.co',
 };
