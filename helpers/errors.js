@@ -141,9 +141,9 @@ function standardize(originalError) {
   if (originalError.name == 'CastError') {
     resultError.message = originalError.message || 'Server error';
     resultError.status = originalError.status || 400;
-    resultError.type = originalError.type || 'DB_ERROR';    
+    resultError.type = originalError.type || 'DB_ERROR';
   } else if (originalError.message == 'validation error') {
-    resultError.message = 'An error was occured in the \"' + originalError.errors[0].field + '\" field.'
+    resultError.message = 'An error was occured in the "' + originalError.errors[0].field + '" field.';
     resultError.status = originalError.status || 400;
     resultError.type = 'VALIDATION_ERROR';
   } else {
@@ -187,6 +187,8 @@ module.exports = {
   userNotManager,
   leaveAsOwner,
   leaveAsDemo,
+  managersOverLimit,
+  usersOverLimit,
   notEnoughProjectsOnPlan,
   fieldNotFound,
   projectIsArchived,

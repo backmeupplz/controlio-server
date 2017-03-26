@@ -19,4 +19,4 @@ module.exports = {
     'no-console': [2, { 'allow': ['info'] }], // Rarely we do need to print some info
     'no-param-reassign': 0
   },
-};
+}; 
