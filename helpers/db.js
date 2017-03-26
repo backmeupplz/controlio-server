@@ -205,7 +205,7 @@ function addProjectAsClient(project, user) {
             return Promise.all(promises)
               .then(() => {
                 mailer.sendInvite(manager.email, dbProject, 'owner');
-                push.pushInvite(manager, dbProject, 'owner');
+                push.pushInvite([manager], dbProject, 'owner');
                 resolve(dbProject);
               });
           });
@@ -274,9 +274,9 @@ function addProjectAsManager(project, user) {
       /** Add invites to clients */
       .then(({ dbUser, dbProject, clients }) => {
         const innerPromises = [];
+        push.pushInvite(clients, dbProject.title, 'client');
         clients.forEach((client) => {
           mailer.sendInvite(client.email, dbProject, 'client');
-          push.pushInvite(client, dbProject.title, 'client');
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'client',
@@ -668,6 +668,7 @@ function addManagers(userId, projectId, managers) {
       /** Add manager invites */
       .then(({ managerObjects, project, user }) => {
         const innerPromises = [];
+        push.pushInvite(managerObjects, project, 'manager');
         managerObjects.forEach((manager) => {
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
@@ -682,7 +683,6 @@ function addManagers(userId, projectId, managers) {
                 return manager.save()
                   .then(() => {
                     mailer.sendInvite(manager.email, project, 'manager');
-                    push.pushInvite(manager, project, 'manager');
                     resolve(dbInvite._id);
                   });
               });
@@ -821,9 +821,9 @@ function addClients(userId, projectId, clients) {
       /** Add client invites */
       .then(({ clientObjects, project, user }) => {
         const innerPromises = [];
+        push.pushInvite(clientObjects, project, 'client');
         clientObjects.forEach((client) => {
           mailer.sendInvite(client.email, project, 'client');
-          push.pushInvite(client, project, 'client');
           innerPromises.push(new Promise((resolve) => {
             const invite = new Invite({
               type: 'client',

@@ -137,9 +137,19 @@ function notEnoughProjectsOnPlan(maxNumberOfProjects) {
 
 function standardize(originalError) {
   const resultError = new Error();
-  resultError.status = originalError.status || 500;
-  resultError.message = originalError.message || 'Oops! Something went wrong';
-  resultError.type = originalError.type || 'UNDECLARED_ERROR';
+  if (originalError.name === 'CastError') {
+    resultError.message = originalError.message || 'Database error';
+    resultError.status = originalError.status || 500;
+    resultError.type = originalError.type || 'DB_ERROR';
+  } else if (originalError.message === 'validation error') {
+    resultError.message = `Something funky has happened at the "${originalError.errors[0].field}" field.`;
+    resultError.status = originalError.status || 500;
+    resultError.type = 'VALIDATION_ERROR';
+  } else {
+    resultError.message = originalError.message || 'Server error';
+    resultError.status = originalError.status || 500;
+    resultError.type = originalError.type || 'UNDECLARED_ERROR';
+  }
   return resultError;
 }
 
@@ -176,6 +186,8 @@ module.exports = {
   userNotManager,
   leaveAsOwner,
   leaveAsDemo,
+  managersOverLimit,
+  usersOverLimit,
   notEnoughProjectsOnPlan,
   fieldNotFound,
   projectIsArchived,
