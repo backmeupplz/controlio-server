@@ -87,11 +87,11 @@ function reportEditProject(project) {
   sendMessage(`✒️ Project has been editted:\n\n \`${JSON.stringify(project, null, 2)}\``);
 }
 
-function reportArchiveProject(user, project, archived) {
-  if (archived) {
-    sendMessage(`💩 *${user.email}* archived *${project.title}*. \n\n \`${JSON.stringify(project, null, 2)}\``);
+function reportFinishProject(user, project, finished) {
+  if (finished) {
+    sendMessage(`💩 *${user.email}* finished *${project.title}*. \n\n \`${JSON.stringify(project, null, 2)}\``);
   } else {
-    sendMessage(`💩 *${user.email}* unarchived *${project.title}*. \n\n \`${JSON.stringify(project, null, 2)}\``);
+    sendMessage(`💩 *${user.email}* revived *${project.title}*. \n\n \`${JSON.stringify(project, null, 2)}\``);
   }
 }
 
@@ -157,7 +157,7 @@ module.exports = {
   /** Projects.js */
   reportGetProjects,
   reportEditProject,
-  reportArchiveProject,
+  reportFinishProject,
   /** Posts.js */
   reportGetPosts,
   reportEditPost,

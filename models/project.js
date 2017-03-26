@@ -44,7 +44,7 @@ const projectSchema = new Schema({
     type: Schema.ObjectId,
     ref: 'post',
   },
-  isArchived: {
+  isFinished: {
     type: Boolean,
     required: true,
     default: false,

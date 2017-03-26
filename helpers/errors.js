@@ -124,15 +124,15 @@ function managersOverLimit() {
 function usersOverLimit() {
   return error(403, 'This project has reached it\'s users limits', 'USER_LIMIT_ERROR');
 }
-function projectIsArchived() {
-  return error(403, 'This project was archived.', 'ARCHIVED_ERROR');
+function projectIsFinished() {
+  return error(403, 'This project was finished.', 'FINISHED_ERROR');
 }
 function notEnoughProjectsOnPlan(maxNumberOfProjects) {
   let projectWord = 'projects';
   if (maxNumberOfProjects === 1) {
     projectWord = 'project';
   }
-  return error(403, `Your plan only includes ${maxNumberOfProjects} ${projectWord}. Please upgrade your plan in settings or archive or delete older projects.`, 'NOT_ENOUGH_PROJECTS_ERROR');
+  return error(403, `Your plan only includes ${maxNumberOfProjects} ${projectWord}. Please upgrade your plan in settings or finish or delete older projects.`, 'NOT_ENOUGH_PROJECTS_ERROR');
 }
 
 function standardize(originalError) {
@@ -190,6 +190,6 @@ module.exports = {
   usersOverLimit,
   notEnoughProjectsOnPlan,
   fieldNotFound,
-  projectIsArchived,
+  projectIsFinished,
   standardize,
 };
