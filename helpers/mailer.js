@@ -74,13 +74,13 @@ function sendInvite(email, project, type) {
   let inviteMessage;
   switch (type) {
     case 'client':
-      inviteMessage = `Somebody has invited you to "${project.name}" as a client.`;
+      inviteMessage = `Somebody has invited you to "${project.title}" as a client.`;
       break;
     case 'manager':
-      inviteMessage = `Somebody has invited you to "${project.name}" as a manager.`;
+      inviteMessage = `Somebody has invited you to "${project.title}" as a manager.`;
       break;
     default:
-      inviteMessage = `Somebody has invited you to "${project.name}" as an owner.`;
+      inviteMessage = `Somebody has invited you to "${project.title}" as an owner.`;
       break;
   }
 
