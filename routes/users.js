@@ -238,6 +238,35 @@ router.post('/recoverPassword', validate(validation.resetPassword), (req, res, n
     .catch(err => next(err));
 });
 
+/** Method to reset password */
+router.post('/resetPassword', validate(validation.postResetPassword), (req, res, next) => {
+  const userId = req.body.userid;
+  const password = req.body.password;
+  const token = req.body.token;
+
+  db.findUserById(userId)
+    .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
+      .then((user) => {
+        if (!user) {
+          throw errors.noUserFound();
+        } else if (user.tokenForPasswordReset !== token) {
+          throw errors.wrongResetToken();
+        } else {
+          return hash.hashPassword(password)
+            .then((result) => {
+              user.tokenForPasswordReset = null;
+              user.password = result;
+              return user.save()
+                .then(() => {
+                  reporter.reportResetPassword(user);
+                  res.send({ success: true });
+                });
+            });
+        }
+      })
+      .catch(err => next(err));
+});
+
 /** Private API check */
 router.use(auth.checkToken);
 

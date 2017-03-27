@@ -127,6 +127,9 @@ function usersOverLimit() {
 function projectIsArchived() {
   return error(403, 'This project was archived.', 'ARCHIVED_ERROR');
 }
+function wrongResetToken() {
+  return error(403, 'Failed to authenticate password reset token', 'AUTH_PASS_RESET_TOKEN_FAILED');
+}
 function notEnoughProjectsOnPlan(maxNumberOfProjects) {
   let projectWord = 'projects';
   if (maxNumberOfProjects === 1) {
@@ -191,5 +194,6 @@ module.exports = {
   notEnoughProjectsOnPlan,
   fieldNotFound,
   projectIsArchived,
+  wrongResetToken,
   standardize,
 };
