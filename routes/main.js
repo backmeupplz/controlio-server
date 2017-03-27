@@ -10,34 +10,26 @@ router.get('/feature_list', (req, res) => {
   res.send({ 0: true, whatever: 'iwant' });
 });
 
+const apple = {
+  applinks: {
+    apps: [],
+    details: [
+      {
+        appID: '9VUB6L23QH.BorodutchStudio.Controlio',
+        paths: ['/magic', '/public/resetPassword', '/public/setPassword'],
+      },
+    ],
+  },
+};
+
 /** Allows iOS to use magic links */
 router.get('/.well-known/apple-app-site-association', (req, res) => {
-  res.send({
-    applinks: {
-      apps: [],
-      details: [
-        {
-          appID: '9VUB6L23QH.BorodutchStudio.Controlio',
-          paths: ['/magic'],
-        },
-      ],
-    },
-  });
+  res.send(apple);
 });
 
 /** Allows iOS to use magic links */
 router.get('/apple-app-site-association', (req, res) => {
-  res.send({
-    applinks: {
-      apps: [],
-      details: [
-        {
-          appID: '9VUB6L23QH.BorodutchStudio.Controlio',
-          paths: ['/magic'],
-        },
-      ],
-    },
-  });
+  res.send(apple);
 });
 
 /** Show magic link login page */
