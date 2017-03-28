@@ -320,9 +320,9 @@ function getProjects(userId, skip, limit, type, query) {
         const regexpQuery = { $regex: new RegExp(query.toLowerCase(), 'i') };
         const searchQuery = { $or: orQuery };
         if (type === 'live') {
-          searchQuery.isArchived = false;
-        } else if (type === 'archived') {
-          searchQuery.isArchived = true;
+          searchQuery.isFinished = false;
+        } else if (type === 'finished') {
+          searchQuery.isFinished = true;
         }
         if (query) {
           searchQuery.title = regexpQuery;
@@ -331,7 +331,7 @@ function getProjects(userId, skip, limit, type, query) {
           .sort({ updatedAt: -1 })
           .skip(skip)
           .limit(limit)
-          .select('_id updatedAt createdAt title description image lastPost lastStatus isArchived owner managers')
+          .select('_id updatedAt createdAt title description image lastPost lastStatus isFinished owner managers')
           .populate([{
             path: 'lastStatus',
             populate: [{
@@ -628,10 +628,10 @@ function addManagers(userId, projectId, managers) {
         }
         return { project, user };
       })
-      /** Check if archived */
+      /** Check if finished */
       .then(({ user, project }) => {
-        if (project.isArchived) {
-          throw errors.projectIsArchived();
+        if (project.isFinished) {
+          throw errors.projectIsFinished();
         }
         return { project, user };
       })
@@ -780,10 +780,10 @@ function addClients(userId, projectId, clients) {
         }
         return { project, user };
       })
-      /** Check if archived */
+      /** Check if finished */
       .then(({ user, project }) => {
-        if (project.isArchived) {
-          throw errors.projectIsArchived();
+        if (project.isFinished) {
+          throw errors.projectIsFinished();
         }
         return { project, user };
       })
@@ -937,13 +937,13 @@ function editProject(userId, projectId, title, description, image) {
 }
 
 /**
- * Function to archive the project
- * @param {Mongoose:ObjectId} userId If of user who is archiving the project
- * @param {Mongoose:ObjectId} projectId If of the project to archive
- * @param {Boolean} archive True = archive, false = unarchive
+ * Function to finish the project
+ * @param {Mongoose:ObjectId} userId If of user who is finishing the project
+ * @param {Mongoose:ObjectId} projectId If of the project to finish
+ * @param {Boolean} finish True = finish, false = revive
  * @return {Promise(Mongoose:Project)} Resulting project
  */
-function archiveProject(userId, projectId, archive) {
+function finishProject(userId, projectId, finish) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
       .then(user =>
@@ -957,9 +957,9 @@ function archiveProject(userId, projectId, archive) {
           })
       )
       .then(({ user, project }) => {
-        project.isArchived = archive;
+        project.isFinished = finish;
 
-        reporter.reportArchiveProject(user, project, archive);
+        reporter.reportFinishProject(user, project, finish);
         return project.save();
       })
       .then(resolve)
@@ -1128,10 +1128,10 @@ function addPost(userId, projectId, text, attachments, type) {
         }
         return { user, project };
       })
-      /** Check if archived */
+      /** Check if finished */
       .then(({ user, project }) => {
-        if (project.isArchived) {
-          throw errors.projectIsArchived();
+        if (project.isFinished) {
+          throw errors.projectIsFinished();
         }
         return { project, user };
       })
@@ -1265,10 +1265,10 @@ function editPost(userId, projectId, postId, text, attachments) {
         }
         return { user, post, project };
       })
-      /** Check if archived */
+      /** Check if Finished */
       .then(({ user, post, project }) => {
-        if (project.isArchived) {
-          throw errors.projectIsArchived();
+        if (project.isFinished) {
+          throw errors.projectIsFinished();
         }
         return { user, post, project };
       })
@@ -1432,7 +1432,7 @@ module.exports = {
   addClients,
   removeClient,
   editProject,
-  archiveProject,
+  finishProject,
   deleteProject,
   leaveProject,
   /** Posts */

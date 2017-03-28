@@ -175,24 +175,23 @@ router.delete('/', validate(validation.delete), (req, res, next) => {
     .catch(err => next(err));
 });
 
-/** TODO: methods below need refactoring and testing */
 
-/** Method to archive the project */
-router.post('/archive', validate(validation.archive), (req, res, next) => {
+/** Method to finish the project */
+router.post('/finish', validate(validation.finish), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
 
-  db.archiveProject(userId, projectId, true)
+  db.finishProject(userId, projectId, true)
     .then(project => res.send(project))
     .catch(err => next(err));
 });
 
-/** Method to unarchive the project */
-router.post('/unarchive', validate(validation.unarchive), (req, res, next) => {
+/** Method to revive the project */
+router.post('/revive', validate(validation.finish), (req, res, next) => {
   const userId = req.get('userId');
   const projectId = req.body.projectid;
 
-  db.archiveProject(userId, projectId, false)
+  db.finishProject(userId, projectId, false)
     .then(project => res.send(project))
     .catch(err => next(err));
 });
