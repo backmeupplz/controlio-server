@@ -51,4 +51,11 @@ module.exports = {
       phone: Joi.phone.e164().max(20),
     },
   },
+  postResetPassword: {
+    body: {
+      userid: Joi.string().required(),
+      token: Joi.string().required(),
+      password: Joi.string().min(6).max(30).required(),
+    },
+  },
 };

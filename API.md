@@ -21,12 +21,14 @@
   token: string
   userId: string 
    ```
-
+   
 ---
 ### Доступные методы
 * [Login / SignUp](#login--signup)
   * [POST /users/login](#post-userslogin-public)
   * [POST /users/signUp](#post-userssignup-public)
+  * [POST /users/recoverPassword](#post-recoverpassword-public)
+  * [POST /users/resetPassword](#post-resetpassword-public)
   * [POST /users/requestMagicLink](#post-usersrequestmagiclink-public)
   * [POST /users/loginMagicLink](#post-loginmagiclink-public)
   * [POST /users/logout](#post-userslogout)
@@ -96,6 +98,7 @@
   * [USER_LIMIT_ERROR](#userlimiterr)
   * [FINISHED_ERROR](#finishederror)
   * [NOT_ENOUGH_PROJECTS_ERROR](#notenoughprojectserror)
+  * [AUTH_PASS_RESET_TOKEN_FAILED](#authpassresettokenfailed)
 
 ---
 ### Login / SignUp
@@ -121,6 +124,14 @@
 Нужно просто сделать запрос – дальше юзеру придет email на почту и в веб форме он меняет пароль. Все уже сделано, от клиента нужно только сделать запрос в нужное время, все остальное делается на сервере, в том числе и формы ресета пароля.
 
 * => email
+* <= OK
+
+---
+### POST /users/resetPassword `Public`
+
+Функция для измненения пароля при помощи reset password token и user id
+
+* => userid, token, password
 * <= OK
 
 ---
@@ -610,3 +621,8 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 * type => NOT_ENOUGH_PROJECTS_ERROR
 
 ---
+### AUTH_PASS_RESET_TOKEN_FAILED
+
+* status => 403
+* message => Failed to authenticate password reset token.
+* type => AUTH_PASS_RESET_TOKEN_FAILED
