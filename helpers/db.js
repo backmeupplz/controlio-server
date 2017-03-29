@@ -919,14 +919,14 @@ function editProject(userId, projectId, title, description, image) {
         if (!authorized) {
           throw errors.notAuthorized();
         }
-        return project;
+        return { user, project };
       })
-      .then((project) => {
+      .then(({ user, project }) => {
         project.title = title;
         project.description = description;
         project.image = image;
 
-        reporter.reportEditProject(project);
+        reporter.reportEditProject(user, project);
 
         return project.save()
         .then(resolve)

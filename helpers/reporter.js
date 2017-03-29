@@ -35,98 +35,105 @@ function checkIfBanned(fullURL, bannedURLs) {
 /** Users.js */
 
 function reportMagicLinkRequest(user) {
-  sendMessage(`🎩 *${user.email}* requested magic link. \n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`🎩 \`${user.email}\` requested magic link`);
 }
 
 
 function reportMagicLinkLogin(user) {
-  sendMessage(`🎩 *${user.email}* logged in with magic link. \n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`🎩 \`${user.email}\` logged in with magic link`);
 }
 
 function reportSignUp(user) {
-  sendMessage(`➕ *${user.email}* signed up. \n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`➕ \`${user.email}\` signed up`);
 }
 
 function reportPasswordResetRequest(user) {
-  sendMessage(`❓ *${user.email}* requested password reset. \n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`❓ \`${user.email}\` requested password reset`);
 }
 
 function reportLogout(user) {
-  sendMessage(`✋ *${user.email}* logged out. \n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`✋ \`${user.email}\` logged out`);
 }
 
 function reportEditProfile(user) {
-  sendMessage(`✏️ *${user.email}* edited profile:\n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`✏️  \`${user.email}\` edited profile:\nEmail: \`${user.email}\`\nName: \`${user.name}\`\nPhone: \`${user.phone}\`\nPhoto: \`${user.photo}\``);
 }
 
 /** Public.js */
 
 function reportGetResetPassword(user) {
-  sendMessage(`👀 *${user.email}* viewed reset password page. \n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`👀 \`${user.email}\` viewed reset password page`);
 }
 
 function reportResetPassword(user) {
-  sendMessage(`🗝 *${user.email}* has reset password. \n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`🗝 \`${user.email}\` has reset password`);
 }
 
 function reportGetSetPassword(user) {
-  sendMessage(`👀 *${user.email}* has viewed set password page. \n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`👀 \`${user.email}\` has viewed set password page`);
 }
 
 function reportSetPassword(user) {
-  sendMessage(`🗝 *${user.email}* has set password. \n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`🗝 \`${user.email}\` has set password`);
 }
 
 /** Projects.js */
 
 function reportGetProjects(user, skip, limit, type, query) {
-  sendMessage(`📄 *${user.email}* requested a list of projects (${skip}, ${limit}, ${type}, ${query})`);
+  sendMessage(`📄 \`${user.email}\` requested a list of projects (\`\`\`${skip}, ${limit}, ${type}, ${query}\`\`\`)`);
 }
 
-function reportEditProject(project) {
-  sendMessage(`✒️ Project has been editted:\n\n \`${JSON.stringify(project, null, 2)}\``);
+function reportEditProject(user, project) {
+  sendMessage(`✒️  \`${user.email}\` editted project: (${project._id})\nTitle: \`${project.title}\`\nDescription: \`\`\`${project.description}\`\`\``);
 }
 
 function reportFinishProject(user, project, finished) {
   if (finished) {
-    sendMessage(`💩 *${user.email}* finished *${project.title}*. \n\n \`${JSON.stringify(project, null, 2)}\``);
+    sendMessage(`💩 \`${user.email}\` finished \`${project.title}\``);
   } else {
-    sendMessage(`💩 *${user.email}* revived *${project.title}*. \n\n \`${JSON.stringify(project, null, 2)}\``);
+    sendMessage(`💩 \`${user.email}\` revived \`${project.title}\``);
   }
 }
 
 /** Posts.js */
 
 function reportGetPosts(user, project) {
-  sendMessage(`🚧 *${user.email}* requested a list of posts for ${project.title}. \n\n \`${JSON.stringify(project, null, 2)}\``);
+  sendMessage(`🚧 \`${user.email}\` requested a list of posts for \`${project.title}\``);
 }
 
 function reportEditPost(user, post, project) {
-  sendMessage(`🖊 *${user.email}* eddited post:\n\n \`${JSON.stringify(post, null, 2)}\`\n\n in project *${project.title}*`);
+  sendMessage(`🖊 \`${user.email}\` eddited post in project \`${project.title}\`:\nType: \`${post.type}\`\nText: \`\`\`${post.text}\`\`\`\nAttachments: \`\`\`${JSON.stringify(post.attachments)}\`\`\``);
 }
 
 function reportDeletePost(user, post, project) {
-  sendMessage(`👺 *${user.email}* deleted ${post.type} *${post.text}* from *${project.title}*. \n\n \`${JSON.stringify(post, null, 2)}\``);
+  sendMessage(`👺 \`${user.email}\` deleted \`\`\`${post.type} ${post.text}\`\`\` from \`${project.title}\``);
 }
 
 /** Payments.js */
 
 function reportChangeSubscription(user, planid) {
-  let planTitle = '';
-  if (planid === 0) {
-    planTitle = 'Free';
-  } else if (planid === 1) {
-    planTitle = '$20/month';
-  } else if (planid === 2) {
-    planTitle = '$50/month';
-  } else if (planid === 3) {
-    planTitle = '$100/month';
+  let planTitle;
+  switch (planid) {
+    case 0:
+      planTitle = 'Free';
+      break;
+    case 1:
+      planTitle = '$20/month';
+      break;
+    case 2:
+      planTitle = '$50/month';
+      break;
+    case 3:
+      planTitle = '$100/month';
+      break;
+    default:
+      planTitle = 'undefined plan';
   }
-  sendMessage(`💰 *${user.email}* changed subscription to *${planTitle}*`);
+  sendMessage(`💰 \`${user.email}\` changed subscription to \`${planTitle}\``);
 }
 
 function reportRedeemCoupon(user, coupon) {
-  sendMessage(`💎 *${user.email}* redeemed coupon *${coupon}*. \n\n \`${JSON.stringify(user, null, 2)}\``);
+  sendMessage(`💎 \`${user.email}\` redeemed coupon \`${coupon}\``);
 }
 
 /** General functions */
