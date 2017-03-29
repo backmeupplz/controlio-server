@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const config = require('../config');
 const randomToken = require('random-token').create(config.randomTokenSalt);
+const jwt = require('jsonwebtoken');
 
 const Schema = mongoose.Schema;
 
@@ -106,12 +107,22 @@ const userSchema = new Schema({
 });
 
 userSchema.methods.generateResetPasswordToken = function generateResetPasswordToken() {
-  this.tokenForPasswordReset = randomToken(24);
+  const token = randomToken(24);
+
+  this.tokenForPasswordReset = jwt.sign({
+    token,
+    userid: this._id,
+  }, config.jwtSecret);
   this.tokenForPasswordResetIsFresh = true;
 };
 
 userSchema.methods.generateMagicToken = function generateMagicToken() {
-  this.magicToken = randomToken(24);
+  const token = randomToken(24);
+
+  this.magicToken = jwt.sign({
+    token,
+    userid: this._id,
+  }, config.jwtSecret);
 };
 
 mongoose.model('user', userSchema);

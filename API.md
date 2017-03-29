@@ -130,7 +130,7 @@
 
 Функция для измненения пароля при помощи reset password token и user id
 
-* => userid, token, password
+* => token, password
 * <= OK
 
 ---
@@ -146,7 +146,7 @@
 
 [User](./models/user.js) login with magic link. Вызывается уже внутри приложения, после открытия с `userid` и `token` из магической ссылки.
 
-* => userid, token, (iosPushToken), (androidPushToken), (webPushToken)
+* => token, (iosPushToken), (androidPushToken), (webPushToken)
 * <= [User](./models/user.js)
 
 ---
