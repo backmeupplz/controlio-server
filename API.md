@@ -18,8 +18,7 @@
    ```
    * Required for Private requests:
    ```
-  token: string
-  userId: string 
+  token: string 
    ```
    
 ---

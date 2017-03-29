@@ -8,8 +8,7 @@ module.exports = {
   },
   token: {
     headers: {
-      token: Joi.string().required(),
-      userid: Joi.string().required()
+      token: Joi.string().required()
     }
   }
 };

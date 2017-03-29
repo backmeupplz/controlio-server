@@ -69,7 +69,10 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
     /** Add token if missing */
     .then((user) => {
       if (!user.token) {
-        user.token = jwt.sign(user.email, config.jwtSecret);
+        user.token = jwt.sign({
+          email: user.email,
+          userid: user._id,
+        }, config.jwtSecret);
       }
       return user;
     })
@@ -144,7 +147,10 @@ router.post('/login', validate(validation.login), (req, res, next) => {
     .then((user) => {
       const userCopy = _.clone(user);
       if (!userCopy.token) {
-        userCopy.token = jwt.sign(email, config.jwtSecret);
+        userCopy.token = jwt.sign({
+          email,
+          userid: userCopy._id,
+        }, config.jwtSecret);
       }
       return userCopy;
     })
@@ -191,7 +197,6 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
       const user = {
         email,
         password,
-        token: jwt.sign(email, config.jwtSecret),
       };
       if (iosPushToken) {
         user.iosPushTokens = [iosPushToken];
@@ -203,6 +208,13 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
         user.webPushTokens = [webPushToken];
       }
       return db.addUser(user)
+        .then((dbuser) => {
+          dbuser.token = jwt.sign({
+            email: dbuser.email,
+            userid: dbuser._id,
+          }, config.jwtSecret);
+          return dbuser.save();
+        })
         .then((dbuser) => {
           const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId', 'name', 'photo']);
           res.send(dbuserCopy);

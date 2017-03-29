@@ -20,13 +20,15 @@ function checkToken(req, res, next) {
   });
 
   const token = req.get('token');
-  const userId = req.get('userId');
 
-  jwt.verify(token, config.jwtSecret, (err) => {
+  jwt.verify(token, config.jwtSecret, (err, data) => {
     if (err) {
       return next(err);
     }
-    db.findUserById(userId)
+    if (!data || !data.userid) {
+      return next(errors.authTokenFailed());
+    }
+    db.findUserById(data.userid)
       .select('token')
       .then((user) => {
         if (!user) {
