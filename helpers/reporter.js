@@ -140,7 +140,6 @@ function reportRedeemCoupon(user, coupon) {
 
 function sendMessage(msg) {
   if (config.telegramKey) {
-    /** TODO: enable bot reporter */
     jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' });
   }
 }
