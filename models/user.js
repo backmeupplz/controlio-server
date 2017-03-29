@@ -107,22 +107,26 @@ const userSchema = new Schema({
 });
 
 userSchema.methods.generateResetPasswordToken = function generateResetPasswordToken() {
-  const token = randomToken(24);
+  const token = randomToken(10);
 
   this.tokenForPasswordReset = jwt.sign({
     token,
     userid: this._id,
-  }, config.jwtSecret);
+  }, config.jwtSecret, {
+    expiresIn: '1d',
+  });
   this.tokenForPasswordResetIsFresh = true;
 };
 
 userSchema.methods.generateMagicToken = function generateMagicToken() {
-  const token = randomToken(24);
+  const token = randomToken(10);
 
   this.magicToken = jwt.sign({
     token,
     userid: this._id,
-  }, config.jwtSecret);
+  }, config.jwtSecret, {
+    expiresIn: '1d',
+  });
 };
 
 mongoose.model('user', userSchema);

@@ -27,7 +27,7 @@ function sendResetPassword(user) {
     button_title: 'Set new password',
     button_url: `${baseURL}/public/resetPassword?token=${user.tokenForPasswordReset}`,
     texts: [
-      'Hello there! Somebody requested us to send you the link to reset your password at Controlio. Please hit the button below to set new password.',
+      'Hello there! Somebody requested us to send you the link to reset your password at Controlio. Please hit the button below to set new password. Please note that this button will only work once and should be used within the next 24 hours.',
       'If it wasn\'t you who requested reset, please ignore this email.',
     ],
   };
@@ -44,7 +44,7 @@ function sendSetPassword(user) {
     button_title: 'Set new password',
     button_url: `${baseURL}/public/setPassword?token=${user.tokenForPasswordReset}`,
     texts: [
-      'Hello there! Somebody has invited you to Controlio and you need to set the password for your account. Please do so by clicking the button below.',
+      'Hello there! Somebody has invited you to Controlio and you need to set the password for your account. Please do so by clicking the button below. Please note that this button will only work once and should be used within the next 24 hours.',
     ],
   };
 
@@ -60,7 +60,7 @@ function sendMagicLink(user) {
     button_title: 'Login to Controlio',
     button_url: `${baseURL}/magic?&token=${user.magicToken}`,
     texts: [
-      'Click the button below to login to Controlio. Yeah, we know, as simple as that.',
+      'Click the button below to login to Controlio. Yeah, we know, as simple as that. Please note that this button will only work once and should be used within the next 24 hours.',
     ],
   };
 
