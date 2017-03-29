@@ -34,9 +34,8 @@ router.get('/apple-app-site-association', (req, res) => {
 
 /** Show magic link login page */
 router.get('/magic', validate(validation.magic), (req, res) => {
-  const userid = req.query.userid;
   const token = req.query.token;
-  res.render('magic', { userid, token });
+  res.render('magic', { token });
 });
 
 /** Export */
