@@ -43,12 +43,7 @@ module.exports = {
       managers: Joi.array().required(),
     },
   },
-  archive: {
-    body: {
-      projectid: Joi.string().required(),
-    },
-  },
-  unarchive: {
+  finish: {
     body: {
       projectid: Joi.string().required(),
     },

@@ -44,8 +44,8 @@
   * [POST /projects/managers](#post-projectsmanagers)
   * [DELETE /projects/manager](#delete-projectsmanager)
   * [PUT /projects/](#put-projects)
-  * [POST /projects/archive](#post-projectsarchive)
-  * [POST /projects/unarchive](#post-projectsunarchive)
+  * [POST /projects/finish](#post-projectsfinish)
+  * [POST /projects/revive](#post-projectsrevive)
   * [POST /projects/leave](#post-projectsleave)
   * [DELETE /projects/](#delete-projects)
   * [POST /projects/invite](#post-projectsinvite)
@@ -95,7 +95,7 @@
   * [LEAVE_AS_OWNER_ERROR](#leaveasownererror)
   * [MANAGER_LIMIT_ERROR](#managerlimiterror)
   * [USER_LIMIT_ERROR](#userlimiterr)
-  * [ARCHIVED_ERROR](#archivederror)
+  * [FINISHED_ERROR](#finishederror)
   * [NOT_ENOUGH_PROJECTS_ERROR](#notenoughprojectserror)
   * [AUTH_PASS_RESET_TOKEN_FAILED](#authpassresettokenfailed)
 
@@ -190,7 +190,7 @@ Create a [Project](./models/project.js). Создание проекта. Либ
 
 Возвращает все [Project](./models/project.js) юзера.
 
-* => (skip), (limit), (type ['all', 'live', 'archived']), (query)
+* => (skip), (limit), (type ['all', 'live', 'finished']), (query)
 * <= [[Project](./models/project.js)]
 
 ---
@@ -249,17 +249,17 @@ Returns json data about a single [Project](./models/project.js).
 * <= [Project](./models/project.js)
 
 ---
-### POST /projects/archive
+### POST /projects/finish
 
-Archive [Project](./models/project.js).
+Finish [Project](./models/project.js).
 
 * => projectid
 * <= [Project](./models/project.js)
 
 ---
-### POST /projects/unarchive
+### POST /projects/revive
 
-Unarchive [Project](./models/project.js).
+Revive [Project](./models/project.js).
 
 * => projectid
 * <= [Project](./models/project.js)
@@ -547,7 +547,7 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 
 * status => 403
 * message => You cannot do this as a demo account
-* type => ADD_DEMO_AS_CLIENT_ERROR
+* type => DEMO_ERROR
 
 ---
 ### ADD_DEMO_AS_CLIENT_ERROR
@@ -606,17 +606,17 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 * type => USER_LIMIT_ERROR
 
 ---
-### ARCHIVED_ERROR
+### FINISHED_ERROR
 
 * status => 403
-* message => This project was archived
-* type => ARCHIVED_ERROR
+* message => This project was finished
+* type => FINISHED_ERROR
 
 ---
 ### NOT_ENOUGH_PROJECTS_ERROR
 
 * status => 403
-* message => Your plan only includes <maxNumberOfProjects> <projectWord>. Please upgrade your plan in settings or archive or delete older projects.
+* message => Your plan only includes <maxNumberOfProjects> <projectWord>. Please upgrade your plan in settings or finish or delete older projects.
 * type => NOT_ENOUGH_PROJECTS_ERROR
 
 ---
