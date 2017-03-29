@@ -61,7 +61,7 @@ module.exports = {
   getProjects: {
     query: {
       type: Joi.string(),
-      query: Joi.string(),
+      query: Joi.string().allow(''),
     },
   },
   deleteInvite: {
