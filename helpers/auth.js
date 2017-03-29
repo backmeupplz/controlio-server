@@ -36,6 +36,7 @@ function checkToken(req, res, next) {
         } else if (user.token !== token) {
           return next(errors.authTokenFailed());
         }
+        req.user = user;
         next();
       })
       .catch(error => next(error));

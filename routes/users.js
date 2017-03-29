@@ -306,7 +306,7 @@ router.use(auth.checkToken);
 
 /** Method to remove the specified push notifications token */
 router.post('/logout', (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const iosPushToken = req.body.iosPushToken;
 
   db.findUserById(userId)
@@ -324,7 +324,7 @@ router.post('/logout', (req, res, next) => {
 
 /** Method to get user's profile */
 router.get('/profile', (req, res, next) => {
-  const userId = req.query.id || req.get('userId');
+  const userId = req.query.id || req.user._id;
 
   db.getProfile(userId)
     .then(user => res.send(user))
@@ -333,7 +333,7 @@ router.get('/profile', (req, res, next) => {
 
 /** Method to edit user's profile */
 router.post('/profile', validate(validation.editProfile), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
 
   const name = req.body.name;
   const phone = req.body.phone;

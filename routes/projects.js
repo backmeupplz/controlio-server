@@ -16,7 +16,7 @@ router.use(auth.checkToken);
 /** Method to create a new project */
 router.post('/', validate(validation.post), (req, res, next) => {
   const project = _.clone(req.body);
-  project.userId = req.get('userId');
+  project.userId = req.user._id;
   if (project.type === 'client') {
     if (validator.isEmail(project.managerEmail)) {
       project.managerEmail = project.managerEmail.toLowerCase();
@@ -35,7 +35,7 @@ router.post('/', validate(validation.post), (req, res, next) => {
 
 /** Method to get a project by id */
 router.get('/project', validate(validation.getProject), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.query.projectid;
 
   db.getProject(userId, projectId)
@@ -45,7 +45,7 @@ router.get('/project', validate(validation.getProject), (req, res, next) => {
 
 /** Method to get a list of the projects */
 router.get('/', validate(validation.getProjects), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const skip = parseInt(req.query.skip || 0, 10);
   const limit = parseInt(req.query.limit || 20, 10);
   const type = req.query.type || 'all';
@@ -58,7 +58,7 @@ router.get('/', validate(validation.getProjects), (req, res, next) => {
 
 /** Method to get invites to projects for user */
 router.get('/invites', (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   db.getInvites(userId)
     .then(invites => res.send(invites))
     .catch(err => next(err));
@@ -66,7 +66,7 @@ router.get('/invites', (req, res, next) => {
 
 /** Method to accept or reject invite */
 router.post('/invite', validate(validation.postInvite), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const inviteId = req.body.inviteid;
   const accept = req.body.accept;
 
@@ -77,7 +77,7 @@ router.post('/invite', validate(validation.postInvite), (req, res, next) => {
 
 /** Method to delete an invite */
 router.delete('/invite', validate(validation.deleteInvite), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const inviteId = req.body.inviteid;
 
   db.removeInvite(userId, inviteId)
@@ -87,7 +87,7 @@ router.delete('/invite', validate(validation.deleteInvite), (req, res, next) => 
 
 /** Method to add managers */
 router.post('/managers', validate(validation.postManagers), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.body.projectid;
   const managers = _.uniq(req.body.managers.map(email => email.toLowerCase()));
 
@@ -103,7 +103,7 @@ router.post('/managers', validate(validation.postManagers), (req, res, next) => 
 
 /** Method to delete a manager */
 router.delete('/manager', validate(validation.deleteManager), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const managerId = req.body.managerid;
   const projectId = req.body.projectid;
 
@@ -114,7 +114,7 @@ router.delete('/manager', validate(validation.deleteManager), (req, res, next) =
 
 /** Method to delete a client */
 router.delete('/client', validate(validation.deleteClient), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const clientId = req.body.clientid;
   const projectId = req.body.projectid;
 
@@ -125,7 +125,7 @@ router.delete('/client', validate(validation.deleteClient), (req, res, next) => 
 
 /** Method to add clients */
 router.post('/clients', validate(validation.postClients), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.body.projectid;
   const clients = _.uniq(req.body.clients.map(email => email.toLowerCase()));
 
@@ -141,7 +141,7 @@ router.post('/clients', validate(validation.postClients), (req, res, next) => {
 
 /** Method to edit project */
 router.put('/', validate(validation.put), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.body.projectid;
   const title = req.body.title;
   let description = req.body.description;
@@ -157,7 +157,7 @@ router.put('/', validate(validation.put), (req, res, next) => {
 
 /** Method to leave project */
 router.post('/leave', validate(validation.leave), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.body.projectid;
 
   db.leaveProject(userId, projectId)
@@ -167,7 +167,7 @@ router.post('/leave', validate(validation.leave), (req, res, next) => {
 
 /** Method to delete project */
 router.delete('/', validate(validation.delete), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.body.projectid;
 
   db.deleteProject(userId, projectId)
@@ -178,7 +178,7 @@ router.delete('/', validate(validation.delete), (req, res, next) => {
 
 /** Method to finish the project */
 router.post('/finish', validate(validation.finish), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.body.projectid;
 
   db.finishProject(userId, projectId, true)
@@ -188,7 +188,7 @@ router.post('/finish', validate(validation.finish), (req, res, next) => {
 
 /** Method to revive the project */
 router.post('/revive', validate(validation.finish), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.body.projectid;
 
   db.finishProject(userId, projectId, false)

@@ -13,7 +13,7 @@ router.use(auth.checkToken);
 
 /** Method to add new post to the database */
 router.post('/', validate(validation.post), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.body.projectid;
   const text = req.body.text;
   const attachments = req.body.attachments;
@@ -28,7 +28,7 @@ router.post('/', validate(validation.post), (req, res, next) => {
 
 /** Method to get a list of posts for the project */
 router.get('/', validate(validation.get), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.query.projectid;
   const skip = parseInt(req.query.skip || 0, 10);
   const limit = parseInt(req.query.limit || 20, 10);
@@ -40,7 +40,7 @@ router.get('/', validate(validation.get), (req, res, next) => {
 
 /** Method to edit a post */
 router.put('/', validate(validation.put), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.body.projectid;
   const postId = req.body.postid;
   const text = req.body.text;
@@ -53,7 +53,7 @@ router.put('/', validate(validation.put), (req, res, next) => {
 
 /** Method to delete the post */
 router.delete('/', validate(validation.delete), (req, res, next) => {
-  const userId = req.get('userId');
+  const userId = req.user._id;
   const projectId = req.body.projectid;
   const postId = req.body.postid;
 

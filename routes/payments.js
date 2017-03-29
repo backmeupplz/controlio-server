@@ -40,7 +40,7 @@ router.post('/customer/default_source', validate(validation.defaultSource), (req
 /** Method to change customer's subscription at Controlio */
 router.post('/customer/subscription', validate(validation.subscription), (req, res, next) => {
   const planid = req.body.planid;
-  const userId = req.get('userId');
+  const userId = req.user._id;
   db.setSripeSubscription(userId, planid)
     .then(user => res.send(user))
     .catch(err => next(err));
@@ -49,7 +49,7 @@ router.post('/customer/subscription', validate(validation.subscription), (req, r
 /** Method to apply coupon (usually discount) at Controlio */
 router.post('/customer/coupon', validate(validation.coupon), (req, res, next) => {
   const coupon = req.body.coupon;
-  const userId = req.get('userId');
+  const userId = req.user._id;
   db.applyStripeCoupon(userId, coupon)
     .then(() => res.send({ success: true }))
     .catch(err => next(err));
