@@ -18,7 +18,7 @@ function reportError(err, req) {
   const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
 
   if (!checkIfBanned(fullUrl, bannedURLs)) {
-    sendMessage(`❗ *Error!*\n${'```'}json\n${fullUrl} – ${req.method}\nheaders: ${JSON.stringify(req.headers, null, 2)}\nbody: ${JSON.stringify(req.body, null, 2)}\n${JSON.stringify(err, null, 2)}${'```'}`);
+    sendMessage(`❗ *Error!*\n${'```'}json\n${fullUrl} – ${req.method}\ntoken: ${req.headers.token}\nbody: ${JSON.stringify(req.body, null, 2)}\n${JSON.stringify(err, null, 2)}${'```'}`);
   }
 }
 
