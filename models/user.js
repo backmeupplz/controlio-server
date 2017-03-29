@@ -129,4 +129,19 @@ userSchema.methods.generateMagicToken = function generateMagicToken() {
   });
 };
 
+userSchema.methods.maxProjects = function maxProjects() {
+  switch (this.plan) {
+    case 0:
+      return 1;
+    case 1:
+      return 5;
+    case 2:
+      return 20;
+    case 3:
+      return 50;
+    default:
+      return 1;
+  }
+};
+
 mongoose.model('user', userSchema);

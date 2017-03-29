@@ -130,12 +130,8 @@ function projectIsFinished() {
 function wrongResetToken() {
   return error(403, 'Failed to authenticate password reset token', 'AUTH_PASS_RESET_TOKEN_FAILED');
 }
-function notEnoughProjectsOnPlan(maxNumberOfProjects) {
-  let projectWord = 'projects';
-  if (maxNumberOfProjects === 1) {
-    projectWord = 'project';
-  }
-  return error(403, `Your plan only includes ${maxNumberOfProjects} ${projectWord}. Please upgrade your plan in settings or finish or delete older projects.`, 'NOT_ENOUGH_PROJECTS_ERROR');
+function notEnoughProjectsOnPlan() {
+  return error(403, 'Please upgrade your plan in settings', 'NOT_ENOUGH_PROJECTS_ERROR');
 }
 
 function standardize(originalError) {

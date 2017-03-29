@@ -125,6 +125,7 @@ function addUser(user) {
  */
 function addProject(project) {
   return findUserById(project.userId)
+    .select('plan')
     .then((user) => {
       if (user.isDemo) {
         throw errors.addDemoAsOwner();
@@ -132,7 +133,13 @@ function addProject(project) {
       if (project.type === 'client') {
         return addProjectAsClient(project, user);
       }
-      return addProjectAsManager(project, user);
+      return getProjectsOwned(user._id)
+        .then((count) => {
+          if (count >= user.maxProjects()) {
+            throw errors.notEnoughProjectsOnPlan();
+          }
+          return addProjectAsManager(project, user);
+        });
     });
 }
 
@@ -495,6 +502,7 @@ function acceptInvite(userId, inviteId, accept) {
   return new Promise((resolve, reject) =>
     /** Find user and invite */
     findUserById(userId)
+      .select('plan')
       .then(user =>
         Invite.findById(inviteId)
           .populate('project')
@@ -505,6 +513,14 @@ function acceptInvite(userId, inviteId, accept) {
             return { user, invite };
           })
       )
+      .then(({ user, invite }) =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (invite.type === 'own' && count >= user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            return ({ user, invite });
+          }))
       /** Remove invite from user and project */
       .then(({ user, invite }) => {
         // Remove invite from user
@@ -605,6 +621,15 @@ function addManagers(userId, projectId, managers) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
     findUserById(userId)
+      .select('plan')
+      .then(user =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (count >= user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            return user;
+          }))
       .then(user =>
         Project.findById(projectId)
           .then((project) => {
@@ -709,6 +734,15 @@ function addManagers(userId, projectId, managers) {
 function removeManager(userId, managerId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
+      .select('plan')
+      .then(user =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (count >= user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            return user;
+          }))
       .then(user =>
         Project.findById(projectId)
           .then(project => ({ user, project }))
@@ -752,6 +786,15 @@ function addClients(userId, projectId, clients) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
     findUserById(userId)
+      .select('plan')
+      .then(user =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (count >= user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            return user;
+          }))
       .then(user =>
         Project.findById(projectId)
           .then((project) => {
@@ -862,6 +905,15 @@ function addClients(userId, projectId, clients) {
 function removeClient(userId, clientId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
+      .select('plan')
+      .then(user =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (count >= user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            return user;
+          }))
       .then(user =>
         Project.findById(projectId)
           .then(project => ({ user, project }))
@@ -900,6 +952,15 @@ function removeClient(userId, clientId, projectId) {
 function editProject(userId, projectId, title, description, image) {
   return new Promise((resolve, reject) => {
     findUserById(userId)
+      .select('plan')
+      .then(user =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (count >= user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            return user;
+          }))
       .then(user =>
         Project.findById(projectId)
           .then(project => ({ user, project })))
@@ -946,6 +1007,7 @@ function editProject(userId, projectId, title, description, image) {
 function finishProject(userId, projectId, finish) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
+      .select('plan')
       .then(user =>
         Project.findById(projectId)
           .populate('owner')
@@ -956,12 +1018,17 @@ function finishProject(userId, projectId, finish) {
             return { user, project };
           })
       )
-      .then(({ user, project }) => {
-        project.isFinished = finish;
+      .then(({ user, project }) =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (count >= user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            project.isFinished = finish;
 
-        reporter.reportFinishProject(user, project, finish);
-        return project.save();
-      })
+            reporter.reportFinishProject(user, project, finish);
+            return project.save();
+          }))
       .then(resolve)
       .catch(reject)
   );
@@ -1026,7 +1093,14 @@ function deleteProject(userId, projectId) {
               promises.push(manager.save());
             });
             return Promise.all(promises)
-              .then(resolve);
+              .then(() =>
+                project.remove((err) => {
+                  if (err) {
+                    throw err;
+                  } else {
+                    resolve();
+                  }
+                }));
           });
       })
       .then(resolve)
@@ -1093,6 +1167,23 @@ function leaveProject(userId, projectId) {
   );
 }
 
+/**
+ * Function to get count of projects owned
+ * @param {Mongoose:ObjectId} userId Id of the user
+ * @return {Promise(Int)} Count of projects owned
+ */
+function getProjectsOwned(userId) {
+  return new Promise((resolve, reject) => {
+    Project.count({ owner: userId, isFinished: false }, (err, c) => {
+      if (err) {
+        reject(err);
+      } else if (c) {
+        resolve(c);
+      }
+    });
+  });
+}
+
 /** Posts */
 
 /**
@@ -1107,11 +1198,19 @@ function leaveProject(userId, projectId) {
 function addPost(userId, projectId, text, attachments, type) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
+      .select('plan')
+      .then(user =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (count >= user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            return user;
+          }))
       .then(user =>
         Project.findById(projectId)
           .populate('clients')
-          .then(project => ({ user, project }))
-      )
+          .then(project => ({ user, project })))
       /** Check if owner */
       .then(({ user, project }) => {
         let authorized = false;
@@ -1235,6 +1334,15 @@ function getPosts(userId, projectId, skip, limit) {
 function editPost(userId, projectId, postId, text, attachments) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
+      .select('plan')
+      .then(user =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (count >= user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            return user;
+          }))
       /** Get user, post, project */
       .then(user =>
         Post.findById(postId)
