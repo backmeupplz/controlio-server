@@ -13,7 +13,7 @@ module.exports = {
     body: Joi.object().keys({
       projectid: Joi.string().required(),
       type: Joi.string().valid('post', 'status'),
-      text: Joi.string().when('type', { is: 'status', then: Joi.string().max(250), otherwise: Joi.string().max(1000) }),
+      text: Joi.string().when('type', { is: 'status', then: Joi.string().max(250), otherwise: Joi.string().max(1000) }).allow(''),
       attachments: Joi.array().max(10),
     }).or('text', 'attachments'),
   },
