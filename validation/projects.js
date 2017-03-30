@@ -5,7 +5,7 @@ module.exports = {
     body: {
       title: Joi.string().max(250).required(),
       type: Joi.string().valid('manager', 'client').required(),
-      description: Joi.string().max(1000),
+      description: Joi.string().max(1000).allow(''),
       managerEmail: Joi.string().when('type', { is: 'client', then: Joi.string().email().max(100).required() }),
       clientEmails: Joi.array().when('type', { is: 'manager', then: Joi.array().items(Joi.string().email().max(100)).required() }),
       image: Joi.string(),

@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "notify": "node ./scripts/gitNotification.js"
+    "notify": "node ./scripts/gitNotification.js",
+    "notify-test": "node ./scripts/gitNotification-test.js"
   },
   "dependencies": {
     "apn": "^2.1.1",
