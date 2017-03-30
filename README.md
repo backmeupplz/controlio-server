@@ -1,6 +1,7 @@
 # Node.js backend for Controlio #
 
 * `https://api.controlio.co` — production instance
+* `http://api.controlio.co:3001` — test instance
 * [API documentaion](API.md)
 
 ### How do I get set up? ###
