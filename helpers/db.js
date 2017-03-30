@@ -229,7 +229,6 @@ function addProjectAsClient(project, user) {
  */
 function addProjectAsManager(project, user) {
   return new Promise((resolve, reject) => {
-    console.log(1);
     if (!project.clientEmails) {
       throw errors.fieldNotFound('clientEmails');
     }
@@ -240,18 +239,15 @@ function addProjectAsManager(project, user) {
     project.clientEmails.forEach((email) => {
       promises.push(findOrCreateUserWithEmail(email));
     });
-    console.log(2);
     return Promise.all(promises)
       /** Add owner */
       .then((clients) => {
-        console.log(3);
         const projectCopy = _.clone(project);
         projectCopy.owner = user;
         return { projectCopy, clients };
       })
       /** Add initial status if any */
       .then(({ projectCopy, clients }) => {
-        console.log(4);
         if (project.initialStatus) {
           const projectCopyCopy = _.clone(projectCopy);
           const initialStatus = new Post({
@@ -274,7 +270,6 @@ function addProjectAsManager(project, user) {
       })
       /** Save project to database and add project to owner */
       .then(({ projectCopy, clients }) => {
-        console.log(5);
         const newProject = new Project(projectCopy);
         return newProject.save()
           .then((dbProject) => {
@@ -285,7 +280,6 @@ function addProjectAsManager(project, user) {
       })
       /** Add invites to clients */
       .then(({ dbUser, dbProject, clients }) => {
-        console.log(6);
         const innerPromises = [];
         push.pushInvite(clients, dbProject.title, 'client');
         clients.forEach((client) => {
@@ -309,9 +303,7 @@ function addProjectAsManager(project, user) {
         });
         return Promise.all(innerPromises)
           .then((invites) => {
-            console.log(7);
             dbProject.invites = dbProject.invites.concat(invites);
-            console.log(8);
             return dbProject.save()
               .then(() => resolve(dbProject));
           });
