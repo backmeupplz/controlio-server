@@ -625,7 +625,7 @@ function addManagers(userId, projectId, managers) {
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
-            if (count >= user.maxProjects()) {
+            if (count > user.maxProjects()) {
               throw errors.notEnoughProjectsOnPlan();
             }
             return user;
@@ -738,7 +738,7 @@ function removeManager(userId, managerId, projectId) {
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
-            if (count >= user.maxProjects()) {
+            if (count > user.maxProjects()) {
               throw errors.notEnoughProjectsOnPlan();
             }
             return user;
@@ -790,7 +790,7 @@ function addClients(userId, projectId, clients) {
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
-            if (count >= user.maxProjects()) {
+            if (count > user.maxProjects()) {
               throw errors.notEnoughProjectsOnPlan();
             }
             return user;
@@ -909,7 +909,7 @@ function removeClient(userId, clientId, projectId) {
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
-            if (count >= user.maxProjects()) {
+            if (count > user.maxProjects()) {
               throw errors.notEnoughProjectsOnPlan();
             }
             return user;
@@ -956,7 +956,7 @@ function editProject(userId, projectId, title, description, image) {
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
-            if (count >= user.maxProjects()) {
+            if (count > user.maxProjects()) {
               throw errors.notEnoughProjectsOnPlan();
             }
             return user;
@@ -1021,7 +1021,7 @@ function finishProject(userId, projectId, finish) {
       .then(({ user, project }) =>
         getProjectsOwned(user._id)
           .then((count) => {
-            if (count >= user.maxProjects()) {
+            if (count >= user.maxProjects() && !finish) {
               throw errors.notEnoughProjectsOnPlan();
             }
             project.isFinished = finish;
@@ -1202,7 +1202,7 @@ function addPost(userId, projectId, text, attachments, type) {
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
-            if (count >= user.maxProjects()) {
+            if (count > user.maxProjects()) {
               throw errors.notEnoughProjectsOnPlan();
             }
             return user;
@@ -1338,7 +1338,7 @@ function editPost(userId, projectId, postId, text, attachments) {
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
-            if (count >= user.maxProjects()) {
+            if (count > user.maxProjects()) {
               throw errors.notEnoughProjectsOnPlan();
             }
             return user;
