@@ -125,10 +125,10 @@ function addUser(user) {
  */
 function addProject(project) {
   return findUserById(project.userId)
-    .select('plan')
+    .select('+plan')
     .then((user) => {
       if (user.isDemo) {
-        throw errors.addDemoAsOwner();
+        throw errors.demoError();
       }
       if (project.type === 'client') {
         return addProjectAsClient(project, user);
@@ -502,7 +502,7 @@ function acceptInvite(userId, inviteId, accept) {
   return new Promise((resolve, reject) =>
     /** Find user and invite */
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         Invite.findById(inviteId)
           .populate('project')
@@ -621,7 +621,7 @@ function addManagers(userId, projectId, managers) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -734,7 +734,7 @@ function addManagers(userId, projectId, managers) {
 function removeManager(userId, managerId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -786,7 +786,7 @@ function addClients(userId, projectId, clients) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -905,7 +905,7 @@ function addClients(userId, projectId, clients) {
 function removeClient(userId, clientId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -952,7 +952,7 @@ function removeClient(userId, clientId, projectId) {
 function editProject(userId, projectId, title, description, image) {
   return new Promise((resolve, reject) => {
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -1007,7 +1007,7 @@ function editProject(userId, projectId, title, description, image) {
 function finishProject(userId, projectId, finish) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         Project.findById(projectId)
           .populate('owner')
@@ -1177,7 +1177,7 @@ function getProjectsOwned(userId) {
     Project.count({ owner: userId, isFinished: false }, (err, c) => {
       if (err) {
         reject(err);
-      } else if (c) {
+      } else {
         resolve(c);
       }
     });
@@ -1198,7 +1198,7 @@ function getProjectsOwned(userId) {
 function addPost(userId, projectId, text, attachments, type) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -1334,7 +1334,7 @@ function getPosts(userId, projectId, skip, limit) {
 function editPost(userId, projectId, postId, text, attachments) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
