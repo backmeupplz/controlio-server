@@ -125,10 +125,10 @@ function addUser(user) {
  */
 function addProject(project) {
   return findUserById(project.userId)
-    .select('plan')
+    .select('+plan')
     .then((user) => {
       if (user.isDemo) {
-        throw errors.addDemoAsOwner();
+        throw errors.demoError();
       }
       if (project.type === 'client') {
         return addProjectAsClient(project, user);
@@ -160,12 +160,14 @@ function addProjectAsClient(project, user) {
     return findOrCreateUserWithEmail(project.managerEmail)
       /** Add client */
       .then((manager) => {
+        console.log(1);
         const projectCopy = _.clone(project);
         projectCopy.clients = [user];
         return { projectCopy, manager };
       })
       /** Add initial status if any */
       .then(({ projectCopy, manager }) => {
+        console.log(2);
         if (project.initialStatus) {
           const projectCopyCopy = _.clone(projectCopy);
           const initialStatus = new Post({
@@ -188,6 +190,7 @@ function addProjectAsClient(project, user) {
       })
       /** Save project to database and add project to client */
       .then(({ projectCopy, manager }) => {
+        console.log(3);
         const newProject = new Project(projectCopy);
         return newProject.save()
           .then((dbProject) => {
@@ -198,6 +201,7 @@ function addProjectAsClient(project, user) {
       })
       /** Add invite to owner */
       .then(({ dbProject, dbUser, manager }) => {
+        console.log(4);
         const invite = new Invite({
           type: 'own',
           sender: dbUser._id,
@@ -206,13 +210,16 @@ function addProjectAsClient(project, user) {
         });
         return invite.save()
           .then((dbInvite) => {
+            console.log(5);
             dbProject.invites.push(dbInvite._id);
             manager.invites.push(dbInvite._id);
             const promises = [dbProject.save(), manager.save()];
             return Promise.all(promises)
               .then(() => {
+                console.log(6);
                 mailer.sendInvite(manager.email, dbProject, 'owner');
                 push.pushInvite([manager], dbProject, 'owner');
+                console.log(7);
                 resolve(dbProject);
               });
           });
@@ -502,7 +509,7 @@ function acceptInvite(userId, inviteId, accept) {
   return new Promise((resolve, reject) =>
     /** Find user and invite */
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         Invite.findById(inviteId)
           .populate('project')
@@ -621,7 +628,7 @@ function addManagers(userId, projectId, managers) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -734,7 +741,7 @@ function addManagers(userId, projectId, managers) {
 function removeManager(userId, managerId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -786,7 +793,7 @@ function addClients(userId, projectId, clients) {
   return new Promise((resolve, reject) =>
     /** Find user and project */
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -905,7 +912,7 @@ function addClients(userId, projectId, clients) {
 function removeClient(userId, clientId, projectId) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -952,7 +959,7 @@ function removeClient(userId, clientId, projectId) {
 function editProject(userId, projectId, title, description, image) {
   return new Promise((resolve, reject) => {
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -1007,7 +1014,7 @@ function editProject(userId, projectId, title, description, image) {
 function finishProject(userId, projectId, finish) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         Project.findById(projectId)
           .populate('owner')
@@ -1198,7 +1205,7 @@ function getProjectsOwned(userId) {
 function addPost(userId, projectId, text, attachments, type) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
@@ -1334,7 +1341,7 @@ function getPosts(userId, projectId, skip, limit) {
 function editPost(userId, projectId, postId, text, attachments) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('plan')
+      .select('+plan')
       .then(user =>
         getProjectsOwned(user._id)
           .then((count) => {
