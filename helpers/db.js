@@ -160,14 +160,12 @@ function addProjectAsClient(project, user) {
     return findOrCreateUserWithEmail(project.managerEmail)
       /** Add client */
       .then((manager) => {
-        console.log(1);
         const projectCopy = _.clone(project);
         projectCopy.clients = [user];
         return { projectCopy, manager };
       })
       /** Add initial status if any */
       .then(({ projectCopy, manager }) => {
-        console.log(2);
         if (project.initialStatus) {
           const projectCopyCopy = _.clone(projectCopy);
           const initialStatus = new Post({
@@ -190,7 +188,6 @@ function addProjectAsClient(project, user) {
       })
       /** Save project to database and add project to client */
       .then(({ projectCopy, manager }) => {
-        console.log(3);
         const newProject = new Project(projectCopy);
         return newProject.save()
           .then((dbProject) => {
@@ -201,7 +198,6 @@ function addProjectAsClient(project, user) {
       })
       /** Add invite to owner */
       .then(({ dbProject, dbUser, manager }) => {
-        console.log(4);
         const invite = new Invite({
           type: 'own',
           sender: dbUser._id,
@@ -210,16 +206,13 @@ function addProjectAsClient(project, user) {
         });
         return invite.save()
           .then((dbInvite) => {
-            console.log(5);
             dbProject.invites.push(dbInvite._id);
             manager.invites.push(dbInvite._id);
             const promises = [dbProject.save(), manager.save()];
             return Promise.all(promises)
               .then(() => {
-                console.log(6);
                 mailer.sendInvite(manager.email, dbProject, 'owner');
                 push.pushInvite([manager], dbProject, 'owner');
-                console.log(7);
                 resolve(dbProject);
               });
           });
