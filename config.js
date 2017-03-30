@@ -8,4 +8,5 @@ module.exports = {
   telegramKey: process.env.TELEGRAM_KEY,
   telegramLogsId: process.env.TELEGRAM_ID,
   url: process.env.SERVER_URL || 'https://api.controlio.co',
+  port: process.env.PORT || 8443,
 };
