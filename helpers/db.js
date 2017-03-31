@@ -241,9 +241,11 @@ function addProjectAsManager(project, user) {
     if (project.clientEmails.includes(user.email)) {
       throw errors.addSelfAsClient();
     }
-    if (_.intersection([project.clientEmails, demoAccounts]).length > 0) {
-      throw errors.addDemoAsClient();
-    }
+    project.clientEmails.forEach((email) => {
+      if (demoAccounts.includes(email)) {
+        throw errors.addDemoAsClient();
+      }
+    });
     const promises = [];
     project.clientEmails.forEach((email) => {
       promises.push(findOrCreateUserWithEmail(email));
