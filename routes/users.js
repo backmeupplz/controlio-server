@@ -11,6 +11,7 @@ const router = require('express').Router();
 const reporter = require('../helpers/reporter');
 const mailer = require('../helpers/mailer');
 const _ = require('lodash');
+const demo = require('../helpers/demo');
 
 /** Public API */
 
@@ -332,7 +333,7 @@ router.get('/profile', (req, res, next) => {
 });
 
 /** Method to edit user's profile */
-router.post('/profile', validate(validation.editProfile), (req, res, next) => {
+router.post('/profile', validate(validation.editProfile), demo.checkDemo, (req, res, next) => {
   const userId = req.user._id;
 
   const name = req.body.name;

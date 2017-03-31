@@ -127,9 +127,6 @@ function addProject(project) {
   return findUserById(project.userId)
     .select('+plan')
     .then((user) => {
-      if (user.isDemo) {
-        throw errors.demoError();
-      }
       if (project.type === 'client') {
         return addProjectAsClient(project, user);
       }
@@ -1127,12 +1124,10 @@ function leaveProject(userId, projectId) {
             return { user, project };
           })
       )
-      /** Check if user is not an owner or demo */
+      /** Check if user is not an owner */
       .then(({ user, project }) => {
         if (project.owner && project.owner.equals(user._id)) {
           throw errors.leaveAsOwner();
-        } else if (user.isDemo) {
-          throw errors.leaveAsDemo();
         }
         return { user, project };
       })
