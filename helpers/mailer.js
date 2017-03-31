@@ -92,13 +92,15 @@ function sendInvite(email, project, type) {
     texts: [
       'Congratulations!',
       inviteMessage,
-      `${project.title}:`,
-      project.description,
-      'You can install Controlio following the link below.',
     ],
   };
 
-  sendEmail(data, 'Controlio: your magic link', email);
+  if (project.description) {
+    data.texts.push(project.description);
+  }
+  data.texts.push('You can install Controlio following the link below.');
+
+  sendEmail(data, 'Controlio: you were invited', email);
 }
 
 /**
