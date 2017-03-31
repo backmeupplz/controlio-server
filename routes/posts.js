@@ -4,7 +4,7 @@ const db = require('../helpers/db');
 const auth = require('../helpers/auth');
 const validate = require('express-validation');
 const validation = require('../validation/posts');
-const reporter = require('../helpers/reporter');
+const demo = require('../helpers/demo');
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ const router = express.Router();
 router.use(auth.checkToken);
 
 /** Method to add new post to the database */
-router.post('/', validate(validation.post), (req, res, next) => {
+router.post('/', validate(validation.post), demo.checkDemo, (req, res, next) => {
   const userId = req.user._id;
   const projectId = req.body.projectid;
   const text = req.body.text;
@@ -39,7 +39,7 @@ router.get('/', validate(validation.get), (req, res, next) => {
 });
 
 /** Method to edit a post */
-router.put('/', validate(validation.put), (req, res, next) => {
+router.put('/', validate(validation.put), demo.checkDemo, (req, res, next) => {
   const userId = req.user._id;
   const projectId = req.body.projectid;
   const postId = req.body.postid;
@@ -52,7 +52,7 @@ router.put('/', validate(validation.put), (req, res, next) => {
 });
 
 /** Method to delete the post */
-router.delete('/', validate(validation.delete), (req, res, next) => {
+router.delete('/', validate(validation.delete), demo.checkDemo, (req, res, next) => {
   const userId = req.user._id;
   const projectId = req.body.projectid;
   const postId = req.body.postid;

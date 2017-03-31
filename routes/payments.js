@@ -5,6 +5,7 @@ const validate = require('express-validation');
 const validation = require('../validation/payments');
 const payments = require('../helpers/payments');
 const db = require('../helpers/db');
+const demo = require('../helpers/demo');
 
 const router = express.Router();
 
@@ -18,6 +19,9 @@ router.get('/customer', validate(validation.customer), (req, res, next) => {
     .then(customer => res.send(customer))
     .catch(err => next(err));
 });
+
+/** Check if not demo */
+router.use(demo.checkDemo);
 
 /** Proxy method to stripe servers to add payment sources to the customer */
 router.post('/customer/sources', validate(validation.postSource), (req, res, next) => {

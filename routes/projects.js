@@ -7,31 +7,12 @@ const validation = require('../validation/projects');
 const errors = require('../helpers/errors');
 const _ = require('lodash');
 const validator = require('validator');
+const demo = require('../helpers/demo');
 
 const router = express.Router();
 
 /** Private API check */
 router.use(auth.checkToken);
-
-/** Method to create a new project */
-router.post('/', validate(validation.post), (req, res, next) => {
-  const project = _.clone(req.body);
-  project.userId = req.user._id;
-  if (project.type === 'client') {
-    if (validator.isEmail(project.managerEmail)) {
-      project.managerEmail = project.managerEmail.toLowerCase();
-    } else {
-      next(errors.validManagerEmail());
-      return;
-    }
-  } else if (project.type === 'manager') {
-    project.clientEmails = _.uniq(req.body.clientEmails.map(email => email.toLowerCase()))
-      .filter(email => validator.isEmail(email));
-  }
-  db.addProject(project)
-    .then(dbproject => res.send(dbproject))
-    .catch(err => next(err));
-});
 
 /** Method to get a project by id */
 router.get('/project', validate(validation.getProject), (req, res, next) => {
@@ -61,6 +42,29 @@ router.get('/invites', (req, res, next) => {
   const userId = req.user._id;
   db.getInvites(userId)
     .then(invites => res.send(invites))
+    .catch(err => next(err));
+});
+
+/** Check if not demo */
+router.use(demo.checkDemo);
+
+/** Method to create a new project */
+router.post('/', validate(validation.post), (req, res, next) => {
+  const project = _.clone(req.body);
+  project.userId = req.user._id;
+  if (project.type === 'client') {
+    if (validator.isEmail(project.managerEmail)) {
+      project.managerEmail = project.managerEmail.toLowerCase();
+    } else {
+      next(errors.validManagerEmail());
+      return;
+    }
+  } else if (project.type === 'manager') {
+    project.clientEmails = _.uniq(req.body.clientEmails.map(email => email.toLowerCase()))
+      .filter(email => validator.isEmail(email));
+  }
+  db.addProject(project)
+    .then(dbproject => res.send(dbproject))
     .catch(err => next(err));
 });
 

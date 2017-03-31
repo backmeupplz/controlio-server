@@ -29,7 +29,7 @@ function checkToken(req, res, next) {
       return next(errors.authTokenFailed());
     }
     db.findUserById(data.userid)
-      .select('token')
+      .select('token isDemo')
       .then((user) => {
         if (!user) {
           return next(errors.authEmailNotRegistered());
