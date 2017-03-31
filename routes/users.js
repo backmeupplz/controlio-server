@@ -340,7 +340,7 @@ router.post('/profile', validate(validation.editProfile), (req, res, next) => {
   const photo = req.body.photo;
 
   db.findUserById(userId)
-    .select('token email name phone photo plan')
+    .select('token email name phone photo plan stripeId')
     .then((user) => {
       const userCopy = _.clone(user);
       userCopy.name = name;
