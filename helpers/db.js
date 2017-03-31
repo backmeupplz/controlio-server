@@ -20,6 +20,8 @@ const Project = mongoose.model('project');
 const Post = mongoose.model('post');
 const Invite = mongoose.model('invite');
 
+const demoAccounts = ['awesome@controlio.co'];
+
 /** Users */
 
 /**
@@ -155,6 +157,13 @@ function addProjectAsClient(project, user) {
       throw errors.fieldNotFound('managerEmail');
     }
     return findOrCreateUserWithEmail(project.managerEmail)
+      /** Check if demo */
+      .then((manager) => {
+        if (manager.isDemo) {
+          throw errors.addDemoAsManager();
+        }
+        return manager;
+      })
       /** Add client */
       .then((manager) => {
         const projectCopy = _.clone(project);
@@ -231,6 +240,9 @@ function addProjectAsManager(project, user) {
     }
     if (project.clientEmails.includes(user.email)) {
       throw errors.addSelfAsClient();
+    }
+    if (_.intersection([project.clientEmails, demoAccounts]).length > 0) {
+      throw errors.addDemoAsClient();
     }
     const promises = [];
     project.clientEmails.forEach((email) => {
@@ -657,7 +669,7 @@ function addManagers(userId, projectId, managers) {
         }
         return { project, user };
       })
-      /** Get clients objects */
+      /** Get managers objects */
       .then(({ project, user }) => {
         const promises = [];
         managers.forEach((email) => {
@@ -681,6 +693,9 @@ function addManagers(userId, projectId, managers) {
             valid = false;
           }
           if (owner === id) {
+            valid = false;
+          }
+          if (managerObject.isDemo) {
             valid = false;
           }
           return valid;
@@ -852,6 +867,9 @@ function addClients(userId, projectId, clients) {
             valid = false;
           }
           if (owner === id) {
+            valid = false;
+          }
+          if (clientObject.isDemo) {
             valid = false;
           }
           return valid;
