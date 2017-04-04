@@ -7,7 +7,7 @@ const validation = require('../validation/main');
 
 /** A list of features to enable in iOS app */
 router.get('/feature_list', (req, res) => {
-  res.send({ 0: false });
+  res.send({ 0: true, 1: true });
 });
 
 const apple = {
@@ -22,6 +22,16 @@ const apple = {
   },
 };
 
+const google = [{
+  relation: ['delegate_permission/common.handle_all_urls'],
+  target: {
+    namespace: 'android_app',
+    package_name: 'ru.adonixis.controlio',
+    sha256_cert_fingerprints:
+    ['07:26:B2:FD:BD:DC:5F:C2:0A:28:E4:EB:82:B9:B9:49:3B:63:27:FC:40:4F:32:E0:83:A6:F9:B1:47:90:32:36'],
+  },
+}];
+
 /** Allows iOS to use magic links */
 router.get('/.well-known/apple-app-site-association', (req, res) => {
   res.send(apple);
@@ -30,6 +40,16 @@ router.get('/.well-known/apple-app-site-association', (req, res) => {
 /** Allows iOS to use magic links */
 router.get('/apple-app-site-association', (req, res) => {
   res.send(apple);
+});
+
+/** Allows Android to use magic links */
+router.get('/assetlinks.json', (req, res) => {
+  res.send(google);
+});
+
+/** Allows Android to use magic links */
+router.get('/.well-known/assetlinks.json', (req, res) => {
+  res.send(google);
 });
 
 /** Show magic link login page */

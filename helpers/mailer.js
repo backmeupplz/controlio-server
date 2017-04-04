@@ -85,12 +85,11 @@ function sendInvite(user, project, type) {
   }
 
   const data = {
-    button_title: 'Install Controlio',
-    button_url: 'https://itunes.apple.com/ca/app/controlio/id997857994',
     texts: [
       'Congratulations!',
       inviteMessage,
     ],
+    needsLinks: true,
   };
 
   if (project.description) {
