@@ -1,8 +1,5 @@
 /**
  * Middleware for api authorization
- *
- * @module auth
- * @license MIT
  */
 
 /** Dependencies */

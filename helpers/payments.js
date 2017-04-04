@@ -1,8 +1,5 @@
 /**
  * Module to handle payments stuff
- *
- * @module payments
- * @license MIT
  */
 
 /** Dependencies */

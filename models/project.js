@@ -52,4 +52,4 @@ const projectSchema = new Schema({
   canEdit: Boolean,
 }, { timestamps: true });
 
-mongoose.model('project', projectSchema);
+module.exports = mongoose.model('project', projectSchema);

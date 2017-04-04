@@ -24,4 +24,4 @@ const inviteSchema = new Schema({
   },
 }, { timestamps: true });
 
-mongoose.model('invite', inviteSchema);
+module.exports = mongoose.model('invite', inviteSchema);

@@ -1,8 +1,5 @@
 /**
  * Module to generate errors
- *
- * @module errors
- * @license MIT
  */
 
 /**

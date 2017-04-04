@@ -1,8 +1,5 @@
 /**
  * Module to handle password hashing
- *
- * @module hash
- * @license MIT
  */
 
 /** Dependencies */

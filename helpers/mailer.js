@@ -1,8 +1,5 @@
 /**
  * Module to send out emails
- *
- * @module mailer
- * @license MIT
  */
 
 /** Dependencies */
@@ -69,10 +66,11 @@ function sendMagicLink(user) {
 
 /**
  * Function to send invite to client
- * @param {Mongo:User} user user that should get an email
+ * @param {Mongoose:User} user user that should get an email
+ * @param {Mongoose:Project} project Project where user was invited
  * @param {String} type Type of invite ('client', 'manager' or 'owner')
  */
-function sendInvite(email, project, type) {
+function sendInvite(user, project, type) {
   let inviteMessage;
   switch (type) {
     case 'client':
@@ -100,7 +98,7 @@ function sendInvite(email, project, type) {
   }
   data.texts.push('You can install Controlio following the link below.');
 
-  sendEmail(data, 'Controlio: you were invited', email);
+  sendEmail(data, 'Controlio: you were invited', user.email);
 }
 
 /**
