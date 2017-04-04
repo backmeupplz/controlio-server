@@ -6,7 +6,6 @@
  */
 
 /** Dependencies */
-const mongoose = require('mongoose');
 const errors = require('./errors');
 const _ = require('lodash');
 const payments = require('./payments');
@@ -14,11 +13,8 @@ const reporter = require('./reporter');
 const mailer = require('./mailer');
 const push = require('./push');
 
-/** Get schemas */
-const User = mongoose.model('user');
-const Project = mongoose.model('project');
-const Post = mongoose.model('post');
-const Invite = mongoose.model('invite');
+/** Get schemas **/
+const { User, Project, Post, Invite } = require('../models');
 
 const demoAccounts = ['awesome@controlio.co'];
 

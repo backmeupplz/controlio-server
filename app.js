@@ -23,12 +23,9 @@ Promise.config({ cancellation: true });
 /** Create app */
 const app = express();
 
-/** Setup mongoose and load all models */
+/** Setup mongoose */
 mongoose.connect(config.database);
 mongoose.Promise = global.Promise;
-fs.readdirSync(path.join(__dirname, '/models')).forEach((filename) => {
-  require(path.join(__dirname, '/models/', filename));
-});
 
 /** Getting auth after loading mongoose because it depends on user model */
 const auth = require('./helpers/auth');

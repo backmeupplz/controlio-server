@@ -15,7 +15,7 @@ module.exports = {
     body: {
       projectid: Joi.string().required(),
       title: Joi.string().max(250).required(),
-      description: Joi.string().max(1000),
+      description: Joi.string().max(1000).allow(''),
       image: Joi.string(),
     },
   },
