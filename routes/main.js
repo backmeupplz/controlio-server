@@ -28,7 +28,7 @@ const google = [{
     namespace: 'android_app',
     package_name: 'ru.adonixis.controlio',
     sha256_cert_fingerprints:
-    ['DE:9A:EC:67:59:31:8F:79:89:F4:58:E7:20:87:80:68:FA:14:D0:61:25:05:D0:2E:BE:32:C1:4E:5D:61:99:59'],
+    ['07:26:B2:FD:BD:DC:5F:C2:0A:28:E4:EB:82:B9:B9:49:3B:63:27:FC:40:4F:32:E0:83:A6:F9:B1:47:90:32:36'],
   },
 }];
 
