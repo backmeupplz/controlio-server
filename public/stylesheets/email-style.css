@@ -153,14 +153,31 @@ a {
   border: solid #03C386;
   border-width: 10px 20px;
   line-height: 2em;
-  /* 2em * 14px = 28px, use px to get airier line-height also in Thunderbird, and Yahoo!, Outlook.com, AOL webmail clients */
-  /*line-height: 28px;*/
   font-weight: bold;
   text-align: center;
   cursor: pointer;
   display: inline-block;
   border-radius: 5px;
   text-transform: capitalize;
+}
+
+@media (max-width: 400px) {
+  .btn-store {
+    cursor: pointer;
+    display: block;
+    max-width: 80%;
+    margin-right: 20px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+}
+@media (min-width: 400px) {
+  .btn-store {
+    cursor: pointer;
+    display: inline-block;
+    max-width: 40%;
+    margin-right: 20px;
+  }
 }
 
 /* -------------------------------------

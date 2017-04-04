@@ -4,7 +4,7 @@ html(xmlns='http://www.w3.org/1999/xhtml')
     meta(name='viewport', content='width=device-width')
     meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
     title #{title}
-    link(href='https://api.controlio.co/stylesheets/email-style.css', media='all', rel='stylesheet', type='text/css')
+    link(href='/stylesheets/email-style.css', media='all', rel='stylesheet', type='text/css')
   body(itemscope='', itemtype='http://schema.org/EmailMessage')
     table.body-wrap
       tr
@@ -27,3 +27,10 @@ html(xmlns='http://www.w3.org/1999/xhtml')
                           a.btn-primary(href=button_url) #{button_title}
                     tr
                       td.content-block Thanks for choosing Controlio!
+                    if needsLinks
+                      tr
+                        td.content-block
+                          a.btn-store(href='https://itunes.apple.com/ca/app/controlio/id997857994?mt=8')
+                            img(src='http://controlio.co/images/app-store.svg')
+                          a.btn-store(href='https://play.google.com/store/apps/details?id=ru.adonixis.controlio')
+                            img(src='http://controlio.co/images/play-store.svg')
