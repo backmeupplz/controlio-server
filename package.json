@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node ./bin/www",
     "notify": "node ./scripts/gitNotification.js",
-    "notify-test": "node ./scripts/gitNotification-test.js"
+    "notify-test": "node ./scripts/gitNotification-test.js",
+    "test": "./node_modules/mocha/bin/mocha test -R spec --recursive"
   },
   "dependencies": {
     "apn": "^2.1.1",
@@ -42,6 +43,8 @@
     "eslint-plugin-import": "^1.15.0",
     "eslint-plugin-jsx-a11y": "^2.2.2",
     "eslint-plugin-promise": "^2.0.1",
-    "eslint-plugin-react": "^6.2.2"
+    "eslint-plugin-react": "^6.2.2",
+    "mocha": "^3.2.0",
+    "unit.js": "^2.0.0"
   }
 }
