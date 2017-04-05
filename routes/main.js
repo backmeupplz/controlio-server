@@ -44,11 +44,15 @@ router.get('/apple-app-site-association', (req, res) => {
 
 /** Allows Android to use magic links */
 router.get('/assetlinks.json', (req, res) => {
+  res.set('Content-Type', 'application/json');
+  res.status(200);
   res.send(google);
 });
 
 /** Allows Android to use magic links */
 router.get('/.well-known/assetlinks.json', (req, res) => {
+  res.set('Content-Type', 'application/json');
+  res.status(200);
   res.send(google);
 });
 

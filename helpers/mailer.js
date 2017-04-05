@@ -127,7 +127,12 @@ function sendEmail(data, subject, receiver) {
 
   emailTemplate.render(data, (err, result) => {
     /** todo: handle error */
-    juice.juiceResources(result.html, {}, (error, html) => {
+    juice.juiceResources(result.html, {
+      webResources: {
+        images: 0,
+        svgs: 0,
+      },
+    }, (error, html) => {
       /** todo: handle error */
       result.html = html;
       const content = new helper.Content('text/html', result.html);
