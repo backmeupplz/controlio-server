@@ -45,7 +45,7 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('common', {
   stream: fs.createWriteStream('./access.log', { flags: 'a' }),
 }));
-app.use(logger('dev'));
+// app.use(logger('dev'));
 /** Setup body parser */
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
