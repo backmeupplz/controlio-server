@@ -693,7 +693,6 @@ function addManagers(userId, projectId, managers) {
           existingInvites.forEach((invite) => {
             if (managerInvites.includes(invite)) {
               valid = false;
-              console.log('yay!');
             }
           });
           if (existingClients.includes(id)) {
