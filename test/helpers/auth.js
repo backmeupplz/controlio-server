@@ -17,23 +17,21 @@ describe('helpers/auth.js', () => {
       mongoose.connect('mongodb://localhost:27017/controlio-test', (error) => {
         if (error) return done(error);
         /** Drop mongo db */
-        mongoose.connection.db.dropDatabase((inerr) => {
-          if (inerr) return done(inerr);
-          /** Add a user */
-          const email = '1@controlio.co';
-          db.addUser({ email })
-            .then((dbuser) => {
-              user = dbuser;
-              /** Give JWT to the dbuser */
-              dbuser.token = jwt.sign({
-                email,
-                userid: dbuser._id,
-              }, config.jwtSecret);
-              return dbuser.save();
-            })
-            .then(() => done())
-            .catch(done);
-        });
+        mongoose.connection.db.dropDatabase();
+        /** Add a user */
+        const email = '1@controlio.co';
+        db.addUser({ email })
+          .then((dbuser) => {
+            user = dbuser;
+            /** Give JWT to the dbuser */
+            dbuser.token = jwt.sign({
+              email,
+              userid: dbuser._id,
+            }, config.jwtSecret);
+            return dbuser.save();
+          })
+          .then(() => done())
+          .catch(done);
       });
     });
   });

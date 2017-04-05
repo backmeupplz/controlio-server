@@ -2,7 +2,6 @@ const test = require('unit.js');
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 const demo = require('../../helpers/demo');
-const config = require('../../config');
 const MockExpressRequest = require('mock-express-request');
 const db = require('../../helpers/db');
 
