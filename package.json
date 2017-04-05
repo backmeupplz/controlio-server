@@ -44,7 +44,9 @@
     "eslint-plugin-jsx-a11y": "^2.2.2",
     "eslint-plugin-promise": "^2.0.1",
     "eslint-plugin-react": "^6.2.2",
+    "express-unit": "^1.1.0",
     "mocha": "^3.2.0",
+    "mock-express-request": "^0.2.0",
     "unit.js": "^2.0.0"
   }
 }

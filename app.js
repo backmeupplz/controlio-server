@@ -8,9 +8,6 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const fs = require('fs');
-require('dotenv').config({
-  path: path.join(__dirname, '/.env'),
-});
 const config = require('./config');
 const reporter = require('./helpers/reporter');
 const errors = require('./helpers/errors');
