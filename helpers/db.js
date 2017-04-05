@@ -684,11 +684,12 @@ function addManagers(userId, projectId, managers) {
       .then(({ managerObjects, project, user }) => {
         const existingClients = project.clients.map(v => String(v));
         const existingManagers = project.managers.map(v => String(v));
+        const existingInvites = project.invites.map(v => String(v));
         const owner = String(project.owner);
+        
         const filteredManagerObjects = managerObjects.filter((managerObject) => {
           const id = String(managerObject._id);
           const managerInvites = managerObject.invites.map(v => String(v));
-          const existingInvites = managerObject.invites.map(v => String(v));
           let valid = true;
           existingInvites.forEach((invite) => {
             if (managerInvites.includes(invite)) {
