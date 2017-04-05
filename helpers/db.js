@@ -687,7 +687,15 @@ function addManagers(userId, projectId, managers) {
         const owner = String(project.owner);
         const filteredManagerObjects = managerObjects.filter((managerObject) => {
           const id = String(managerObject._id);
+          const managerInvites = managerObject.invites.map(v => String(v));
+          const existingInvites = managerObject.invites.map(v => String(v));
           let valid = true;
+          existingInvites.forEach((invite) => {
+            if (managerInvites.includes(invite)) {
+              valid = false;
+              console.log('yay!');
+            }
+          });
           if (existingClients.includes(id)) {
             valid = false;
           }
@@ -857,11 +865,20 @@ function addClients(userId, projectId, clients) {
       .then(({ clientObjects, project, user }) => {
         const existingClients = project.clients.map(v => String(v));
         const existingManagers = project.managers.map(v => String(v));
+        const existingInvites = project.invites.map(v => String(v));
         const owner = String(project.owner);
 
         const filteredClientObjects = clientObjects.filter((clientObject) => {
           const id = String(clientObject._id);
+          const clientInvites = clientObject.invites.map(v => String(v));
           let valid = true;
+          if (existingInvites) {
+            existingInvites.forEach((invite) => {
+              if (clientInvites.includes(invite)) {
+                valid = false;
+              }
+            });
+          }
           if (existingClients.includes(id)) {
             valid = false;
           }
