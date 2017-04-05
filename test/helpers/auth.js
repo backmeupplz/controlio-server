@@ -32,8 +32,11 @@ describe('helpers/auth.js', () => {
     });
   });
 
-  after(() => {
-    mongoose.connection.db.dropDatabase();
+  after((done) => {
+    mongoose.connection.db.dropDatabase(() => {
+      mongoose.connection.close();
+      done();
+    });
   });
 
   it('validates correct api key', (done) => {
