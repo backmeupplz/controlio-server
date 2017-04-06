@@ -1,46 +1,28 @@
 const test = require('unit.js');
-const mongoose = require('mongoose');
-mongoose.Promise = require('bluebird');
+const helper = require('../helper');
+
 const auth = require('../../helpers/auth');
 const config = require('../../config');
 const MockExpressRequest = require('mock-express-request');
-const db = require('../../helpers/db');
-const jwt = require('jsonwebtoken');
 
 describe('helpers/auth.js', () => {
+  const email = 'test@controlio.co';
   let user;
 
   before((done) => {
-    /** Connect to mongo db */
-    mongoose.connection.close((err) => {
-      if (err) return done(err);
-      mongoose.connect('mongodb://localhost:27017/controlio-test', (error) => {
-        if (error) return done(error);
-        /** Drop mongo db */
-        mongoose.connection.db.dropDatabase();
-        /** Add a user */
-        const email = '1@controlio.co';
-        db.addUser({ email })
-          .then((dbuser) => {
-            user = dbuser;
-            /** Give JWT to the dbuser */
-            dbuser.token = jwt.sign({
-              email,
-              userid: dbuser._id,
-            }, config.jwtSecret);
-            return dbuser.save();
-          })
-          .then(() => done())
-          .catch(done);
-      });
-    });
+    helper.closeConnectDrop()
+      .then(() => helper.addUserWithJWT({ email }))
+      .then((dbuser) => {
+        user = dbuser;
+        done();
+      })
+      .catch(done);
   });
 
   after((done) => {
-    mongoose.connection.db.dropDatabase(() => {
-      mongoose.connection.close();
-      done();
-    });
+    helper.dropClose()
+      .then(done)
+      .catch(done);
   });
 
   it('validates correct api key', (done) => {
