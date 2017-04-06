@@ -42,7 +42,6 @@ describe('routes/public.js', () => {
           .get(`/public/resetPassword?token=${saved.tokenForPasswordReset}`)
           .expect(200, (error, res) => {
             if (error) return done(error);
-
             test.string(res.text)
               .contains(saved.tokenForPasswordReset);
             done();
@@ -69,13 +68,9 @@ describe('routes/public.js', () => {
       .get('/public/resetPassword?token=123')
       .expect(200, (error, res) => {
         if (error) return done(error);
-        try {
-          test.string(res.text)
-            .contains('jwt malformed');
-          done();
-        } catch (err) {
-          done(err);
-        }
+        test.string(res.text)
+          .contains('jwt malformed');
+        done();
       });
   });
   it('returns error on second view of the reset password', (done) => {
