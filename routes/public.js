@@ -48,7 +48,7 @@ router.get('/resetPassword', validate(validation.getResetPassword), (req, res) =
 
 /** Method to reset password */
 router.post('/resetPassword', validate(validation.postResetPassword), (req, res) => {
-  const password = String(req.body.password);
+  const password = req.body.password;
   const token = req.body.token;
 
   if (password.length < 6 || password.length > 30) {
@@ -132,8 +132,8 @@ router.post('/setPassword', validate(validation.postSetPassword), (req, res) => 
   const password = String(req.body.password);
   const token = req.body.token;
 
-  if (password.length < 6 || password.length > 20) {
-    res.render('error', { error: 'Password length should be between 6 and 20 characters' });
+  if (password.length < 6 || password.length > 30) {
+    res.render('error', { error: 'Password length should be between 6 and 30 characters' });
     return;
   }
 

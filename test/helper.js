@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 const db = require('../helpers/db');
+const hash = require('../helpers/hash');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const request = require('supertest');
@@ -53,10 +54,25 @@ function addUserWithJWT(user) {
     });
 }
 
+function generateResetPasswordToken(user) {
+  user.generateResetPasswordToken();
+  return user.save();
+}
+
+function setPassword(password) {
+  return user => hash.hashPassword(password)
+    .then((result) => {
+      user.password = result;
+      return user.save();
+    });
+}
+
 module.exports = {
   closeConnectDrop,
   dropClose,
   drop,
   addUserWithJWT,
   request: request(app),
+  generateResetPasswordToken,
+  setPassword,
 };
