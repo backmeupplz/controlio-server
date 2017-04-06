@@ -15,7 +15,6 @@ const reporter = require('../reporter');
  */
 function addProject(project) {
   return users.findUserById(project.userId)
-    .select('+plan')
     .then(user => ((project.type === 'client') ?
       addProjectAsClient(project, user) :
       addProjectAsManager(project, user)));

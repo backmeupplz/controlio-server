@@ -143,8 +143,9 @@ function sendEmail(data, subject, receiver) {
         path: '/v3/mail/send',
         body: mail.toJSON(),
       });
-
-      sg.API(request);
+      if (config.sendgridApiKey) {
+        sg.API(request);
+      }
     });
   });
 }
