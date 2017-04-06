@@ -1,41 +1,35 @@
 const test = require('unit.js');
-const mongoose = require('mongoose');
-mongoose.Promise = require('bluebird');
 const demo = require('../../helpers/demo');
 const MockExpressRequest = require('mock-express-request');
-const db = require('../../helpers/db');
+const helper = require('../helper');
 
 describe('helpers/demo.js', () => {
+  const demoEmail = 'demo@controlio.co';
+  const usualEmail = 'usual@controlio.co';
   let demoUser;
   let usualUser;
 
   before((done) => {
-    /** Connect to mongo db */
-    mongoose.connect('mongodb://localhost:27017/controlio-test', () => {
-      /** Drop mongo db */
-      mongoose.connection.db.dropDatabase();
-      /** Add a user */
-      const demoEmail = 'demo@controlio.co';
-      const notdemoEmail = 'notdemo@controlio.co';
-      db.addUser({ email: demoEmail, isDemo: true })
-        .then((dbdemouser) => {
-          demoUser = dbdemouser;
-          return db.addUser({ email: notdemoEmail, isDemo: false })
-            .then((dbnotdemouser) => {
-              usualUser = dbnotdemouser;
-              return dbnotdemouser;
-            });
-        })
-        .then(() => done())
-        .catch(done);
-    });
+    helper.closeConnectDrop()
+      .then(() => {
+        const promises = [
+          helper.addUserWithJWT({ email: demoEmail, isDemo: true }),
+          helper.addUserWithJWT({ email: usualEmail, isDemo: false }),
+        ];
+        return Promise.all(promises);
+      })
+      .then((users) => {
+        demoUser = users[0];
+        usualUser = users[1];
+        done();
+      })
+      .catch(done);
   });
 
   after((done) => {
-    mongoose.connection.db.dropDatabase(() => {
-      mongoose.connection.close();
-      done();
-    });
+    helper.dropClose()
+      .then(done)
+      .catch(done);
   });
 
   it('validates not demo user', (done) => {

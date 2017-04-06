@@ -56,6 +56,15 @@ function findUser(query) {
 }
 
 /**
+ * Function to get multiple users from database
+ * @param {Object} query Query to find the users
+ * @return {Promise([Mongoose:User])} Promise with a users from the database
+ */
+function findUsers(query) {
+  return User.find(query);
+}
+
+/**
  * Function to find a user by id
  * @param {Mongoose:ObjectId} id Id of the user to find
  * @return {Promise(Mongoose:User)} User with such id
@@ -159,6 +168,7 @@ module.exports = {
   addUser,
   findOrCreateUserWithEmail,
   findUser,
+  findUsers,
   findUserById,
   getProfile,
   removeTokens,

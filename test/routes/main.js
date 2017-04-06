@@ -1,10 +1,9 @@
 const test = require('unit.js');
-const request = require('supertest');
-const app = require('../../app');
+const helper = require('../helper');
 
 describe('routes/main.js', () => {
   it('returns feature list', (done) => {
-    request(app)
+    helper.request
       .get('/feature_list')
       .expect(200, (error, res) => {
         if (error) return done(error);
@@ -18,7 +17,7 @@ describe('routes/main.js', () => {
       });
   });
   it('returns apple live links list', (done) => {
-    request(app)
+    helper.request
       .get('/.well-known/apple-app-site-association')
       .expect(200, (error, res) => {
         if (error) return done(error);
@@ -32,7 +31,7 @@ describe('routes/main.js', () => {
       });
   });
   it('returns apple live links list', (done) => {
-    request(app)
+    helper.request
       .get('/apple-app-site-association')
       .expect(200, (error, res) => {
         if (error) return done(error);
@@ -46,7 +45,7 @@ describe('routes/main.js', () => {
       });
   });
   it('returns google live links list', (done) => {
-    request(app)
+    helper.request
       .get('/.well-known/assetlinks.json')
       .expect(200, (error, res) => {
         if (error) return done(error);
@@ -60,7 +59,7 @@ describe('routes/main.js', () => {
       });
   });
   it('returns google live links list', (done) => {
-    request(app)
+    helper.request
       .get('/assetlinks.json')
       .expect(200, (error, res) => {
         if (error) return done(error);
@@ -74,7 +73,7 @@ describe('routes/main.js', () => {
       });
   });
   it('returns magic link page with token', (done) => {
-    request(app)
+    helper.request
       .get('/magic?token=check_token')
       .expect(200, (error, res) => {
         if (error) return done(error);
@@ -85,7 +84,7 @@ describe('routes/main.js', () => {
       });
   });
   it('returns error when magic token not provided', (done) => {
-    request(app)
+    helper.request
       .get('/magic')
       .expect(400, (error, res) => {
         if (error) return done(error);
