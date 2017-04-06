@@ -87,18 +87,6 @@ describe('helpers/auth.js', () => {
       done();
     });
   });
-  it('returns error on empty string api key', (done) => {
-    const request = new MockExpressRequest({
-      headers: {
-        apiKey: '',
-      },
-    });
-    auth.checkApiKey(request, null, (err) => {
-      test.value(err)
-        .isObject();
-      done();
-    });
-  });
   it('validates correct jwt', (done) => {
     const request = new MockExpressRequest({
       headers: {
