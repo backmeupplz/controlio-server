@@ -1,29 +1,22 @@
 const test = require('unit.js');
-const mongoose = require('mongoose');
-mongoose.Promise = require('bluebird');
-const request = require('supertest');
-const app = require('../../app');
-const db = require('../../helpers/db');
+const helper = require('../helper');
 
 describe('routes/public.js', () => {
   let email = 'test@controlio.co';
   let user;
+
   before((done) => {
-    /** Connect to mongo db */
-    mongoose.connect('mongodb://localhost:27017/controlio-test', (err) => {
-      if (err) return done(err);
-      /** Drop mongo db */
-      mongoose.connection.db.dropDatabase(done);
-    });
+    helper.closeConnectDrop()
+      .then(done)
+      .catch(done);
   });
   after((done) => {
-    mongoose.connection.db.dropDatabase(() => {
-      mongoose.connection.close();
-      done();
-    });
+    helper.dropClose()
+      .then(done)
+      .catch(done);
   });
   beforeEach((done) => {
-    db.addUser({ email })
+    helper.addUserWithJWT({ email })
       .then((dbuser) => {
         user = dbuser;
         done();
@@ -31,14 +24,16 @@ describe('routes/public.js', () => {
       .catch(done);
   });
   afterEach((done) => {
-    mongoose.connection.db.dropDatabase(done);
+    helper.drop()
+      .then(done)
+      .catch(done);
   });
 
   it('returns reset password page with token', (done) => {
     user.generateResetPasswordToken();
     user.save()
       .then((saved) => {
-        request(app)
+        helper.request
           .get(`/public/resetPassword?token=${saved.tokenForPasswordReset}`)
           .expect(200, (error, res) => {
             if (error) return done(error);
@@ -50,7 +45,7 @@ describe('routes/public.js', () => {
       .catch(done);
   });
   it('returns error when reset password token not provided', (done) => {
-    request(app)
+    helper.request
       .get('/public/resetPassword')
       .expect(400, (error, res) => {
         if (error) return done(error);
@@ -64,7 +59,7 @@ describe('routes/public.js', () => {
       });
   });
   it('returns error when reset password token malformed', (done) => {
-    request(app)
+    helper.request
       .get('/public/resetPassword?token=123')
       .expect(200, (error, res) => {
         if (error) return done(error);
@@ -77,10 +72,10 @@ describe('routes/public.js', () => {
     user.generateResetPasswordToken();
     user.save()
       .then((saved) => {
-        request(app)
+        helper.request
           .get(`/public/resetPassword?token=${saved.tokenForPasswordReset}`)
           .end(() => {
-            request(app)
+            helper.request
               .get(`/public/resetPassword?token=${saved.tokenForPasswordReset}`)
               .expect(200, (error, res) => {
                 if (error) return done(error);
