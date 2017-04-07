@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const config = require('../config');
 const randomToken = require('random-token').create(config.randomTokenSalt);
-const jwt = require('jsonwebtoken');
 const mailer = require('../helpers/mailer');
 const push = require('../helpers/push');
+const jwt = require('../helpers/jwt');
 
 const Schema = mongoose.Schema;
 
@@ -111,7 +111,7 @@ userSchema.methods.generateResetPasswordToken = function () {
   this.tokenForPasswordReset = jwt.sign({
     token,
     userid: this._id,
-  }, config.jwtSecret, {
+  }, {
     expiresIn: '1d',
   });
   this.tokenForPasswordResetIsFresh = true;
@@ -124,7 +124,7 @@ userSchema.methods.generateMagicToken = function () {
   this.magicToken = jwt.sign({
     token,
     userid: this._id,
-  }, config.jwtSecret, {
+  }, {
     expiresIn: '1d',
   });
 };

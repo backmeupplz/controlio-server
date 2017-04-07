@@ -267,7 +267,6 @@ function getInvites(userId) {
  */
 function acceptInvite(userId, inviteId, accept) {
   return users.findUserById(userId)
-    .select('+plan')
     .then(user =>
       Invite.findById(inviteId)
         .populate('project')
@@ -1027,6 +1026,7 @@ module.exports = {
   getProject,
   getInvites,
   acceptInvite,
+  removeInvite,
   addManagers,
   removeManager,
   addClients,
