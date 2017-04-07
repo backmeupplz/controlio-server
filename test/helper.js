@@ -45,13 +45,7 @@ function drop() {
 
 function addUserWithJWT(user) {
   return db.addUser(user)
-    .then((dbuser) => {
-      dbuser.token = jwt.sign({
-        email: dbuser.email,
-        userid: dbuser._id,
-      }, config.jwtSecret);
-      return dbuser.save();
-    });
+    .then(generateJWT);
 }
 
 function generateResetPasswordToken(user) {
@@ -67,6 +61,19 @@ function setPassword(password) {
     });
 }
 
+function generateJWT(user) {
+  user.token = jwt.sign({
+    email: user.email,
+    userid: user._id,
+  }, config.jwtSecret);
+  return user.save();
+}
+
+function maximizePlan(user) {
+  user.plan = 3;
+  return user.save();
+}
+
 module.exports = {
   closeConnectDrop,
   dropClose,
@@ -75,4 +82,6 @@ module.exports = {
   request: request(app),
   generateResetPasswordToken,
   setPassword,
+  generateJWT,
+  maximizePlan,
 };
