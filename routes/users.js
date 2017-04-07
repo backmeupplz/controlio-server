@@ -1,8 +1,7 @@
 /** Dependencies */
 const db = require('../helpers/db');
 const hash = require('../helpers/hash');
-const jwt = require('jsonwebtoken');
-const config = require('../config');
+const jwt = require('../helpers/jwt');
 const errors = require('../helpers/errors');
 const auth = require('../helpers/auth');
 const validate = require('express-validation');
@@ -32,7 +31,7 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
         dbuser.token = jwt.sign({
           email,
           userid: dbuser._id,
-        }, config.jwtSecret);
+        });
         return dbuser.save();
       });
     })
@@ -53,7 +52,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
   const androidPushToken = req.body.androidPushToken;
   const webPushToken = req.body.webPushToken;
 
-  jwt.verify(token, config.jwtSecret, (err, data) => {
+  jwt.verify(token, (err, data) => {
     if (err) {
       return next(err);
     }
@@ -85,7 +84,7 @@ router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, n
           user.token = jwt.sign({
             email: user.email,
             userid: user._id,
-          }, config.jwtSecret);
+          });
         }
         return user;
       })
@@ -164,7 +163,7 @@ router.post('/login', validate(validation.login), (req, res, next) => {
         userCopy.token = jwt.sign({
           email,
           userid: userCopy._id,
-        }, config.jwtSecret);
+        });
       }
       return userCopy;
     })
@@ -226,7 +225,7 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
           dbuser.token = jwt.sign({
             email: dbuser.email,
             userid: dbuser._id,
-          }, config.jwtSecret);
+          });
           return dbuser.save();
         })
         .then((dbuser) => {
@@ -269,7 +268,7 @@ router.post('/resetPassword', validate(validation.postResetPassword), (req, res,
   const password = req.body.password;
   const token = req.body.token;
 
-  jwt.verify(token, config.jwtSecret, (err, data) => {
+  jwt.verify(token, (err, data) => {
     if (err) {
       return next(err);
     }
