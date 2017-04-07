@@ -7,7 +7,6 @@ const reporter = require('../helpers/reporter');
 const validate = require('express-validation');
 const validation = require('../validation/public');
 const jwt = require('../helpers/jwt');
-const config = require('../config');
 
 const router = express.Router();
 
@@ -15,7 +14,7 @@ const router = express.Router();
 router.get('/resetPassword', validate(validation.getResetPassword), (req, res) => {
   const token = req.query.token;
 
-  jwt.verify(token, config.jwtSecret, (error, data) => {
+  jwt.verify(token, (error, data) => {
     if (error) {
       return res.render('error', { error: error.message || 'Something went wrong :(' });
     }
@@ -56,7 +55,7 @@ router.post('/resetPassword', validate(validation.postResetPassword), (req, res)
     return;
   }
 
-  jwt.verify(token, config.jwtSecret, (error, data) => {
+  jwt.verify(token, (error, data) => {
     if (error) {
       return res.render('error', { error: error.message || 'Something went wrong :(' });
     }
@@ -95,7 +94,7 @@ router.post('/resetPassword', validate(validation.postResetPassword), (req, res)
 router.get('/setPassword', validate(validation.getSetPassword), (req, res) => {
   const token = req.query.token;
 
-  jwt.verify(token, config.jwtSecret, (error, data) => {
+  jwt.verify(token, (error, data) => {
     if (error) {
       return res.render('error', { error: error.message || 'Something went wrong :(' });
     }
@@ -137,7 +136,7 @@ router.post('/setPassword', validate(validation.postSetPassword), (req, res) => 
     return;
   }
 
-  jwt.verify(token, config.jwtSecret, (error, data) => {
+  jwt.verify(token, (error, data) => {
     if (error) {
       return res.render('error', { error: error.message || 'Something went wrong :(' });
     }

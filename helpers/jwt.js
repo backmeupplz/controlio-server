@@ -1,13 +1,12 @@
 const jwt = require('jsonwebtoken');
+const secret = require('../config').jwtSecret;
 
-// auth
 
-/** Method to check if request is signed with a valid user token */
-function verify(token, secret, err, data) {
+function verify(token, err, data) {
   return jwt.verify(token, secret, err, data);
 }
-function sign(payload, secret) {
-  return jwt.sign(payload, secret);
+function sign(payload, options) {
+  return jwt.sign(payload, secret, options);
 }
 
 /** Exports */

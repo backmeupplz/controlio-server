@@ -21,7 +21,7 @@ function checkToken(req, res, next) {
 
   const token = req.get('token');
 
-  jwt.verify(token, config.jwtSecret, (err, data) => {
+  jwt.verify(token, (err, data) => {
     if (err) {
       return next(err);
     }
