@@ -2,22 +2,30 @@ const mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
 const db = require('../helpers/db');
 const hash = require('../helpers/hash');
-const jwt = require('jsonwebtoken');
-const config = require('../config');
+const jwt = require('../helpers/jwt');
 const request = require('supertest');
 const app = require('../app');
 
 function closeConnectDrop() {
   return new Promise((resolve, reject) => {
-    mongoose.connection.close((err) => {
-      if (err) return reject(err);
+    if (mongoose.connection.readyState) {
+      mongoose.connection.close((err) => {
+        if (err) return reject(err);
+        mongoose.connect('mongodb://localhost:27017/controlio-test', (error) => {
+          if (error) return reject(error);
+          drop()
+            .then(resolve)
+            .catch(reject);
+        });
+      });
+    } else {
       mongoose.connect('mongodb://localhost:27017/controlio-test', (error) => {
         if (error) return reject(error);
         drop()
           .then(resolve)
           .catch(reject);
       });
-    });
+    }
   });
 }
 
@@ -65,7 +73,7 @@ function generateJWT(user) {
   user.token = jwt.sign({
     email: user.email,
     userid: user._id,
-  }, config.jwtSecret);
+  });
   return user.save();
 }
 

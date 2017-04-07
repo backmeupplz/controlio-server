@@ -16,8 +16,11 @@ function checkToken(req, res, next) {
     if (err) return next(err);
 
     const token = req.get('token');
+    const { error, data } = jwt.verify(token);
 
-    const data = jwt.verify(token);
+    if (error) {
+      return next(error);
+    }
     if (!data) {
       return next(errors.authTokenFailed());
     }
@@ -32,7 +35,7 @@ function checkToken(req, res, next) {
         req.user = user;
         next();
       })
-      .catch(error => next(error));
+      .catch(next);
   });
 }
 
