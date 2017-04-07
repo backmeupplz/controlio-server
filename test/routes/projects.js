@@ -16,7 +16,7 @@ describe('routes/projects.js', () => {
 
   before((done) => {
     helper.closeConnectDrop()
-      .then(() => helper.addUserWithJWT({ email }))
+      .then(() => helper.addUserWithJWT({ email, plan: 3 }))
       .then((dbuser) => {
         user = dbuser;
       })
@@ -158,6 +158,7 @@ describe('routes/projects.js', () => {
       .set('token', user.token)
       .send({
         type: 'client',
+        title: 'SHould fail',
         managerEmail: '123',
       })
       .expect(400, (err, res) => {
@@ -250,7 +251,7 @@ describe('routes/projects.js', () => {
       .set('apiKey', config.apiKey)
       .set('token', user.token)
       .send({
-        title: 'Initial status that is too long',
+        title: 'Manager email that is too long',
         type: 'client',
         managerEmail: `${manager}@controlio.co`,
       })
@@ -472,6 +473,197 @@ describe('routes/projects.js', () => {
                 .hasProperty('type', 'status')
                 .array(json.posts[0].attachments)
                   .hasLength(0);
+          done();
+        } catch (error) {
+          done(error);
+        }
+      });
+  });
+
+  it('invites clients after creating a project as a manager', (done) => {
+    Promise.reduce(clientEmails, (array, clientEmail) =>
+      db.findUser({ email: clientEmail })
+        .then((client) => {
+          array.push(client);
+          return array;
+        }), [])
+      .then((clients) => {
+        clients.forEach((client, index) => {
+          test.object(client.toObject())
+            .hasProperty('email', clientEmails[index])
+            .array(client.toObject().invites)
+              .hasLength(1);
+        });
+        done();
+      })
+      .catch(done);
+  });
+
+  it('creates a project without image, description, manager email and initial status as a manager', (done) => {
+    helper.request
+      .post('/projects')
+      .set('apiKey', config.apiKey)
+      .set('token', user.token)
+      .send({
+        title: 'Test manager almost empty',
+        type: 'manager',
+        clientEmails,
+      })
+      .expect(200, (err, res) => {
+        if (err) return done(err);
+        try {
+          const json = JSON.parse(res.text);
+          test
+            .object(json)
+              .hasProperty('title', 'Test manager almost empty')
+              .hasNotProperty('description')
+              .hasProperty('isFinished', false)
+              .hasNotProperty('image')
+              .hasProperty('owner')
+              .hasNotProperty('lastPost')
+              .hasNotProperty('lastStatus')
+              .array(json.posts)
+                .hasLength(0)
+              .array(json.invites)
+                .hasLength(3)
+              .array(json.clients)
+                .hasLength(0)
+              .array(json.managers)
+                .hasLength(0);
+          done();
+        } catch (error) {
+          done(error);
+        }
+      });
+  });
+
+  it('does not create client objects twice', (done) => {
+    Promise.reduce(clientEmails, (array, clientEmail) =>
+      db.findUser({ email: clientEmail })
+        .then((client) => {
+          array.push(client);
+          return array;
+        }), [])
+      .then((clients) => {
+        test.array(clients)
+          .hasLength(3);
+        done();
+      })
+      .catch(done);
+  });
+
+  it('returns error creating a project with malformed client email as manager', (done) => {
+    helper.request
+      .post('/projects')
+      .set('apiKey', config.apiKey)
+      .set('token', user.token)
+      .send({
+        title: 'Should fail',
+        type: 'manager',
+        clientEmails: ['123'],
+      })
+      .expect(400, (err, res) => {
+        if (err) return done(err);
+        try {
+          const json = JSON.parse(res.text);
+          test.object(json)
+            .hasProperty('type', 'VALIDATION_ERROR');
+          done();
+        } catch (error) {
+          done(error);
+        }
+      });
+  });
+
+  it('returns error creating a project without client emails as a manager', (done) => {
+    helper.request
+      .post('/projects')
+      .set('apiKey', config.apiKey)
+      .set('token', user.token)
+      .send({
+        title: 'Test manager without client emails',
+        type: 'manager',
+      })
+      .expect(400, (err, res) => {
+        if (err) return done(err);
+        try {
+          const json = JSON.parse(res.text);
+          test.object(json)
+            .hasProperty('type', 'VALIDATION_ERROR');
+          done();
+        } catch (error) {
+          done(error);
+        }
+      });
+  });
+
+  it('returns error creating a project with clients emails too long', (done) => {
+    const stub = '1234567890';
+    let client = stub;
+    for (let i = 0; i < 11; i += 1) {
+      client += stub;
+    }
+    helper.request
+      .post('/projects')
+      .set('apiKey', config.apiKey)
+      .set('token', user.token)
+      .send({
+        title: 'Client emails that are too long',
+        type: 'manager',
+        clientEmails: [`${client}@controlio.co`],
+      })
+      .expect(400, (err, res) => {
+        if (err) return done(err);
+        try {
+          const json = JSON.parse(res.text);
+          test.object(json)
+            .hasProperty('type', 'VALIDATION_ERROR');
+          done();
+        } catch (error) {
+          done(error);
+        }
+      });
+  });
+
+  it('returns error creating a project as client with self as client', (done) => {
+    helper.request
+      .post('/projects')
+      .set('apiKey', config.apiKey)
+      .set('token', user.token)
+      .send({
+        title: 'Self as client',
+        type: 'manager',
+        clientEmails: [email],
+      })
+      .expect(400, (err, res) => {
+        if (err) return done(err);
+        try {
+          const json = JSON.parse(res.text);
+          test.object(json)
+            .hasProperty('type', 'ADD_SELF_AS_CLIENT_ERROR');
+          done();
+        } catch (error) {
+          done(error);
+        }
+      });
+  });
+
+  it('returns error creating a project as client with demo as client', (done) => {
+    helper.request
+      .post('/projects')
+      .set('apiKey', config.apiKey)
+      .set('token', user.token)
+      .send({
+        title: 'Demo as client',
+        type: 'manager',
+        clientEmails: [demoEmail],
+      })
+      .expect(403, (err, res) => {
+        if (err) return done(err);
+        try {
+          const json = JSON.parse(res.text);
+          test.object(json)
+            .hasProperty('type', 'ADD_DEMO_AS_CLIENT_ERROR');
           done();
         } catch (error) {
           done(error);
