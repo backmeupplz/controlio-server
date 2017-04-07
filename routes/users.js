@@ -1,7 +1,7 @@
 /** Dependencies */
 const db = require('../helpers/db');
 const hash = require('../helpers/hash');
-const jwt = require('jsonwebtoken');
+const jwt = require('../helpers/jwt');
 const config = require('../config');
 const errors = require('../helpers/errors');
 const auth = require('../helpers/auth');

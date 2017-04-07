@@ -6,7 +6,7 @@ const hash = require('../helpers/hash');
 const reporter = require('../helpers/reporter');
 const validate = require('express-validation');
 const validation = require('../validation/public');
-const jwt = require('jsonwebtoken');
+const jwt = require('../helpers/jwt');
 const config = require('../config');
 
 const router = express.Router();

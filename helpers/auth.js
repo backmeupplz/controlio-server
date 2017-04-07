@@ -8,7 +8,7 @@
 /** Dependencies */
 const errors = require('./errors');
 const db = require('./db');
-const jwt = require('jsonwebtoken');
+const jwt = require('./jwt');
 const config = require('../config');
 const validate = require('express-validation');
 const validation = require('../validation/auth');
