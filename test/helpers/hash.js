@@ -1,12 +1,12 @@
 const test = require('unit.js');
 const hash = require('../../helpers/hash');
 
-describe('helpers/hash.js', () => {
+describe('helpers/hash.js', function () {
   const correctPass = 'correct';
   const wrongPass = 'wrong';
   let correcthash;
 
-  before((done) => {
+  before(function (done) {
     hash.hashPassword(correctPass)
       .then((result) => {
         correcthash = result;
@@ -15,7 +15,7 @@ describe('helpers/hash.js', () => {
       .catch(done);
   });
 
-  it('correctly hashes the password', (done) => {
+  it('correctly hashes the password', function (done) {
     hash.hashPassword(correctPass)
       .then((result) => {
         test.string(result);
@@ -23,7 +23,7 @@ describe('helpers/hash.js', () => {
       })
       .catch(done);
   });
-  it('correctly checks the password', (done) => {
+  it('correctly checks the password', function (done) {
     hash.checkPassword(correcthash, correctPass)
       .then(result => {
         if (result) {
@@ -34,7 +34,7 @@ describe('helpers/hash.js', () => {
       })
       .catch(done);
   });
-  it('gives false on wrong password', (done) => {
+  it('gives false on wrong password', function (done) {
     hash.checkPassword(correcthash, wrongPass)
       .then(result => {
         if (result) {

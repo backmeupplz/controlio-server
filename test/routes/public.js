@@ -3,21 +3,22 @@ const helper = require('../helper');
 const db = require('../../helpers/db');
 const hash = require('../../helpers/hash');
 
-describe('routes/public.js', () => {
+describe('routes/public.js', function () {
   const email = 'test@controlio.co';
   let user;
 
-  before((done) => {
+  before(function (done) {
     helper.closeConnectDrop()
       .then(done)
       .catch(done);
   });
-  after((done) => {
+  after(function (done) {
     helper.dropClose()
       .then(done)
       .catch(done);
   });
-  beforeEach((done) => {
+  beforeEach(function (done) {
+    this.timeout(10000);
     helper.addUserWithJWT({ email })
       .then(helper.generateResetPasswordToken)
       .then((dbuser) => {
@@ -26,13 +27,13 @@ describe('routes/public.js', () => {
       })
       .catch(done);
   });
-  afterEach((done) => {
+  afterEach(function (done) {
     helper.drop()
       .then(done)
       .catch(done);
   });
 
-  it('returns reset password page with token', (done) => {
+  it('returns reset password page with token', function (done) {
     helper.request
       .get('/public/resetPassword')
       .query({ token: user.tokenForPasswordReset })
@@ -43,7 +44,7 @@ describe('routes/public.js', () => {
         done();
       });
   });
-  it('returns error when reset password page token not provided', (done) => {
+  it('returns error when reset password page token not provided', function (done) {
     helper.request
       .get('/public/resetPassword')
       .expect(400, (error, res) => {
@@ -57,7 +58,7 @@ describe('routes/public.js', () => {
         }
       });
   });
-  it('returns error when reset password page token malformed', (done) => {
+  it('returns error when reset password page token malformed', function (done) {
     helper.request
       .get('/public/resetPassword')
       .query({ token: '123' })
@@ -68,7 +69,7 @@ describe('routes/public.js', () => {
         done();
       });
   });
-  it('returns error on second view of the reset password page', (done) => {
+  it('returns error on second view of the reset password page', function (done) {
     helper.request
       .get('/public/resetPassword')
       .query({ token: user.tokenForPasswordReset })
@@ -85,7 +86,7 @@ describe('routes/public.js', () => {
           });
       });
   });
-  it('returns success message if everything is ok', (done) => {
+  it('returns success message if everything is ok', function (done) {
     helper.request
       .post('/public/resetPassword')
       .send({
@@ -99,7 +100,7 @@ describe('routes/public.js', () => {
         done();
       });
   });
-  it('correctly resets password on user without password', (done) => {
+  it('correctly resets password on user without password', function (done) {
     const password = '123456789';
     helper.request
       .post('/public/resetPassword')
@@ -121,7 +122,7 @@ describe('routes/public.js', () => {
           .catch(done);
       });
   });
-  it('correctly resets password on user with password', (done) => {
+  it('correctly resets password on user with password', function (done) {
     const firstPassword = '123456789';
     const secondPassword = '987654321';
 
@@ -149,7 +150,7 @@ describe('routes/public.js', () => {
       })
       .catch(done);
   });
-  it('returns an error when password is too short', (done) => {
+  it('returns an error when password is too short', function (done) {
     const password = '123';
     helper.request
       .post('/public/resetPassword')
@@ -165,7 +166,7 @@ describe('routes/public.js', () => {
         done();
       });
   });
-  it('returns an error when password is too long', (done) => {
+  it('returns an error when password is too long', function (done) {
     const password = '1234567890123456789012345678901';
     helper.request
       .post('/public/resetPassword')
@@ -181,7 +182,7 @@ describe('routes/public.js', () => {
         done();
       });
   });
-  it('returns error when reset password token not provided', (done) => {
+  it('returns error when reset password token not provided', function (done) {
     helper.request
       .post('/public/resetPassword')
       .expect(400, (error, res) => {
@@ -195,7 +196,7 @@ describe('routes/public.js', () => {
         }
       });
   });
-  it('returns error when reset password token malformed', (done) => {
+  it('returns error when reset password token malformed', function (done) {
     helper.request
       .post('/public/resetPassword')
       .send({ token: '123' })
@@ -210,7 +211,7 @@ describe('routes/public.js', () => {
         }
       });
   });
-  it('returns set password page with token', (done) => {
+  it('returns set password page with token', function (done) {
     helper.request
       .get('/public/setPassword')
       .query({ token: user.tokenForPasswordReset })
@@ -221,7 +222,7 @@ describe('routes/public.js', () => {
         done();
       });
   });
-  it('returns error when set password page token not provided', (done) => {
+  it('returns error when set password page token not provided', function (done) {
     helper.request
       .get('/public/setPassword')
       .expect(400, (error, res) => {
@@ -235,7 +236,7 @@ describe('routes/public.js', () => {
         }
       });
   });
-  it('returns error when set password page token malformed', (done) => {
+  it('returns error when set password page token malformed', function (done) {
     helper.request
       .get('/public/setPassword')
       .query({ token: '123' })
@@ -246,7 +247,7 @@ describe('routes/public.js', () => {
         done();
       });
   });
-  it('returns error on second view of the set password page', (done) => {
+  it('returns error on second view of the set password page', function (done) {
     helper.request
       .get('/public/setPassword')
       .query({ token: user.tokenForPasswordReset })
@@ -263,7 +264,7 @@ describe('routes/public.js', () => {
           });
       });
   });
-  it('returns success message if everything is ok', (done) => {
+  it('returns success message if everything is ok', function (done) {
     helper.request
       .post('/public/setPassword')
       .send({
@@ -277,7 +278,7 @@ describe('routes/public.js', () => {
         done();
       });
   });
-  it('correctly sets password on user without password', (done) => {
+  it('correctly sets password on user without password', function (done) {
     const password = '123456789';
     helper.request
       .post('/public/setPassword')
@@ -299,7 +300,7 @@ describe('routes/public.js', () => {
           .catch(done);
       });
   });
-  it('correctly sets password on user with password', (done) => {
+  it('correctly sets password on user with password', function (done) {
     const firstPassword = '123456789';
     const secondPassword = '987654321';
 
@@ -327,7 +328,7 @@ describe('routes/public.js', () => {
       })
       .catch(done);
   });
-  it('returns an error when password is too short', (done) => {
+  it('returns an error when password is too short', function (done) {
     const password = '123';
     helper.request
       .post('/public/setPassword')
@@ -343,7 +344,7 @@ describe('routes/public.js', () => {
         done();
       });
   });
-  it('returns an error when password is too long', (done) => {
+  it('returns an error when password is too long', function (done) {
     const password = '1234567890123456789012345678901';
     helper.request
       .post('/public/setPassword')
@@ -359,7 +360,7 @@ describe('routes/public.js', () => {
         done();
       });
   });
-  it('returns error when set password token not provided', (done) => {
+  it('returns error when set password token not provided', function (done) {
     helper.request
       .post('/public/setPassword')
       .expect(400, (error, res) => {
@@ -373,7 +374,7 @@ describe('routes/public.js', () => {
         }
       });
   });
-  it('returns error when set password token malformed', (done) => {
+  it('returns error when set password token malformed', function (done) {
     helper.request
       .post('/public/setPassword')
       .send({ token: '123' })

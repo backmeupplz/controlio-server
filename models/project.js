@@ -23,6 +23,7 @@ const projectSchema = new Schema({
     type: Schema.ObjectId,
     ref: 'user',
     required: true,
+    default: [],
   }],
   invites: [{
     type: Schema.ObjectId,

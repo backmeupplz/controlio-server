@@ -21,7 +21,6 @@ const push = require('../push');
 function addPost(userId, projectId, text, attachments, type) {
   return new Promise((resolve, reject) =>
     users.findUserById(userId)
-      .select('+plan')
       .then(user =>
         projects.getProjectsOwned(user._id)
           .then((count) => {
@@ -157,7 +156,6 @@ function getPosts(userId, projectId, skip, limit) {
 function editPost(userId, projectId, postId, text, attachments) {
   return new Promise((resolve, reject) =>
     users.findUserById(userId)
-      .select('+plan')
       .then(user =>
         projects.getProjectsOwned(user._id)
           .then((count) => {

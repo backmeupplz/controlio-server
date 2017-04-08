@@ -19,7 +19,6 @@ router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next
   const email = req.body.email.toLowerCase();
 
   db.findUser({ email })
-    .select('email')
     /** If user doesn't exist, we create one */
     .then((user) => {
       if (user) {
@@ -241,15 +240,15 @@ router.post('/signUp', validate(validation.signup), (req, res, next) => {
 router.post('/recoverPassword', validate(validation.resetPassword), (req, res, next) => {
   const email = req.body.email;
 
-  db.findUser({ email })
+  const p = db.findUser({ email })
     .select('email')
     /** Check user existence */
     .then((user) => {
       if (!user) {
-        next(errors.authEmailNotRegistered());
-      } else {
-        return user;
+        p.cancel();
+        return next(errors.authEmailNotRegistered());
       }
+      return user;
     })
     /** Save tokens and send email */
     .then((user) => {
@@ -278,25 +277,25 @@ router.post('/resetPassword', validate(validation.postResetPassword), (req, res,
   const userId = data.userid;
   db.findUserById(userId)
     .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
-      .then((user) => {
-        if (!user) {
-          throw errors.noUserFound();
-        } else if (user.tokenForPasswordReset !== token) {
-          throw errors.wrongResetToken();
-        } else {
-          return hash.hashPassword(password)
-            .then((result) => {
-              user.tokenForPasswordReset = null;
-              user.password = result;
-              return user.save()
-                .then(() => {
-                  reporter.reportResetPassword(user);
-                  res.send({ success: true });
-                });
-            });
-        }
-      })
-      .catch(err => next(err));
+    .then((user) => {
+      if (!user) {
+        throw errors.noUserFound();
+      } else if (user.tokenForPasswordReset !== token) {
+        throw errors.wrongResetToken();
+      } else {
+        return hash.hashPassword(password)
+          .then((result) => {
+            user.tokenForPasswordReset = null;
+            user.password = result;
+            return user.save()
+              .then(() => {
+                reporter.reportResetPassword(user);
+                res.send({ success: true });
+              });
+          });
+      }
+    })
+    .catch(err => next(err));
 });
 
 /** Private API check */
@@ -306,10 +305,15 @@ router.use(auth.checkToken);
 router.post('/logout', (req, res, next) => {
   const userId = req.user._id;
   const iosPushToken = req.body.iosPushToken;
+  const androidPushToken = req.body.androidPushToken;
+  const webPushToken = req.body.webPushToken;
 
   db.findUserById(userId)
+    .select('iosPushTokens androidPushTokens webPushTokens')
     .then((user) => {
-      user.iosPushTokens.filter(v => v !== iosPushToken);
+      user.iosPushTokens = user.iosPushTokens.filter(v => v !== iosPushToken);
+      user.androidPushTokens = user.androidPushTokens.filter(v => v !== androidPushToken);
+      user.webPushTokens = user.webPushTokens.filter(v => v !== webPushToken);
 
       reporter.reportLogout(user);
 
