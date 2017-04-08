@@ -18,6 +18,7 @@ describe('routes/public.js', function () {
       .catch(done);
   });
   beforeEach(function (done) {
+    this.timeout(10000);
     helper.addUserWithJWT({ email })
       .then(helper.generateResetPasswordToken)
       .then((dbuser) => {

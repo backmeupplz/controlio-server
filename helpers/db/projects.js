@@ -1032,4 +1032,5 @@ module.exports = {
   finishProject,
   deleteProject,
   leaveProject,
+  getProjectsOwned,
 };

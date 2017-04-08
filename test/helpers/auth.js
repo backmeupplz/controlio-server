@@ -10,6 +10,7 @@ describe('helpers/auth.js', function () {
   let user;
 
   before(function (done) {
+    this.timeout(10000);
     helper.closeConnectDrop()
       .then(() => helper.addUserWithJWT({ email }))
       .then((dbuser) => {

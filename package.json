@@ -7,7 +7,6 @@
     "notify": "node ./scripts/gitNotification.js",
     "notify-test": "node ./scripts/gitNotification-test.js",
     "test": "./node_modules/mocha/bin/mocha test -R spec --recursive",
-    "t": "./node_modules/mocha/bin/mocha test/routes/users.js -R spec"
   },
   "dependencies": {
     "apn": "^2.1.1",
