@@ -121,31 +121,34 @@ function sendSignup(email) {
  * @param {String(Email)} receiver Email of the receiver
  */
 function sendEmail(data, subject, receiver) {
-  const fromEmail = new helper.Email('noreply@controlio.co');
-  const toEmail = new helper.Email(receiver);
-  data.title = subject;
+  return new Promise((resolve, reject) => {
+    const fromEmail = new helper.Email('noreply@controlio.co');
+    const toEmail = new helper.Email(receiver);
+    data.title = subject;
 
-  emailTemplate.render(data, (err, result) => {
-    /** todo: handle error */
-    juice.juiceResources(result.html, {
-      webResources: {
-        images: 0,
-        svgs: 0,
-      },
-    }, (error, html) => {
-      /** todo: handle error */
-      result.html = html;
-      const content = new helper.Content('text/html', result.html);
-      const mail = new helper.Mail(fromEmail, subject, toEmail, content);
+    emailTemplate.render(data, (err, result) => {
+      if (err) return reject(err);
+      juice.juiceResources(result.html, {
+        webResources: {
+          images: 0,
+          svgs: 0,
+        },
+      }, (error, html) => {
+        if (error) return reject(error);
+        result.html = html;
+        const content = new helper.Content('text/html', result.html);
+        const mail = new helper.Mail(fromEmail, subject, toEmail, content);
 
-      const request = sg.emptyRequest({
-        method: 'POST',
-        path: '/v3/mail/send',
-        body: mail.toJSON(),
+        const request = sg.emptyRequest({
+          method: 'POST',
+          path: '/v3/mail/send',
+          body: mail.toJSON(),
+        });
+        if (config.sendgridApiKey) {
+          resolve();
+          sg.API(request);
+        }
       });
-      if (config.sendgridApiKey) {
-        sg.API(request);
-      }
     });
   });
 }
