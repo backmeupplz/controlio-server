@@ -35,13 +35,13 @@ module.exports = {
   postClients: {
     body: {
       projectid: Joi.string().required(),
-      clients: Joi.array().required(),
+      clients: Joi.array().required().min(1).items(Joi.string().email().max(100)),
     },
   },
   postManagers: {
     body: {
       projectid: Joi.string().required(),
-      managers: Joi.array().required(),
+      managers: Joi.array().required().min(1).items(Joi.string().email().max(100)),
     },
   },
   finish: {
@@ -61,7 +61,7 @@ module.exports = {
   },
   getProjects: {
     query: {
-      type: Joi.string(),
+      type: Joi.string().valid('all', 'live', 'finished').allow(''),
       query: Joi.string().allow(''),
     },
   },

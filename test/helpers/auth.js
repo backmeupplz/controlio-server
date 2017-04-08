@@ -5,11 +5,11 @@ const auth = require('../../helpers/auth');
 const config = require('../../config');
 const MockExpressRequest = require('mock-express-request');
 
-describe('helpers/auth.js', () => {
+describe('helpers/auth.js', function () {
   const email = 'test@controlio.co';
   let user;
 
-  before((done) => {
+  before(function (done) {
     helper.closeConnectDrop()
       .then(() => helper.addUserWithJWT({ email }))
       .then((dbuser) => {
@@ -19,13 +19,13 @@ describe('helpers/auth.js', () => {
       .catch(done);
   });
 
-  after((done) => {
+  after(function (done) {
     helper.dropClose()
       .then(done)
       .catch(done);
   });
 
-  it('validates correct api key', (done) => {
+  it('validates correct api key', function (done) {
     const request = new MockExpressRequest({
       headers: {
         apiKey: config.apiKey,
@@ -37,7 +37,7 @@ describe('helpers/auth.js', () => {
       done();
     });
   });
-  it('returns erorr on no api key', (done) => {
+  it('returns erorr on no api key', function (done) {
     const request = new MockExpressRequest();
     auth.checkApiKey(request, null, (err) => {
       test.value(err)
@@ -45,7 +45,7 @@ describe('helpers/auth.js', () => {
       done();
     });
   });
-  it('returns error on incorrect api key', (done) => {
+  it('returns error on incorrect api key', function (done) {
     const request = new MockExpressRequest({
       headers: {
         apiKey: 'incorrect',
@@ -57,7 +57,7 @@ describe('helpers/auth.js', () => {
       done();
     });
   });
-  it('returns error on empty string api key', (done) => {
+  it('returns error on empty string api key', function (done) {
     const request = new MockExpressRequest({
       headers: {
         apiKey: '',
@@ -69,7 +69,7 @@ describe('helpers/auth.js', () => {
       done();
     });
   });
-  it('validates correct jwt', (done) => {
+  it('validates correct jwt', function (done) {
     const request = new MockExpressRequest({
       headers: {
         token: user.token,
@@ -81,7 +81,7 @@ describe('helpers/auth.js', () => {
       done();
     });
   });
-  it('passes user after checking jwt', (done) => {
+  it('passes user after checking jwt', function (done) {
     const request = new MockExpressRequest({
       headers: {
         token: user.token,
@@ -93,7 +93,7 @@ describe('helpers/auth.js', () => {
       done();
     });
   });
-  it('passes error when no jwt', (done) => {
+  it('passes error when no jwt', function (done) {
     const request = new MockExpressRequest();
     auth.checkToken(request, null, (err) => {
       test.value(err)
@@ -101,7 +101,7 @@ describe('helpers/auth.js', () => {
       done();
     });
   });
-  it('passes error when malformed jwt', (done) => {
+  it('passes error when malformed jwt', function (done) {
     const request = new MockExpressRequest({
       headers: {
         token: 'malformed',
@@ -113,7 +113,7 @@ describe('helpers/auth.js', () => {
       done();
     });
   });
-  it('passes error when empty string jwt', (done) => {
+  it('passes error when empty string jwt', function (done) {
     const request = new MockExpressRequest({
       headers: {
         token: '',
@@ -125,7 +125,7 @@ describe('helpers/auth.js', () => {
       done();
     });
   });
-  it('passes error when wrong database jwt', (done) => {
+  it('passes error when wrong database jwt', function (done) {
     const request = new MockExpressRequest({
       headers: {
         token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImZvbWVua28uaW5AZ21haWwuY29tIiwidXNlcmlkIjoiNThkYzc0ZWQzYmZhOTU1NDBiYzY3M2M5IiwiaWF0IjoxNDkwODQyODYxfQ.bxjvJ1K0SQMbLv7hMjOYGty7HUIL-1eMPkalXV_7qKw',

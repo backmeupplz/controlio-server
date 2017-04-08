@@ -3,13 +3,13 @@ const demo = require('../../helpers/demo');
 const MockExpressRequest = require('mock-express-request');
 const helper = require('../helper');
 
-describe('helpers/demo.js', () => {
+describe('helpers/demo.js', function () {
   const demoEmail = 'demo@controlio.co';
   const usualEmail = 'usual@controlio.co';
   let demoUser;
   let usualUser;
 
-  before((done) => {
+  before(function (done) {
     helper.closeConnectDrop()
       .then(() => {
         const promises = [
@@ -26,13 +26,13 @@ describe('helpers/demo.js', () => {
       .catch(done);
   });
 
-  after((done) => {
+  after(function (done) {
     helper.dropClose()
       .then(done)
       .catch(done);
   });
 
-  it('validates not demo user', (done) => {
+  it('validates not demo user', function (done) {
     const request = new MockExpressRequest();
     request.user = usualUser;
     demo.checkDemo(request, null, (err) => {
@@ -42,7 +42,7 @@ describe('helpers/demo.js', () => {
     });
   });
 
-  it('returns an error on demo user', (done) => {
+  it('returns an error on demo user', function (done) {
     const request = new MockExpressRequest();
     request.user = demoUser;
     demo.checkDemo(request, null, (err) => {
