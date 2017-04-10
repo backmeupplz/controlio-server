@@ -6,7 +6,7 @@
     "start": "node ./bin/www",
     "notify": "node ./scripts/gitNotification.js",
     "notify-test": "node ./scripts/gitNotification-test.js",
-    "test": "./node_modules/mocha/bin/mocha test -R spec --recursive"
+    "test": "./node_modules/mocha/bin/mocha test -R spec --recursive --timeout 5000"
   },
   "dependencies": {
     "apn": "^2.1.1",
