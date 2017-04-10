@@ -150,8 +150,6 @@ function standardize(originalError) {
     resultError.status = originalError.status || 500;
     resultError.type = originalError.type || 'UNDECLARED_ERROR';
   }
-  console.log('===============================================================')
-  console.log(originalError.message);
   return resultError;
 }
 
