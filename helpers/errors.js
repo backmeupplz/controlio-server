@@ -142,9 +142,9 @@ function standardize(originalError) {
     resultError.status = originalError.status || 500;
     resultError.type = 'VALIDATION_ERROR';
   } else if (originalError.name === 'TokenExpiredError') {
-    resultError.message = `Your Magic Link expired at "${originalError.expiredAt}".`;
+    resultError.message = `Token expired "${originalError.expiredAt}".`;
     resultError.status = 403;
-    resultError.type = 'MAGIC_EXPIRED_ERROR';
+    resultError.type = 'TOKEN_EXPIRED_ERROR';
   } else {
     resultError.message = originalError.message || 'Server error';
     resultError.status = originalError.status || 500;

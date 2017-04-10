@@ -98,6 +98,7 @@
   * [FINISHED_ERROR](#finishederror)
   * [NOT_ENOUGH_PROJECTS_ERROR](#notenoughprojectserror)
   * [AUTH_PASS_RESET_TOKEN_FAILED](#authpassresettokenfailed)
+  * [TOKEN_EXPIRED_ERROR](#tokenexpirederror)
 
 ---
 ### Login / SignUp
@@ -625,3 +626,10 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 * status => 403
 * message => Failed to authenticate password reset token.
 * type => AUTH_PASS_RESET_TOKEN_FAILED
+
+---
+### TOKEN_EXPIRED_ERROR
+
+* status => 403
+* message => Token expired "${originalError.expiredAt}".
+* type => TOKEN_EXPIRED_ERROR
