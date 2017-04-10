@@ -141,11 +141,17 @@ function standardize(originalError) {
     resultError.message = `Something funky has happened at the "${originalError.errors[0].field}" field.`;
     resultError.status = originalError.status || 500;
     resultError.type = 'VALIDATION_ERROR';
+  } else if (originalError.name === 'TokenExpiredError') {
+    resultError.message = `Your Magic Link expired at "${originalError.expiredAt}".`;
+    resultError.status = 403;
+    resultError.type = 'MAGIC_EXPIRED_ERROR';
   } else {
     resultError.message = originalError.message || 'Server error';
     resultError.status = originalError.status || 500;
     resultError.type = originalError.type || 'UNDECLARED_ERROR';
   }
+  console.log('===============================================================')
+  console.log(originalError.message);
   return resultError;
 }
 
