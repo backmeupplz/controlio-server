@@ -278,7 +278,7 @@ function acceptInvite(userId, inviteId, accept) {
         })
     )
     .then(({ user, invite }) =>
-      checkPlan(user, false, invite.type !== 'own')({ user, invite }))
+      checkPlan(user, false, invite.type !== 'own' || !accept)({ user, invite }))
     /** Remove invite from user and project */
     .then(({ user, invite }) => {
       // Remove invite from user
