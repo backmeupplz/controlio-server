@@ -8,6 +8,7 @@ describe('routes/projects.js', function () {
   const managerEmail = 'manager@controlio.co';
   const secondManagerEmail = 'secondmanager@controlio.co';
   const demoEmail = 'awesome@controlio.co';
+  const testOwnerEmail = 'testowner@controlio.co';
   const clientEmails = [
     'client1@controlio.co',
     'client2@controlio.co',
@@ -19,9 +20,9 @@ describe('routes/projects.js', function () {
   let clientObjects;
   let testProject;
   let testProjectCannotEdit;
+  let testOwner;
 
   before(function (done) {
-    this.timeout(5000);
     helper.closeConnectDrop()
       .then(() => helper.addUserWithJWT({ email, plan: 3 }))
       .then((dbuser) => {
@@ -140,6 +141,50 @@ describe('routes/projects.js', function () {
                     .hasProperty('email', email)
                 .array(json.managers)
                   .hasLength(0);
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('creates another project without image, description, client emails and initial status as a client', function (done) {
+      helper.request
+        .post('/projects')
+        .set('apiKey', config.apiKey)
+        .set('token', user.token)
+        .send({
+          title: 'Test owner can reject',
+          type: 'client',
+          managerEmail: testOwnerEmail,
+        })
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('title', 'Test owner can reject');
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('creates third project without image, description, client emails and initial status as a client', function (done) {
+      helper.request
+        .post('/projects')
+        .set('apiKey', config.apiKey)
+        .set('token', user.token)
+        .send({
+          title: 'Test owner can reject 2',
+          type: 'client',
+          managerEmail: testOwnerEmail,
+        })
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('title', 'Test owner can reject 2');
             done();
           } catch (error) {
             done(error);
@@ -953,6 +998,62 @@ describe('routes/projects.js', function () {
         })
         .catch(done);
     });
+    it('correctly fetches test manager', function (done) {
+      db.findUser({ email: testOwnerEmail })
+        .then(helper.generateJWT)
+        .then((dbuser) => {
+          testOwner = dbuser.toObject();
+          test.object(testOwner)
+            .hasProperty('token')
+            .hasProperty('invites')
+            .array(testOwner.invites)
+              .hasLength(2);
+          done();
+        })
+        .catch(done);
+    });
+    it('allows user to reject owner invite', function (done) {
+      helper.request
+        .post('/projects/invite')
+        .set('apiKey', config.apiKey)
+        .set('token', testOwner.token)
+        .send({
+          inviteid: String(testOwner.invites[0]),
+          accept: true,
+        })
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('success', true);
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('allows user with plan over limit invited as owner to reject invite', function (done) {
+      helper.request
+        .post('/projects/invite')
+        .set('apiKey', config.apiKey)
+        .set('token', testOwner.token)
+        .send({
+          inviteid: String(testOwner.invites[1]),
+          accept: false,
+        })
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('success', true);
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
   });
 
   context('DELETE /projects/invite', function () {
@@ -1181,15 +1282,15 @@ describe('routes/projects.js', function () {
           try {
             const json = JSON.parse(res.text);
             test.array(json)
-              .hasLength(5)
+              .hasLength(7)
               .object(json[0])
                 .hasProperty('canEdit', true)
               .object(json[1])
                 .hasProperty('canEdit', false)
               .object(json[2])
-                .hasProperty('canEdit', true)
-              .object(json[3])
                 .hasProperty('canEdit', false)
+              .object(json[3])
+                .hasProperty('canEdit', true)
               .object(json[4])
                 .hasProperty('canEdit', false);
             done();
@@ -1227,7 +1328,7 @@ describe('routes/projects.js', function () {
         .set('apiKey', config.apiKey)
         .set('token', user.token)
         .query({
-          skip: 5,
+          skip: 7,
         })
         .expect(200, (err, res) => {
           if (err) return done(err);
@@ -1274,7 +1375,7 @@ describe('routes/projects.js', function () {
           try {
             const json = JSON.parse(res.text);
             test.array(json)
-              .hasLength(5);
+              .hasLength(7);
             done();
           } catch (error) {
             done(error);
@@ -1320,7 +1421,7 @@ describe('routes/projects.js', function () {
           try {
             const json = JSON.parse(res.text);
             test.array(json)
-              .hasLength(5);
+              .hasLength(7);
             done();
           } catch (error) {
             done(error);
@@ -1340,7 +1441,7 @@ describe('routes/projects.js', function () {
           try {
             const json = JSON.parse(res.text);
             test.array(json)
-              .hasLength(5);
+              .hasLength(7);
             done();
           } catch (error) {
             done(error);
@@ -1360,7 +1461,7 @@ describe('routes/projects.js', function () {
           try {
             const json = JSON.parse(res.text);
             test.array(json)
-              .hasLength(5);
+              .hasLength(7);
             done();
           } catch (error) {
             done(error);
