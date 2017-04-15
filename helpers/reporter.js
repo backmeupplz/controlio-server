@@ -1,8 +1,5 @@
 /**
  * Telegram bot that sends crucial logs
- *
- * @module reporter
- * @license MIT
  */
 
 /** Dependencies */

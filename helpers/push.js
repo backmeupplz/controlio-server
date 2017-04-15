@@ -1,8 +1,5 @@
 /**
  * Module to send out ush notifications
- *
- * @module push
- * @license MIT
  */
 
 /** Dependencies */

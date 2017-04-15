@@ -1,14 +1,11 @@
 /**
  * Middleware for api authorization
- *
- * @module auth
- * @license MIT
  */
 
 /** Dependencies */
 const errors = require('./errors');
 const db = require('./db');
-const jwt = require('jsonwebtoken');
+const jwt = require('./jwt');
 const config = require('../config');
 const validate = require('express-validation');
 const validation = require('../validation/auth');
@@ -17,15 +14,14 @@ const validation = require('../validation/auth');
 function checkToken(req, res, next) {
   validate(validation.token)(req, res, (err) => {
     if (err) return next(err);
-  });
 
-  const token = req.get('token');
+    const token = req.get('token');
+    const { error, data } = jwt.verify(token);
 
-  jwt.verify(token, config.jwtSecret, (err, data) => {
-    if (err) {
-      return next(err);
+    if (error) {
+      return next(error);
     }
-    if (!data || !data.userid) {
+    if (!data) {
       return next(errors.authTokenFailed());
     }
     db.findUserById(data.userid)
@@ -39,7 +35,7 @@ function checkToken(req, res, next) {
         req.user = user;
         next();
       })
-      .catch(error => next(error));
+      .catch(next);
   });
 }
 
@@ -47,13 +43,14 @@ function checkToken(req, res, next) {
 function checkApiKey(req, res, next) {
   validate(validation.apiKey)(req, res, (err) => {
     if (err) return next(err);
+
+    const apiKey = req.get('apiKey');
+    if (apiKey === config.apiKey) {
+      next();
+    } else {
+      next(errors.noApiKey());
+    }
   });
-  const apiKey = req.get('apiKey');
-  if (apiKey === config.apiKey) {
-    next();
-  } else {
-    next(errors.noApiKey());
-  }
 }
 
 /** Exports */
