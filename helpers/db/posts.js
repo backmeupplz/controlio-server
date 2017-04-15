@@ -107,8 +107,6 @@ function getPosts(userId, projectId, skip, limit) {
           .then(project => ({ user, project }))
       )
       .then(({ user, project }) => {
-        reporter.reportGetPosts(user, project);
-
         if (!project) {
           throw errors.noProjectFound();
         }

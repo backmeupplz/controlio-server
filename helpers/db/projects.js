@@ -193,7 +193,6 @@ function getProjects(userId, skip, limit, type, query) {
         .then(projects => ({ user, projects }));
     })
     .then(({ user, projects }) => {
-      reporter.reportGetProjects(user, skip, limit, type, query);
       projects.forEach((project) => {
         project.canEdit = canEdit(project, user);
       });

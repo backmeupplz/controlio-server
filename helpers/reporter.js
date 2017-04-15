@@ -76,10 +76,6 @@ function reportSetPassword(user) {
 
 /** Projects.js */
 
-function reportGetProjects(user, skip, limit, type, query) {
-  sendMessage(`📄 \`${user.email}\` requested a list of projects (\`\`\`${skip}, ${limit}, ${type}, ${query}\`\`\`)`);
-}
-
 function reportEditProject(user, project) {
   sendMessage(`✒️  \`${user.email}\` editted project: (${project._id})\nTitle: \`${project.title}\`\nDescription: \`\`\`${project.description}\`\`\``);
 }
@@ -93,10 +89,6 @@ function reportFinishProject(user, project, finished) {
 }
 
 /** Posts.js */
-
-function reportGetPosts(user, project) {
-  sendMessage(`🚧 \`${user.email}\` requested a list of posts for \`${project.title}\``);
-}
 
 function reportEditPost(user, post, project) {
   sendMessage(`🖊 \`${user.email}\` eddited post in project \`${project.title}\`:\nType: \`${post.type}\`\nText: \`\`\`${post.text}\`\`\`\nAttachments: \`\`\`${JSON.stringify(post.attachments)}\`\`\``);
@@ -160,11 +152,9 @@ module.exports = {
   reportGetSetPassword,
   reportSetPassword,
   /** Projects.js */
-  reportGetProjects,
   reportEditProject,
   reportFinishProject,
   /** Posts.js */
-  reportGetPosts,
   reportEditPost,
   reportDeletePost,
   /** Payments.js */
