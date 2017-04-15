@@ -92,7 +92,7 @@ function demoError() {
   return error(403, 'You cannot do this as a demo account', 'DEMO_ERROR');
 }
 function addDemoAsOwner() {
-  return error(403, 'You cannot create project using a demo account', 'ADD_DEMO_AS_CLIENT_ERROR');
+  return error(403, 'You cannot create project using a demo account', 'ADD_DEMO_AS_OWNER_ERROR');
 }
 function addDemoAsClient() {
   return error(403, 'You cannot add demo account as a client', 'ADD_DEMO_AS_CLIENT_ERROR');
