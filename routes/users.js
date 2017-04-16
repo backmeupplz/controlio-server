@@ -303,24 +303,18 @@ router.use(auth.checkToken);
 
 /** Method to remove the specified push notifications token */
 router.post('/logout', (req, res, next) => {
-  const userId = req.user._id;
   const iosPushToken = req.body.iosPushToken;
   const androidPushToken = req.body.androidPushToken;
   const webPushToken = req.body.webPushToken;
 
-  db.findUserById(userId)
-    .select('iosPushTokens androidPushTokens webPushTokens')
-    .then((user) => {
-      user.iosPushTokens = user.iosPushTokens.filter(v => v !== iosPushToken);
-      user.androidPushTokens = user.androidPushTokens.filter(v => v !== androidPushToken);
-      user.webPushTokens = user.webPushTokens.filter(v => v !== webPushToken);
+  req.user.iosPushTokens = req.user.iosPushTokens.filter(v => v !== iosPushToken);
+  req.user.androidPushTokens = req.user.androidPushTokens.filter(v => v !== androidPushToken);
+  req.user.webPushTokens = req.user.webPushTokens.filter(v => v !== webPushToken);
 
-      reporter.reportLogout(user);
+  reporter.reportLogout(req.user);
 
-      user.save()
-        .then(() => res.send({ success: true }))
-        .catch(err => next(err));
-    })
+  req.user.save()
+    .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
 
