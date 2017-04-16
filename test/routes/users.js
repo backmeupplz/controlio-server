@@ -796,7 +796,6 @@ describe('routes/users.js', function () {
           androidPushToken: 'android_three',
           webPushToken: 'web_three',
         })
-        .send({ password })
         .expect(200, (err, res) => {
           if (err) return done(err);
           try {
