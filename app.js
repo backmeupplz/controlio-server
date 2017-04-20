@@ -8,9 +8,6 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const fs = require('fs');
-require('dotenv').config({
-  path: path.join(__dirname, '/.env'),
-});
 const config = require('./config');
 const reporter = require('./helpers/reporter');
 const errors = require('./helpers/errors');
@@ -23,12 +20,9 @@ Promise.config({ cancellation: true });
 /** Create app */
 const app = express();
 
-/** Setup mongoose and load all models */
+/** Setup mongoose */
 mongoose.connect(config.database);
 mongoose.Promise = global.Promise;
-fs.readdirSync(path.join(__dirname, '/models')).forEach((filename) => {
-  require(path.join(__dirname, '/models/', filename));
-});
 
 /** Getting auth after loading mongoose because it depends on user model */
 const auth = require('./helpers/auth');
@@ -51,7 +45,7 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('common', {
   stream: fs.createWriteStream('./access.log', { flags: 'a' }),
 }));
-app.use(logger('dev'));
+// app.use(logger('dev'));
 /** Setup body parser */
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const config = require('../config');
 const randomToken = require('random-token').create(config.randomTokenSalt);
-const jwt = require('jsonwebtoken');
+const mailer = require('../helpers/mailer');
+const push = require('../helpers/push');
+const jwt = require('../helpers/jwt');
 
 const Schema = mongoose.Schema;
 
@@ -20,7 +22,6 @@ const userSchema = new Schema({
     type: Number,
     required: true,
     default: 0,
-    select: false,
   },
   /** Variables */
   email: {
@@ -54,19 +55,16 @@ const userSchema = new Schema({
     type: String,
     required: true,
     default: [],
-    select: false,
   }],
   androidPushTokens: [{
     type: String,
     required: true,
     default: [],
-    select: false,
   }],
   webPushTokens: [{
     type: String,
     required: true,
     default: [],
-    select: false,
   }],
   /** Projects */
   invites: [{
@@ -106,30 +104,46 @@ const userSchema = new Schema({
   },
 });
 
-userSchema.methods.generateResetPasswordToken = function generateResetPasswordToken() {
+/** Generates reset password token and makes it fresh */
+userSchema.methods.generateResetPasswordToken = function () {
   const token = randomToken(10);
 
   this.tokenForPasswordReset = jwt.sign({
     token,
     userid: this._id,
-  }, config.jwtSecret, {
+  }, {
     expiresIn: '1d',
   });
   this.tokenForPasswordResetIsFresh = true;
 };
 
-userSchema.methods.generateMagicToken = function generateMagicToken() {
+/** Generates magic link login token */
+userSchema.methods.generateMagicToken = function () {
   const token = randomToken(10);
 
   this.magicToken = jwt.sign({
     token,
     userid: this._id,
-  }, config.jwtSecret, {
+  }, {
     expiresIn: '1d',
   });
 };
 
-userSchema.methods.maxProjects = function maxProjects() {
+/** Initiates set password sequence */
+userSchema.methods.sendSetPassword = function () {
+  this.generateResetPasswordToken();
+  mailer.sendSetPassword(this);
+  return this.save();
+};
+
+/** Sends invite */
+userSchema.methods.sendInvite = function (project, type) {
+  mailer.sendInvite(this, project, type);
+  push.pushInvite([this], project, type);
+};
+
+/** Function to get number of max available projects for user */
+userSchema.methods.maxProjects = function () {
   switch (this.plan) {
     case 0:
       return 1;
@@ -144,4 +158,4 @@ userSchema.methods.maxProjects = function maxProjects() {
   }
 };
 
-mongoose.model('user', userSchema);
+module.exports = mongoose.model('user', userSchema);

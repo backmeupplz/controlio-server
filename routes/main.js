@@ -4,10 +4,16 @@ const express = require('express');
 const router = express.Router();
 const validate = require('express-validation');
 const validation = require('../validation/main');
+const errors = require('../helpers/errors');
+
+/** A list of errors */
+router.get('/error_list', (req, res) => {
+  res.send(errors.localizedList);
+});
 
 /** A list of features to enable in iOS app */
 router.get('/feature_list', (req, res) => {
-  res.send({ 0: true, 1: true });
+  res.send({ 0: false, 1: true });
 });
 
 const apple = {

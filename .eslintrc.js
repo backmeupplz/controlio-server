@@ -17,6 +17,8 @@ module.exports = {
     'new-cap': [2, {'capIsNewExceptions': ['Router', 'API']}], // Router is used by express, API by sendgrid
     'no-unused-vars': [2, { 'argsIgnorePattern': 'next' }], // sometimes we need to specify 'next' even if we don't use it
     'no-console': [2, { 'allow': ['info'] }], // Rarely we do need to print some info
-    'no-param-reassign': 0
+    'no-param-reassign': 0,
+    'func-names': 0,
+    'prefer-arrow-callback': 0,
   },
 };

@@ -1,8 +1,5 @@
 /**
  * Module to send out emails
- *
- * @module mailer
- * @license MIT
  */
 
 /** Dependencies */
@@ -69,10 +66,11 @@ function sendMagicLink(user) {
 
 /**
  * Function to send invite to client
- * @param {Mongo:User} user user that should get an email
+ * @param {Mongoose:User} user user that should get an email
+ * @param {Mongoose:Project} project Project where user was invited
  * @param {String} type Type of invite ('client', 'manager' or 'owner')
  */
-function sendInvite(email, project, type) {
+function sendInvite(user, project, type) {
   let inviteMessage;
   switch (type) {
     case 'client':
@@ -99,7 +97,7 @@ function sendInvite(email, project, type) {
   }
   data.texts.push('You can install Controlio following the link below.');
 
-  sendEmail(data, 'Controlio: you were invited', email);
+  sendEmail(data, 'Controlio: you were invited', user.email);
 }
 
 /**
@@ -123,30 +121,34 @@ function sendSignup(email) {
  * @param {String(Email)} receiver Email of the receiver
  */
 function sendEmail(data, subject, receiver) {
-  const fromEmail = new helper.Email('noreply@controlio.co');
-  const toEmail = new helper.Email(receiver);
-  data.title = subject;
+  return new Promise((resolve, reject) => {
+    const fromEmail = new helper.Email('noreply@controlio.co');
+    const toEmail = new helper.Email(receiver);
+    data.title = subject;
 
-  emailTemplate.render(data, (err, result) => {
-    /** todo: handle error */
-    juice.juiceResources(result.html, {
-      webResources: {
-        images: 0,
-        svgs: 0,
-      },
-    }, (error, html) => {
-      /** todo: handle error */
-      result.html = html;
-      const content = new helper.Content('text/html', result.html);
-      const mail = new helper.Mail(fromEmail, subject, toEmail, content);
+    emailTemplate.render(data, (err, result) => {
+      if (err) return reject(err);
+      juice.juiceResources(result.html, {
+        webResources: {
+          images: 0,
+          svgs: 0,
+        },
+      }, (error, html) => {
+        if (error) return reject(error);
+        result.html = html;
+        const content = new helper.Content('text/html', result.html);
+        const mail = new helper.Mail(fromEmail, subject, toEmail, content);
 
-      const request = sg.emptyRequest({
-        method: 'POST',
-        path: '/v3/mail/send',
-        body: mail.toJSON(),
+        const request = sg.emptyRequest({
+          method: 'POST',
+          path: '/v3/mail/send',
+          body: mail.toJSON(),
+        });
+        if (config.sendgridApiKey) {
+          resolve();
+          sg.API(request);
+        }
       });
-
-      sg.API(request);
     });
   });
 }

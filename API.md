@@ -73,7 +73,7 @@
   * [NO_API_KEY_ERROR](#noapikeyerror)
   * [USER_NOT_FOUND_ERROR](#usernotfounderror)
   * [PASSWORD_ALREADY_EXIST_ERROR](#passwordalreadyexisterror)
-  * [PASSWORD_NOT_FOUND_ERROR](#passwordnotfounderror)
+  * [PASSWORD_NOT_FOUND](#passwordnotfound)
   * [OWNER_NOT_FOUND_ERROR](#ownernotfounderror)
   * [MANAGER_NOT_FOUND_ERROR](#managernotfounderror)
   * [CLIENT_OBJECT_NOT_CREATED_ERROR](#clientobjectnotcreatederror)
@@ -98,6 +98,7 @@
   * [FINISHED_ERROR](#finishederror)
   * [NOT_ENOUGH_PROJECTS_ERROR](#notenoughprojectserror)
   * [AUTH_PASS_RESET_TOKEN_FAILED](#authpassresettokenfailed)
+  * [TOKEN_EXPIRED_ERROR](#tokenexpirederror)
 
 ---
 ### Login / SignUp
@@ -452,11 +453,11 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 * type => PASSWORD_ALREADY_EXIST_ERROR
 
 ---
-### PASSWORD_NOT_FOUND_ERROR
+### PASSWORD_NOT_FOUND
 
 * status => 500
 * message => You haven't set password yet. We sent you an email to set it.
-* type => PASSWORD_NOT_FOUND_ERROR
+* type => PASSWORD_NOT_FOUND
 
 ---
 ### OWNER_NOT_FOUND_ERROR
@@ -625,3 +626,10 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 * status => 403
 * message => Failed to authenticate password reset token.
 * type => AUTH_PASS_RESET_TOKEN_FAILED
+
+---
+### TOKEN_EXPIRED_ERROR
+
+* status => 403
+* message => Token expired "${originalError.expiredAt}".
+* type => TOKEN_EXPIRED_ERROR
