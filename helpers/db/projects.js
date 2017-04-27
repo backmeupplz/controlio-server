@@ -764,6 +764,14 @@ function editProgress(userId, projectId, progress) {
   return new Promise((resolve, reject) => {
     users.findUserById(userId)
       .then(user =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (count > user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            return user;
+          }))
+      .then(user =>
         Project.findById(projectId)
           .then(project => ({ user, project })))
       .then(({ user, project }) => {
