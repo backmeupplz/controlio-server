@@ -1,5 +1,5 @@
 /**
- * Module to send out push notifications
+ * Module to send out ush notifications
  */
 
 /** Dependencies */

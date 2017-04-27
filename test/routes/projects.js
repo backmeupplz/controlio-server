@@ -2558,30 +2558,7 @@ describe('routes/projects.js', function () {
         });
     });
     // TODO
-    // it('successfully edits progress as manager', function (done) {
-    //   helper.request
-    //     .put('/projects/progress')
-    //     .set('apiKey', config.apiKey)
-    //     .set('token', secondManagerObject.token)
-    //     .send({
-    //       projectid: String(testProject._id),
-    //       progress: '99',
-    //     })
-    //     .expect(200, (err, res) => {
-    //       if (err) return done(err);
-    //       try {
-    //         const json = JSON.parse(res.text);
-    //         test.object(json)
-    //           .hasProperty('title', 'Should work')
-    //           .hasProperty('description', 'As manager')
-    //           .hasNotProperty('image');
-    //         done();
-    //       } catch (error) {
-    //         done(error);
-    //       }
-    //     });
-    // });
-    it('successfully edits progress as owner', function (done) {
+    it('successfully edits progress as manager', function (done) {
       helper.request
         .put('/projects/progress')
         .set('apiKey', config.apiKey)
@@ -2589,6 +2566,27 @@ describe('routes/projects.js', function () {
         .send({
           projectid: String(testProject._id),
           progress: '99',
+        })
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('success', true);
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('successfully edits progress as owner', function (done) {
+      helper.request
+        .put('/projects/progress')
+        .set('apiKey', config.apiKey)
+        .set('token', user.token)
+        .send({
+          projectid: String(testProject._id),
+          progress: '100',
         })
         .expect(200, (err, res) => {
           if (err) return done(err);
@@ -2644,7 +2642,7 @@ describe('routes/projects.js', function () {
           }
         });
     });
-    it('disable progress for project', function (done) {
+    it('disable progress for project as manager', function (done) {
       helper.request
         .put('/projects')
         .set('apiKey', config.apiKey)
@@ -2668,32 +2666,32 @@ describe('routes/projects.js', function () {
         });
     });
     // TODO
-    // it('returns error when trying to change progress while progress is disabled', function (done) {
-    //   helper.request
-    //     .put('/projects/progress')
-    //     .set('apiKey', config.apiKey)
-    //     .set('token', managerObject.token)
-    //     .send({
-    //       projectid: String(testProject._id),
-    //       progress: 'qwe',
-    //     })
-    //     .expect(403, (err, res) => {
-    //       if (err) return done(err);
-    //       try {
-    //         const json = JSON.parse(res.text);
-    //         test.object(json)
-    //           .hasProperty('type', 'PROGRESS_DISABLED_ERROR');
-    //         done();
-    //       } catch (error) {
-    //         done(error);
-    //       }
-    //     });
-    // });
-    it('Enabling progress for project again', function (done) {
+    it('returns error when trying to change progress as manager while progress disabled', function (done) {
+      helper.request
+        .put('/projects/progress')
+        .set('apiKey', config.apiKey)
+        .set('token', managerObject.token)
+        .send({
+          projectid: String(testProject._id),
+          progress: '1',
+        })
+        .expect(403, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('type', 'PROGRESS_DISABLED_ERROR');
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('Enabling progress for project again, as owner', function (done) {
       helper.request
         .put('/projects')
         .set('apiKey', config.apiKey)
-        .set('token', managerObject.token)
+        .set('token', user.token)
         .send({
           projectid: String(testProject._id),
           progressEnabled: true,
