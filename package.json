@@ -34,7 +34,9 @@
     "sendgrid": "^4.4.0",
     "serve-favicon": "~2.3.0",
     "stripe": "^4.11.0",
-    "validator": "^7.0.0"
+    "validator": "^7.0.0",
+    "aws-sdk": "^2.7.22",
+    "multer": "^1.3.0"
   },
   "devDependencies": {
     "eslint": "^3.5.0",

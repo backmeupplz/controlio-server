@@ -14,4 +14,8 @@ module.exports = {
   telegramLogsId: process.env.TELEGRAM_ID,
   url: process.env.SERVER_URL || 'https://api.controlio.co',
   port: process.env.PORT || 8443,
+  identy: 'us-east-1:16327515-a666-4f4b-b7b9-d7c831b285c0',
+  region: 'us-east-1',
+  bucketName: 'controlio',
+  files: `${__dirname}/images`,
 };

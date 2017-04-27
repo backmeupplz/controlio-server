@@ -130,6 +130,21 @@ function wrongResetToken() {
 function notEnoughProjectsOnPlan() {
   return error(403, 'Please upgrade your plan in settings', 'NOT_ENOUGH_PROJECTS_ERROR');
 }
+function notFoundFileKey() {
+  return error(400, 'No key found', 'NOT_FOUND_FILE_KEY')
+}
+function notFoundFile() {
+  return error(400, 'No file found', 'NOT_FOUND_KEY')
+}
+function bucketDownload() {
+  return error(500, 'Bucket download error', 'BUCKET_DOWNLOAD_ERROR')
+}
+function bucketUpload() {
+  return error(500, 'Bucket upload assert.ifError(err);', 'BUCKET_UPLOAD_ERROR')
+}
+function fileSend() {
+  return error(500, 'Error with send file', 'SEND_FILE_ERROR')
+}
 
 function standardize(originalError) {
   const resultError = new Error();
@@ -323,7 +338,6 @@ const localizedList = {
 
 /** Exports */
 module.exports = {
-  notFound,
   noAccess,
   authEmailNotRegistered,
   validManagerEmail,
@@ -362,4 +376,10 @@ module.exports = {
   wrongResetToken,
   standardize,
   localizedList,
+  fileSend,
+  bucketUpload,
+  bucketDownload,
+  notFoundFile,
+  notFound,
+  notFoundFileKey
 };
