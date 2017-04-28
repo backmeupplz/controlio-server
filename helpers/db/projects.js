@@ -707,7 +707,7 @@ function removeClient(userId, clientId, projectId) {
   );
 }
 
-function editProject(userId, projectId, title, description, image) {
+function editProject(userId, projectId, title, description, image, progressEnabled) {
   return new Promise((resolve, reject) => {
     users.findUserById(userId)
       .then(user =>
@@ -743,12 +743,68 @@ function editProject(userId, projectId, title, description, image) {
         project.title = title;
         project.description = description;
         project.image = image;
+        project.progressEnabled = progressEnabled;
 
         reporter.reportEditProject(user, project);
 
         return project.save()
         .then(resolve)
         .catch(reject);
+      })
+      .catch(reject);
+  });
+}
+
+/**
+ * Function to edit project progress
+ */
+
+
+function editProgress(userId, projectId, progress) {
+  return new Promise((resolve, reject) => {
+    users.findUserById(userId)
+      .then(user =>
+        getProjectsOwned(user._id)
+          .then((count) => {
+            if (count > user.maxProjects()) {
+              throw errors.notEnoughProjectsOnPlan();
+            }
+            return user;
+          }))
+      .then(user =>
+        Project.findById(projectId)
+          .then(project => ({ user, project })))
+      .then(({ user, project }) => {
+        if (!project) {
+          throw errors.noProjectFound();
+        }
+        if (project.progressEnabled === false) {
+          throw errors.progressDisabled();
+        }
+        let authorized = false;
+        if (project.owner.equals(user._id)) {
+          authorized = true;
+        }
+        project.managers.forEach((manager) => {
+          if (manager.equals(user._id)) {
+            authorized = true;
+          }
+        });
+        if (!authorized) {
+          throw errors.notAuthorized();
+        }
+        return { user, project };
+      })
+      .then(({ user, project }) => {
+        progress = parseInt(progress, 10);
+        if (progress >= 0 && progress <= 100) {
+          project.progress = progress;
+        } else {
+          throw errors.progressValueError();
+        }
+
+        return project.save()
+        .then(resolve);
       })
       .catch(reject);
   });
@@ -1028,6 +1084,7 @@ module.exports = {
   addClients,
   removeClient,
   editProject,
+  editProgress,
   finishProject,
   deleteProject,
   leaveProject,
