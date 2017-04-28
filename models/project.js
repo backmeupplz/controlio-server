@@ -9,6 +9,18 @@ const projectSchema = new Schema({
   },
   image: String,
   description: String,
+  progressEnabled: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  progress: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0,
+    max: 100,
+  },
   owner: {
     type: Schema.ObjectId,
     ref: 'user',

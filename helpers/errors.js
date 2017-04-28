@@ -130,6 +130,9 @@ function wrongResetToken() {
 function notEnoughProjectsOnPlan() {
   return error(403, 'Please upgrade your plan in settings', 'NOT_ENOUGH_PROJECTS_ERROR');
 }
+function progressDisabled() {
+  return error(403, 'Progress bar not enabled', 'PROGRESS_DISABLED_ERROR');
+}
 
 function standardize(originalError) {
   const resultError = new Error();
@@ -319,6 +322,10 @@ const localizedList = {
     en: 'Undeclared error',
     ru: 'Неизвестная ошибка',
   },
+  PROGRESS_DISABLED_ERROR: {
+    en: 'Progress bar is not enabled for this project',
+    ru: 'Визуализация прогресса отключена для этого проекта',
+  },
 };
 
 /** Exports */
@@ -362,4 +369,5 @@ module.exports = {
   wrongResetToken,
   standardize,
   localizedList,
+  progressDisabled,
 };

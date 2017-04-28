@@ -50,6 +50,7 @@ describe('routes/projects.js', function () {
           description: 'Test project description',
           initialStatus: 'Test initial status',
           managerEmail,
+          progressEnabled: true,
           image: 'key/to/test/image.png',
         })
         .expect(200, (err, res) => {
@@ -61,6 +62,7 @@ describe('routes/projects.js', function () {
                 .hasProperty('title', 'Test client')
                 .hasProperty('description', 'Test project description')
                 .hasProperty('isFinished', false)
+                .hasProperty('progressEnabled', true)
                 .hasProperty('image', 'key/to/test/image.png')
                 .hasNotProperty('owner')
                 .array(json.posts)
@@ -108,7 +110,7 @@ describe('routes/projects.js', function () {
         })
         .catch(done);
     });
-    it('creates a project without image, description, client emails and initial status as a client', function (done) {
+    it('creates a project without image, description, client emails, progressEnabled and initial status as a client', function (done) {
       helper.request
         .post('/projects')
         .set('apiKey', config.apiKey)
@@ -127,6 +129,7 @@ describe('routes/projects.js', function () {
                 .hasProperty('title', 'Test client almost empty')
                 .hasNotProperty('description')
                 .hasProperty('isFinished', false)
+                .hasProperty('progressEnabled', false)
                 .hasNotProperty('image')
                 .hasNotProperty('owner')
                 .hasNotProperty('lastPost')
@@ -191,7 +194,7 @@ describe('routes/projects.js', function () {
           }
         });
     });
-    it('creates third project a client', function (done) {
+    it('creates third project as client', function (done) {
       helper.request
         .post('/projects')
         .set('apiKey', config.apiKey)
@@ -248,6 +251,29 @@ describe('routes/projects.js', function () {
           type: 'client',
           title: 'SHould fail',
           managerEmail: '123',
+        })
+        .expect(400, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('type', 'VALIDATION_ERROR');
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('returns error creating a project with malformed progressEnabled flag as client', function (done) {
+      helper.request
+        .post('/projects')
+        .set('apiKey', config.apiKey)
+        .set('token', user.token)
+        .send({
+          type: 'client',
+          title: 'Should fail',
+          progressEnabled: '90qwe',
+          managerEmail,
         })
         .expect(400, (err, res) => {
           if (err) return done(err);
@@ -511,6 +537,7 @@ describe('routes/projects.js', function () {
           description: 'Test project description for manager',
           initialStatus: 'Test initial status for manager',
           image: 'key/to/test/image_for_manager.png',
+          progressEnabled: true,
           clientEmails,
         })
         .expect(200, (err, res) => {
@@ -522,6 +549,7 @@ describe('routes/projects.js', function () {
                 .hasProperty('title', 'Test manager')
                 .hasProperty('description', 'Test project description for manager')
                 .hasProperty('isFinished', false)
+                .hasProperty('progressEnabled', true)
                 .hasProperty('image', 'key/to/test/image_for_manager.png')
                 .hasProperty('owner')
                 .array(json.posts)
@@ -574,7 +602,7 @@ describe('routes/projects.js', function () {
         })
         .catch(done);
     });
-    it('creates a project without image, description, manager email and initial status as a manager', function (done) {
+    it('creates a project without image, description, manager email, progressEnabled and initial status as a manager', function (done) {
       helper.request
         .post('/projects')
         .set('apiKey', config.apiKey)
@@ -597,6 +625,7 @@ describe('routes/projects.js', function () {
                 .hasProperty('owner')
                 .hasNotProperty('lastPost')
                 .hasNotProperty('lastStatus')
+                .hasProperty('progressEnabled', false)
                 .array(json.posts)
                   .hasLength(0)
                 .array(json.invites)
@@ -634,6 +663,29 @@ describe('routes/projects.js', function () {
           title: 'Should fail',
           type: 'manager',
           clientEmails: ['123'],
+        })
+        .expect(400, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('type', 'VALIDATION_ERROR');
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('returns error creating a project with malformed progressEnabled flag as manager', function (done) {
+      helper.request
+        .post('/projects')
+        .set('apiKey', config.apiKey)
+        .set('token', user.token)
+        .send({
+          type: 'client',
+          title: 'Should fail',
+          progressEnabled: '90qwe',
+          clientEmails,
         })
         .expect(400, (err, res) => {
           if (err) return done(err);
@@ -2417,6 +2469,7 @@ describe('routes/projects.js', function () {
           projectid: String(testProject._id),
           title: 'Should fail',
           description: 'Desctiption for should fail',
+          progressEnabled: true,
         })
         .expect(403, (err, res) => {
           if (err) return done(err);
@@ -2439,6 +2492,7 @@ describe('routes/projects.js', function () {
           projectid: String(testProject._id),
           title: 'Should work',
           description: 'As manager',
+          progressEnabled: true,
         })
         .expect(200, (err, res) => {
           if (err) return done(err);
@@ -2463,6 +2517,7 @@ describe('routes/projects.js', function () {
           projectid: String(testProject._id),
           title: 'Should work too',
           description: 'As client',
+          progressEnabled: true,
         })
         .expect(200, (err, res) => {
           if (err) return done(err);
@@ -2472,6 +2527,181 @@ describe('routes/projects.js', function () {
               .hasProperty('title', 'Should work too')
               .hasProperty('description', 'As client')
               .hasNotProperty('image');
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+  });
+
+  context('PUT /projects/progress', function () {
+    it('returns error when client tries to edit progress', function (done) {
+      helper.request
+        .put('/projects/progress')
+        .set('apiKey', config.apiKey)
+        .set('token', secondManagerObject.token)
+        .send({
+          projectid: String(testProject._id),
+          progress: '99',
+        })
+        .expect(403, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('type', 'NOT_AUTHORIZED_ERROR');
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('successfully edits progress as manager', function (done) {
+      helper.request
+        .put('/projects/progress')
+        .set('apiKey', config.apiKey)
+        .set('token', managerObject.token)
+        .send({
+          projectid: String(testProject._id),
+          progress: '99',
+        })
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('success', true);
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('successfully edits progress as owner', function (done) {
+      helper.request
+        .put('/projects/progress')
+        .set('apiKey', config.apiKey)
+        .set('token', user.token)
+        .send({
+          projectid: String(testProject._id),
+          progress: '100',
+        })
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('success', true);
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('returns error when progress is malformed', function (done) {
+      helper.request
+        .put('/projects/progress')
+        .set('apiKey', config.apiKey)
+        .set('token', managerObject.token)
+        .send({
+          projectid: String(testProject._id),
+          progress: 'qwe',
+        })
+        .expect(400, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('type', 'VALIDATION_ERROR');
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('returns error when progress is out of range', function (done) {
+      helper.request
+        .put('/projects/progress')
+        .set('apiKey', config.apiKey)
+        .set('token', managerObject.token)
+        .send({
+          projectid: String(testProject._id),
+          progress: '101',
+        })
+        .expect(400, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('type', 'VALIDATION_ERROR');
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('disable progress for project as manager', function (done) {
+      helper.request
+        .put('/projects')
+        .set('apiKey', config.apiKey)
+        .set('token', managerObject.token)
+        .send({
+          projectid: String(testProject._id),
+          progressEnabled: false,
+          title: 'Should work too',
+        })
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test
+              .object(json)
+                .hasProperty('progressEnabled', false);
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('returns error when trying to change progress as manager while progress disabled', function (done) {
+      helper.request
+        .put('/projects/progress')
+        .set('apiKey', config.apiKey)
+        .set('token', managerObject.token)
+        .send({
+          projectid: String(testProject._id),
+          progress: '1',
+        })
+        .expect(403, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test.object(json)
+              .hasProperty('type', 'PROGRESS_DISABLED_ERROR');
+            done();
+          } catch (error) {
+            done(error);
+          }
+        });
+    });
+    it('Enabling progress for project again, as owner', function (done) {
+      helper.request
+        .put('/projects')
+        .set('apiKey', config.apiKey)
+        .set('token', user.token)
+        .send({
+          projectid: String(testProject._id),
+          progressEnabled: true,
+          title: 'Should work too',
+        })
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          try {
+            const json = JSON.parse(res.text);
+            test
+              .object(json)
+                .hasProperty('progressEnabled', true);
             done();
           } catch (error) {
             done(error);
