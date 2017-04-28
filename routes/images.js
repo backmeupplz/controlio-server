@@ -6,6 +6,7 @@ const validation = require('../validation/files');
 const errors = require('../helpers/errors');
 const config = require('../config');
 const multer = require('multer');
+const fs = require('fs');
 
 const upload = multer({ dest: 'uploads/' });
 const bucket = require('../helpers/bucket').create({
@@ -41,7 +42,7 @@ router.post('/', validate(validation.upload), upload.array('image', 10), functio
   const files = req.files;
   files.forEach(file => bucket.upload(key, file)
       .then(result => res.send(result))
-      .catch(() => {
+      .catch((err) => {
         next(errors.bucketUpload());
       }));
 });

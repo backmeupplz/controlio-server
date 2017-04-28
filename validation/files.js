@@ -7,7 +7,7 @@ module.exports = {
     },
   },
   upload: {
-    body: {
+    payload: {
       key: Joi.string().required(),
     },
   },

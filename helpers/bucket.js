@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk');
+const fs = require('fs');
 
 /**
   * class BucketService
@@ -38,7 +39,11 @@ class BucketService {
    * @param {File} file
    */
   upload(key, file) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => fs.readFile(file.path, (err, data) => {
+      if (err) {
+        reject({ type: 'FILE_NOT_READ' });
+        return;
+      }
       if (file === undefined) {
         reject({ type: 'FILE_NOT_SET' });
         return;
@@ -47,12 +52,17 @@ class BucketService {
         reject({ type: 'KEY_NOT_SET' });
         return;
       }
-      const params = { Key: key, Body: file };
+      const params = { Key: key, Body: data };
       this.bucket.upload(params, (err, data) => {
+        fs.unlink(file.path, function (err) {
+          if (err) {
+            console.error(err);
+          }
+        });
         if (!err) resolve(data);
         else reject(err);
       });
-    });
+    }));
   }
 
   /**
