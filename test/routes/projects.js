@@ -2557,7 +2557,6 @@ describe('routes/projects.js', function () {
           }
         });
     });
-    // TODO
     it('successfully edits progress as manager', function (done) {
       helper.request
         .put('/projects/progress')
@@ -2665,7 +2664,6 @@ describe('routes/projects.js', function () {
           }
         });
     });
-    // TODO
     it('returns error when trying to change progress as manager while progress disabled', function (done) {
       helper.request
         .put('/projects/progress')

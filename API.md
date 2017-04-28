@@ -651,10 +651,3 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 * type => PROGRESS_DISABLED_ERROR
 
 ---
-### PROGRESS_VALUE_ERROR
-
-* status => 403
-* message => The progress value must be a number in the range from 0 to 100
-* type => PROGRESS_VALUE_ERROR
-
----

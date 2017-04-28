@@ -133,9 +133,6 @@ function notEnoughProjectsOnPlan() {
 function progressDisabled() {
   return error(403, 'Progress bar not enabled', 'PROGRESS_DISABLED_ERROR');
 }
-function progressValueError() {
-  return error(403, 'The progress value must be a number in the range from 0 to 100', 'PROGRESS_VALUE_ERROR');
-}
 
 function standardize(originalError) {
   const resultError = new Error();
@@ -326,12 +323,8 @@ const localizedList = {
     ru: 'Неизвестная ошибка',
   },
   PROGRESS_DISABLED_ERROR: {
-    en: 'Progress bar not enabled',
-    ru: 'Визуализация прогресса отключена',
-  },
-  PROGRESS_VALUE_ERROR: {
-    en: 'The progress value must be a number in the range from 0 to 100',
-    ru: 'Значение прогресса должен быть числом в диапазоне от 0 до 100',
+    en: 'Progress bar is not enabled for this project',
+    ru: 'Визуализация прогресса отключена для этого проекта',
   },
 };
 
@@ -377,5 +370,4 @@ module.exports = {
   standardize,
   localizedList,
   progressDisabled,
-  progressValueError,
 };

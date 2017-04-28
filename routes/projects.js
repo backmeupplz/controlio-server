@@ -51,7 +51,7 @@ router.use(demo.checkDemo);
 /** Method to create a new project */
 router.post('/', validate(validation.post), (req, res, next) => {
   const project = _.clone(req.body);
-  project.progressEnabled = req.body.progressEnabled;
+  project.progressEnabled = req.body.progressEnabled || false;
   project.userId = req.user._id;
   if (project.type === 'client') {
     if (validator.isEmail(project.managerEmail)) {

@@ -799,14 +799,12 @@ function editProgress(userId, projectId, progress) {
         progress = parseInt(progress, 10);
         if (progress >= 0 && progress <= 100) {
           project.progress = progress;
-          reporter.reportEditProject(user, project);
         } else {
           throw errors.progressValueError();
         }
 
         return project.save()
-        .then(resolve)
-        .catch(reject);
+        .then(resolve);
       })
       .catch(reject);
   });
