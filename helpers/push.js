@@ -35,7 +35,8 @@ function pushNewPostToClients(project, post) {
   const message = (post.text && post.text.length > 0) ?
     post.text : 'New message';
   const text = `"${project.title}": ${message}`;
-  sendNotification(text, project.clients);
+  const users = project.clients.concat(project.managers, project.owner);
+  sendNotification(text, users);
 }
 
 /**
