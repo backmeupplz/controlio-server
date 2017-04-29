@@ -50,7 +50,6 @@ function sendNotification(text, users) {
   notification.topic = 'BorodutchStudio.Controlio';
   let resultTokens = [];
   users.forEach((user) => {
-    console.log(user.email);
     resultTokens = resultTokens.concat(user.iosPushTokens);
   });
   provider.send(notification, resultTokens)
