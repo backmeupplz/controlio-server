@@ -35,7 +35,8 @@ function pushNewPostToClients(project, post) {
   const message = (post.text && post.text.length > 0) ?
     post.text : 'New message';
   const text = `"${project.title}": ${message}`;
-  sendNotification(text, project.clients);
+  const users = project.clients.concat(project.managers, project.owner);
+  sendNotification(text, users);
 }
 
 /**
@@ -49,6 +50,7 @@ function sendNotification(text, users) {
   notification.topic = 'BorodutchStudio.Controlio';
   let resultTokens = [];
   users.forEach((user) => {
+    console.log(user.email);
     resultTokens = resultTokens.concat(user.iosPushTokens);
   });
   provider.send(notification, resultTokens)
