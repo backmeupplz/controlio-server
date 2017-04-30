@@ -5,7 +5,7 @@ module.exports = {
     body: {
       title: Joi.string().max(250).required(),
       type: Joi.string().valid('manager', 'client').required(),
-      description: Joi.string().max(1000).allow(''),
+      description: Joi.string().max(1000),
       initialStatus: Joi.string().max(250),
       managerEmail: Joi.string().when('type', { is: 'client', then: Joi.string().email().max(100).required() }),
       clientEmails: Joi.array().when('type', { is: 'manager', then: Joi.array().items(Joi.string().email().max(100)).required() }),
@@ -17,7 +17,7 @@ module.exports = {
     body: {
       projectid: Joi.string().required(),
       title: Joi.string().max(250).required(),
-      description: Joi.string().max(1000).allow(''),
+      description: Joi.string().max(1000),
       image: Joi.string(),
       progressEnabled: Joi.boolean(),
     },
@@ -69,8 +69,8 @@ module.exports = {
   },
   getProjects: {
     query: {
-      type: Joi.string().valid('all', 'live', 'finished').allow(''),
-      query: Joi.string().allow(''),
+      type: Joi.string().valid('all', 'live', 'finished', null),
+      query: Joi.string().allow(null),
     },
   },
   deleteInvite: {
