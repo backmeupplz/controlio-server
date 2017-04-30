@@ -23,7 +23,7 @@ router.get('/resetPassword', validate(validation.getResetPassword), (req, res) =
   }
   const userId = data.userid;
   db.findUserById(userId)
-    .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
+    .select('tokenForPasswordResetIsFresh tokenForPasswordReset email')
     .then((user) => {
       if (!user) {
         res.render('error', { error: errors.noUserFound().message });
@@ -64,7 +64,7 @@ router.post('/resetPassword', validate(validation.postResetPassword), (req, res)
   const userId = data.userid;
 
   db.findUserById(userId)
-    .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
+    .select('tokenForPasswordResetIsFresh tokenForPasswordReset email')
       .then((user) => {
         if (!user) {
           res.render('error', { error: errors.noUserFound().message });
@@ -102,7 +102,7 @@ router.get('/setPassword', validate(validation.getSetPassword), (req, res) => {
   const userId = data.userid;
 
   db.findUserById(userId)
-    .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
+    .select('tokenForPasswordResetIsFresh tokenForPasswordReset email')
     .then((user) => {
       if (!user) {
         res.render('error', { error: errors.noUserFound().message });
@@ -142,7 +142,7 @@ router.post('/setPassword', validate(validation.postSetPassword), (req, res) => 
   const userId = data.userid;
 
   db.findUserById(userId)
-    .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
+    .select('tokenForPasswordResetIsFresh tokenForPasswordReset email')
       .then((user) => {
         if (!user) {
           res.render('error', { error: errors.noUserFound().message });
