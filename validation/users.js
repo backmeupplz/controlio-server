@@ -7,6 +7,11 @@ module.exports = {
       password: Joi.string().required(),
     },
   },
+  loginFacebook: {
+    body: {
+      access_token: Joi.string().required(),
+    },
+  },
   signup: {
     body: {
       email: Joi.string().email().max(100).required(),

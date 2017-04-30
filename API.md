@@ -30,6 +30,7 @@
   * [POST /users/resetPassword](#post-resetpassword-public)
   * [POST /users/requestMagicLink](#post-usersrequestmagiclink-public)
   * [POST /users/loginMagicLink](#post-loginmagiclink-public)
+  * [POST /users/loginFacebook](#post-loginfacebook-public)
   * [POST /users/logout](#post-userslogout)
 * [Users](#users)
   * [GET /users/profile](#get-usersprofile)
@@ -149,6 +150,14 @@
 [User](./models/user.js) login with magic link. Вызывается уже внутри приложения, после открытия с `userid` и `token` из магической ссылки.
 
 * => token, (iosPushToken), (androidPushToken), (webPushToken)
+* <= [User](./models/user.js)
+
+---
+### POST /users/loginFacebook `Public`
+
+[User](./models/user.js) login with facebook
+
+* => access_token, (iosPushToken), (androidPushToken), (webPushToken)
 * <= [User](./models/user.js)
 
 ---
