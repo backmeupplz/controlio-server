@@ -175,7 +175,7 @@ function getProjects(userId, skip, limit, type, query) {
         .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select('_id updatedAt createdAt title description image lastPost lastStatus isFinished owner managers')
+        .select('_id updatedAt createdAt title description image lastPost lastStatus isFinished owner managers progressEnabled')
         .populate([{
           path: 'lastStatus',
           populate: [{
