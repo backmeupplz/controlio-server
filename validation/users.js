@@ -1,11 +1,15 @@
 const Joi = require('joi');
-Joi.phone = require('joi-phone');
 
 module.exports = {
   login: {
     body: {
       email: Joi.string().email().required(),
       password: Joi.string().required(),
+    },
+  },
+  loginFacebook: {
+    body: {
+      access_token: Joi.string().required(),
     },
   },
   signup: {
@@ -47,7 +51,7 @@ module.exports = {
   editProfile: {
     body: {
       name: Joi.string().max(100),
-      phone: Joi.phone.e164().max(20),
+      phone: Joi.string().max(15),
     },
   },
   postResetPassword: {

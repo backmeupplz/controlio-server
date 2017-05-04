@@ -11,6 +11,17 @@ const reporter = require('../helpers/reporter');
 const mailer = require('../helpers/mailer');
 const _ = require('lodash');
 const demo = require('../helpers/demo');
+const passport = require('passport');
+const FacebookTokenStrategy = require('passport-facebook-token');
+
+/** Configure faacebook passport */
+passport.use(new FacebookTokenStrategy({
+  clientID: '168986530293704',
+  clientSecret: '0ea97f4d7a7d7ded8a67342f108e32d5',
+}, (accessToken, refreshToken, profile, done) => {
+  profile.accessToken = accessToken;
+  done(null, profile);
+}));
 
 /** Public API */
 
@@ -192,6 +203,56 @@ router.post('/login', validate(validation.login), (req, res, next) => {
           res.send(savedUserCopy);
         })
     )
+    .catch(err => next(err));
+});
+
+/** Method for login with facebook */
+router.post('/loginFacebook',
+validate(validation.loginFacebook),
+passport.authenticate('facebook-token', { session: false }),
+(req, res, next) => {
+  const email = req.user.emails[0].value;
+  if (!email) {
+    return next(errors.authEmailNotRegistered());
+  }
+  const iosPushToken = req.body.iosPushToken;
+  const androidPushToken = req.body.androidPushToken;
+  const webPushToken = req.body.webPushToken;
+
+  db.findUser({ email })
+    .select('email token isDemo isAdmin iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan name photo')
+    /** Check if user exists */
+    .then((user) => {
+      if (user) {
+        return user;
+      }
+      const newUser = { email };
+      if (iosPushToken) {
+        newUser.iosPushTokens = [iosPushToken];
+      }
+      if (androidPushToken) {
+        newUser.androidPushTokens = [androidPushToken];
+      }
+      if (webPushToken) {
+        newUser.webPushTokens = [webPushToken];
+      }
+      return db.addUser(newUser);
+    })
+    /** Add token if missing */
+    .then((user) => {
+      if (!user.token) {
+        user.token = jwt.sign({
+          email,
+          userid: user._id,
+        });
+        return user.save();
+      }
+      return user;
+    })
+    /** Save user and return without password */
+    .then((user) => {
+      res.send(_.pick(user, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId', 'name', 'photo']));
+    })
     .catch(err => next(err));
 });
 

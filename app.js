@@ -11,6 +11,7 @@ const fs = require('fs');
 const config = require('./config');
 const reporter = require('./helpers/reporter');
 const errors = require('./helpers/errors');
+const sanitizer = require('./helpers/sanitizer');
 
 /** Change default promises to bluebird */
 global.Promise = require('bluebird');
@@ -56,6 +57,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 /** Support cors */
 /** TODO: need to support only approved cors */
 app.use(cors());
+/** Trim and nulify all body and query parameters */
+app.use(sanitizer);
 
 /** Redirect public routes */
 app.use('/public/', publicRoute);

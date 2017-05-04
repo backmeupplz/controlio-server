@@ -30,6 +30,7 @@
   * [POST /users/resetPassword](#post-resetpassword-public)
   * [POST /users/requestMagicLink](#post-usersrequestmagiclink-public)
   * [POST /users/loginMagicLink](#post-loginmagiclink-public)
+  * [POST /users/loginFacebook](#post-loginfacebook-public)
   * [POST /users/logout](#post-userslogout)
 * [Users](#users)
   * [GET /users/profile](#get-usersprofile)
@@ -44,6 +45,7 @@
   * [POST /projects/managers](#post-projectsmanagers)
   * [DELETE /projects/manager](#delete-projectsmanager)
   * [PUT /projects/](#put-projects)
+  * [PUT /projects/progress](#put-projects-progress)
   * [POST /projects/finish](#post-projectsfinish)
   * [POST /projects/revive](#post-projectsrevive)
   * [POST /projects/leave](#post-projectsleave)
@@ -151,6 +153,14 @@
 * <= [User](./models/user.js)
 
 ---
+### POST /users/loginFacebook `Public`
+
+[User](./models/user.js) login with facebook
+
+* => access_token, (iosPushToken), (androidPushToken), (webPushToken)
+* <= [User](./models/user.js)
+
+---
 ### POST /users/logout
 
 Используется для стирания пуш токенов. Вызывать, конечно, не обязательно при логауте, но желательно. Главное, незаметно для пользователя.
@@ -183,7 +193,7 @@ Returns json data about a single [User](./models/user.js). Нужен, чтоб�
 
 Create a [Project](./models/project.js). Создание проекта. Либо его создает клиент — тогда указывает один managerEmail, либо менеджер — тогда он указывает массив имейлов клиентов.
 
-* => title, type [`manager`, `client`], (image), (status), (description), (managerEmail), (clientEmails)
+* => title, type [`manager`, `client`], (image), (status), (description), (managerEmail), (clientEmails), (progressEnabled)
 * <= [Project](./models/project.js)
 
 ---
@@ -246,7 +256,15 @@ Returns json data about a single [Project](./models/project.js).
 
 Редактирование [Project](./models/project.js).
 
-* projectid, title, (description), (image)
+* projectid, title, (description), (image), (progressEnabled)
+* <= [Project](./models/project.js)
+
+---
+### PUT /projects/progress
+
+Изменение прогресса [Project](./models/project.js).
+
+* projectid, progress
 * <= [Project](./models/project.js)
 
 ---
@@ -633,3 +651,12 @@ Adds a `StripeSource`. Stripe API: [Stipe API](https://stripe.com/docs/api)
 * status => 403
 * message => Token expired "${originalError.expiredAt}".
 * type => TOKEN_EXPIRED_ERROR
+
+---
+### PROGRESS_DISABLED_ERROR
+
+* status => 403
+* message => Progress bar not enabled
+* type => PROGRESS_DISABLED_ERROR
+
+---

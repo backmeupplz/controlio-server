@@ -166,8 +166,8 @@ a {
     cursor: pointer;
     display: block;
     max-width: 80%;
-    margin-right: 20px;
-    margin-bottom: 10px;
+    padding-right: 20px;
+    padding-bottom: 10px;
     text-align: center;
   }
 }
@@ -176,7 +176,7 @@ a {
     cursor: pointer;
     display: inline-block;
     max-width: 40%;
-    margin-right: 20px;
+    padding-right: 20px;
   }
 }
 
