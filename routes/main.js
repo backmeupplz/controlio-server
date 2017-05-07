@@ -68,5 +68,10 @@ router.get('/magic', validate(validation.magic), (req, res) => {
   res.render('magic', { token });
 });
 
+/** Show number of users used discount */
+router.get('/discount', (req, res) => {
+  res.send({ uses: 900 });
+});
+
 /** Export */
 module.exports = router;
