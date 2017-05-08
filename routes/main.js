@@ -5,6 +5,7 @@ const router = express.Router();
 const validate = require('express-validation');
 const validation = require('../validation/main');
 const errors = require('../helpers/errors');
+const db = require('../helpers/db');
 
 /** A list of errors */
 router.get('/error_list', (req, res) => {
@@ -69,8 +70,12 @@ router.get('/magic', validate(validation.magic), (req, res) => {
 });
 
 /** Show number of users used discount */
-router.get('/discount', (req, res) => {
-  res.send({ uses: 900 });
+router.get('/discount', (req, res, next) => {
+  db.getStats()
+    .then((stats) => {
+      res.send({ uses: stats.numberOfFriendDiscountsLeft });
+    })
+    .catch(err => next(err));
 });
 
 /** Export */

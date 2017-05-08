@@ -7,4 +7,5 @@ module.exports = {
   Post: require('./post'),
   Project: require('./project'),
   User: require('./user'),
+  Stats: require('./stats'),
 };
