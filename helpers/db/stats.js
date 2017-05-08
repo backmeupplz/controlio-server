@@ -15,7 +15,18 @@ function getStats() {
     });
 }
 
+function decrementNumberOfFriend() {
+  return getStats()
+    .then((stats) => {
+      if (stats.numberOfFriendDiscountsLeft >= 0) {
+        stats.numberOfFriendDiscountsLeft -= 1;
+      }
+      return stats.save();
+    });
+}
+
 /** Export */
 module.exports = {
   getStats,
+  decrementNumberOfFriend,
 };
