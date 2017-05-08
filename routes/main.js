@@ -78,5 +78,11 @@ router.get('/discount', (req, res, next) => {
     .catch(err => next(err));
 });
 
+/** robots.txt */
+router.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.send(`User-agent: *\nDisallow: /`);
+});
+
 /** Export */
 module.exports = router;
