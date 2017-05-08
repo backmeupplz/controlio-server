@@ -154,10 +154,9 @@ function applyStripeCoupon(userId, coupon) {
           .then(() => {
             user.coupons.push(coupon);
             return user.save();
-          })
-          .then(resolve)
-          .catch(reject))
-  );
+          }))
+      .then(resolve)
+      .catch(reject));
 }
 
 /**
