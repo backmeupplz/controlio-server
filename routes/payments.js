@@ -56,7 +56,7 @@ router.post('/customer/coupon', validate(validation.coupon), (req, res, next) =>
   const userId = req.user._id;
   db.applyStripeCoupon(userId, coupon)
     .then(() => {
-      if (coupon === 'FRIEND') {
+      if (coupon.toLowerCase() === 'friend') {
         return db.decrementNumberOfFriend();
       }
     })
