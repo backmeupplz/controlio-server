@@ -52,7 +52,7 @@ router.post('/customer/subscription', validate(validation.subscription), (req, r
 
 /** Method to apply coupon (usually discount) at Controlio */
 router.post('/customer/coupon', validate(validation.coupon), (req, res, next) => {
-  const coupon = req.body.coupon;
+  const coupon = req.body.coupon.toLowerCase();
   const userId = req.user._id;
   db.applyStripeCoupon(userId, coupon)
     .then(() => {
