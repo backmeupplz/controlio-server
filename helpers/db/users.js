@@ -155,6 +155,7 @@ function applyStripeCoupon(userId, coupon) {
             user.coupons.push(coupon);
             return user.save();
           })
+          .then(resolve)
           .catch(reject))
   );
 }
