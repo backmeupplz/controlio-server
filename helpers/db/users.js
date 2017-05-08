@@ -136,16 +136,25 @@ function setSripeSubscription(userId, planid) {
 function applyStripeCoupon(userId, coupon) {
   return new Promise((resolve, reject) =>
     findUserById(userId)
-      .select('token email isDemo isAdmin plan stripeId stripeSubscriptionId')
+      .select('token email isDemo isAdmin plan stripeId stripeSubscriptionId coupons')
       .then((user) => {
         if (!user) {
           throw errors.noUserFound();
         }
         return user;
       })
+      .then((user) => {
+        if (user.coupons.includes(coupon)) {
+          throw errors.couponAlreadyUsed();
+        }
+        return user;
+      })
       .then(user =>
         payments.applyStripeCoupon(user, coupon)
-          .then(resolve)
+          .then(() => {
+            user.coupons.push(coupon);
+            return user.save();
+          })
           .catch(reject))
   );
 }

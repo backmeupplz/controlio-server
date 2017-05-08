@@ -133,6 +133,9 @@ function notEnoughProjectsOnPlan() {
 function progressDisabled() {
   return error(403, 'Progress bar not enabled', 'PROGRESS_DISABLED_ERROR');
 }
+function couponAlreadyUsed() {
+  return error(403, 'Coupon has already been used', 'COUPON_ALREADY_USERD_ERROR');
+}
 
 function standardize(originalError) {
   const resultError = new Error();
@@ -326,6 +329,10 @@ const localizedList = {
     en: 'Progress bar is not enabled for this project',
     ru: 'Визуализация прогресса отключена для этого проекта',
   },
+  COUPON_ALREADY_USERD_ERROR: {
+    en: 'Coupon has already been used',
+    ru: 'Купон уже был использован',
+  },
 };
 
 /** Exports */
@@ -370,4 +377,5 @@ module.exports = {
   standardize,
   localizedList,
   progressDisabled,
+  couponAlreadyUsed,
 };
