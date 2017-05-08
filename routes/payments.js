@@ -55,7 +55,14 @@ router.post('/customer/coupon', validate(validation.coupon), (req, res, next) =>
   const coupon = req.body.coupon;
   const userId = req.user._id;
   db.applyStripeCoupon(userId, coupon)
-    .then(() => res.send({ success: true }))
+    .then(() => {
+      if (coupon === 'FRIEND') {
+        return db.decrementNumberOfFriend();
+      }
+    })
+    .then(() => {
+      res.send({ success: true });
+    })
     .catch(err => next(err));
 });
 
