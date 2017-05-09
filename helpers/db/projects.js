@@ -124,7 +124,7 @@ function addProjectAsManager(project, user) {
     .then(({ dbUser, dbProject }) => {
       const innerPromises = [];
       clients.forEach((client) => {
-        client.sendInvite(client, dbProject, 'client');
+        client.sendInvite(dbProject, 'client');
         innerPromises.push(new Promise((resolve) => {
           const invite = new Invite({
             type: 'client',
