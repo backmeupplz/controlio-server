@@ -51,7 +51,7 @@ module.exports = {
   editProfile: {
     body: {
       name: Joi.string().max(100),
-      phone: Joi.string().max(15),
+      phone: Joi.string().max(30),
     },
   },
   postResetPassword: {
