@@ -5,7 +5,7 @@ module.exports = {
     body: Joi.object().keys({
       projectid: Joi.string().required(),
       type: Joi.string().valid('post', 'status'),
-      text: Joi.string().when('type', { is: 'post', then: Joi.string().max(1000), otherwise: Joi.string().max(250) }).allow(''),
+      text: Joi.string().when('type', { is: 'post', then: Joi.string().max(1000), otherwise: Joi.string().max(250) }).allow(null),
       attachments: Joi.array().max(10),
     }).or('text', 'attachments'),
   },
@@ -13,7 +13,7 @@ module.exports = {
     body: Joi.object().keys({
       projectid: Joi.string().required(),
       type: Joi.string().valid('post', 'status'),
-      text: Joi.string().when('type', { is: 'status', then: Joi.string().max(250), otherwise: Joi.string().max(1000) }).allow(''),
+      text: Joi.string().when('type', { is: 'status', then: Joi.string().max(250), otherwise: Joi.string().max(1000) }).allow(null),
       attachments: Joi.array().max(10),
     }).or('text', 'attachments'),
   },
