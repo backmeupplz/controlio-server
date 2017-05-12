@@ -313,10 +313,6 @@ const localizedList = {
     en: 'Token expired',
     ru: 'Токен просрочился',
   },
-  VALIDATION_ERROR: {
-    en: 'Validation error',
-    ru: 'Ошибка валидации',
-  },
   DB_ERROR: {
     en: 'Database error',
     ru: 'Ошибка базы данных',
