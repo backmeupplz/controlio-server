@@ -212,6 +212,7 @@ validate(validation.loginFacebook),
 passport.authenticate('facebook-token', { session: false }),
 (req, res, next) => {
   const email = req.user.emails[0].value;
+  const name = req.user.displayName;
   if (!email) {
     return next(errors.authEmailNotRegistered());
   }
@@ -240,6 +241,11 @@ passport.authenticate('facebook-token', { session: false }),
     })
     /** Add token if missing */
     .then((user) => {
+      // TODO: add photo here as well
+      if (!user.name) {
+        user.name = name;
+        return user.save();
+      }
       if (!user.token) {
         user.token = jwt.sign({
           email,
