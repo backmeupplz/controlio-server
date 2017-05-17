@@ -14,7 +14,7 @@ router.get('/error_list', (req, res) => {
 
 /** A list of features to enable in iOS app */
 router.get('/feature_list', (req, res) => {
-  res.send({ 0: false, 1: true });
+  res.send({ 0: true, 1: false });
 });
 
 const apple = {
