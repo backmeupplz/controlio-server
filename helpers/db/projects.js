@@ -424,6 +424,7 @@ function addManagers(userId, projectId, managers) {
             }
           });
           if (existingClients.includes(id)) {
+            project.managers.push(user._id);
             valid = false;
           }
           if (existingManagers.includes(id)) {
