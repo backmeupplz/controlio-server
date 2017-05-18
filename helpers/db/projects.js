@@ -610,7 +610,7 @@ function addClients(userId, projectId, clients) {
           }
           if (existingManagers.includes(id)) {
             if (project.owner.equals(user._id)) {
-              project.managers = project.clients.filter(Client => !Client.equals(id));
+              project.managers = project.managers.filter(manager => !manager.equals(id));
               project.clients.push(id);
             }
             valid = false;
