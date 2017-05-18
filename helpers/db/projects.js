@@ -424,7 +424,8 @@ function addManagers(userId, projectId, managers) {
             }
           });
           if (existingClients.includes(id)) {
-            project.managers.push(user._id);
+            project.clients = project.clients.filter(Client => !Client.equals(id));
+            project.managers.push(id);
             valid = false;
           }
           if (existingManagers.includes(id)) {
@@ -608,6 +609,8 @@ function addClients(userId, projectId, clients) {
             valid = false;
           }
           if (existingManagers.includes(id)) {
+            project.managers = project.clients.filter(Client => !Client.equals(id));
+            project.clients.push(id);
             valid = false;
           }
           if (owner === id) {
