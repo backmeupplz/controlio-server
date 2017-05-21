@@ -145,6 +145,9 @@ function addProjectAsManager(project, user) {
       return Promise.all(innerPromises)
         .then((invites) => {
           dbProject.invites = dbProject.invites.concat(invites);
+          if (dbProject.owner.id) {
+            dbProject.owner = dbProject.owner.id;
+          }
           return dbProject.save();
         });
     });
