@@ -385,6 +385,18 @@ router.post('/logout', (req, res, next) => {
     .catch(err => next(err));
 });
 
+router.post('/changeAndroidToken', (req, res, next) => {
+  const androidPushToken = req.body.androidPushToken;
+  const oldAndroidPushToken = req.body.oldAndroidPushToken;
+
+  req.user.androidPushTokens = req.user.androidPushTokens.filter(v => v !== oldAndroidPushToken);
+  req.user.androidPushTokens.push(androidPushToken);
+
+  req.user.save()
+    .then(() => res.send({ success: true }))
+    .catch(err => next(err));
+});
+
 /** Method to get user's profile */
 router.get('/profile', (req, res, next) => {
   const userId = req.query.id || req.user._id;
