@@ -23,6 +23,11 @@ const userSchema = new Schema({
     required: true,
     default: 0,
   },
+  coupons: [{
+    type: String,
+    required: true,
+    default: [],
+  }],
   /** Variables */
   email: {
     type: String,

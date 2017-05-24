@@ -51,6 +51,7 @@ router.use(demo.checkDemo);
 /** Method to create a new project */
 router.post('/', validate(validation.post), (req, res, next) => {
   const project = _.clone(req.body);
+  project.progressEnabled = req.body.progressEnabled || false;
   project.userId = req.user._id;
   if (project.type === 'client') {
     if (validator.isEmail(project.managerEmail)) {
@@ -153,9 +154,21 @@ router.put('/', validate(validation.put), (req, res, next) => {
     description = null;
   }
   const image = req.body.image;
+  const progressEnabled = req.body.progressEnabled || false;
 
-  db.editProject(userId, projectId, title, description, image)
+  db.editProject(userId, projectId, title, description, image, progressEnabled)
     .then(project => res.send(project))
+    .catch(err => next(err));
+});
+
+/** Method to edit progress */
+router.put('/progress', validate(validation.putProgress), (req, res, next) => {
+  const userId = req.user._id;
+  const projectId = req.body.projectid;
+  const progress = req.body.progress;
+
+  db.editProgress(userId, projectId, progress)
+    .then(() => res.send({ success: true }))
     .catch(err => next(err));
 });
 

@@ -31,7 +31,7 @@ function addPost(userId, projectId, text, attachments, type) {
           }))
       .then(user =>
         Project.findById(projectId)
-          .populate('clients')
+          .populate('clients managers owner')
           .then(project => ({ user, project })))
       /** Check if owner */
       .then(({ user, project }) => {

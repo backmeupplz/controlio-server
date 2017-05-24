@@ -5,6 +5,7 @@ const router = express.Router();
 const validate = require('express-validation');
 const validation = require('../validation/main');
 const errors = require('../helpers/errors');
+const db = require('../helpers/db');
 
 /** A list of errors */
 router.get('/error_list', (req, res) => {
@@ -66,6 +67,21 @@ router.get('/.well-known/assetlinks.json', (req, res) => {
 router.get('/magic', validate(validation.magic), (req, res) => {
   const token = req.query.token;
   res.render('magic', { token });
+});
+
+/** Show number of users used discount */
+router.get('/discount', (req, res, next) => {
+  db.getStats()
+    .then((stats) => {
+      res.send({ uses: stats.numberOfFriendDiscountsLeft });
+    })
+    .catch(err => next(err));
+});
+
+/** robots.txt */
+router.get('/robots.txt', (req, res) => {
+  res.type('text/plain');
+  res.send(`User-agent: *\nDisallow: /`);
 });
 
 /** Export */

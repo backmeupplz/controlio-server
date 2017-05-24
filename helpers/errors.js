@@ -145,6 +145,12 @@ function bucketUpload() {
 function fileSend() {
   return error(500, 'Error with send file', 'SEND_FILE_ERROR')
 }
+function progressDisabled() {
+  return error(403, 'Progress bar not enabled', 'PROGRESS_DISABLED_ERROR');
+}
+function couponAlreadyUsed() {
+  return error(403, 'Coupon has already been used', 'COUPON_ALREADY_USERD_ERROR');
+}
 
 function standardize(originalError) {
   const resultError = new Error();
@@ -322,10 +328,6 @@ const localizedList = {
     en: 'Token expired',
     ru: 'Токен просрочился',
   },
-  VALIDATION_ERROR: {
-    en: 'Validation error',
-    ru: 'Ошибка валидации',
-  },
   DB_ERROR: {
     en: 'Database error',
     ru: 'Ошибка базы данных',
@@ -333,6 +335,14 @@ const localizedList = {
   UNDECLARED_ERROR: {
     en: 'Undeclared error',
     ru: 'Неизвестная ошибка',
+  },
+  PROGRESS_DISABLED_ERROR: {
+    en: 'Progress bar is not enabled for this project',
+    ru: 'Визуализация прогресса отключена для этого проекта',
+  },
+  COUPON_ALREADY_USERD_ERROR: {
+    en: 'Coupon has already been used',
+    ru: 'Купон уже был использован',
   },
 };
 
@@ -381,5 +391,7 @@ module.exports = {
   bucketDownload,
   notFoundFile,
   notFound,
-  notFoundFileKey
+  notFoundFileKey,
+  progressDisabled,
+  couponAlreadyUsed,
 };
