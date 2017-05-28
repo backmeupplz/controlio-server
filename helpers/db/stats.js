@@ -4,15 +4,13 @@
 
 const { Stats } = require('../../models');
 
-function getStats() {
-  return Stats.findOne({})
-    .then((stats) => {
-      if (!stats) {
-        const newStats = new Stats({});
-        return newStats.save();
-      }
-      return stats;
-    });
+async function getStats() {
+  let dbstats = await Stats.findOne({});
+  if (!dbstats) {
+    const newStats = new Stats({});
+    dbstats = await newStats.save();
+  }
+  return dbstats;
 }
 
 function decrementNumberOfFriend() {

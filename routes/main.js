@@ -70,18 +70,19 @@ router.get('/magic', validate(validation.magic), (req, res) => {
 });
 
 /** Show number of users used discount */
-router.get('/discount', (req, res, next) => {
-  db.getStats()
-    .then((stats) => {
-      res.send({ uses: stats.numberOfFriendDiscountsLeft });
-    })
-    .catch(err => next(err));
+router.get('/discount', async (req, res, next) => {
+  try {
+    const stats = await db.getStats();
+    res.send({ uses: stats.numberOfFriendDiscountsLeft });
+  } catch (err) {
+    next(err);
+  }
 });
 
 /** robots.txt */
 router.get('/robots.txt', (req, res) => {
   res.type('text/plain');
-  res.send(`User-agent: *\nDisallow: /`);
+  res.send('User-agent: *\nDisallow: /');
 });
 
 /** Export */
