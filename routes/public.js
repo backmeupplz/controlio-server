@@ -11,161 +11,198 @@ const jwt = require('../helpers/jwt');
 const router = express.Router();
 
 /** Method to return reset password web page */
-router.get('/resetPassword', validate(validation.getResetPassword), (req, res) => {
-  const token = req.query.token;
-
-  const { error, data } = jwt.verify(token);
-  if (error) {
-    return res.render('error', { error: error.message || 'Something went wrong :(' });
+router.get('/resetPassword',
+validate(validation.getResetPassword),
+async (req, res) => {
+  try {
+    /** Get req parameters */
+    const token = req.query.token;
+    /** Verify reset password token */
+    const { error, data } = jwt.verify(token);
+    /** Throw an error if cannot verify password token */
+    if (error) {
+      throw error;
+    }
+    /** Throw an error if no data in reset password token */
+    if (!data || !data.userid) {
+      throw new Error();
+    }
+    /** Get user id from reset password token */
+    const userId = data.userid;
+    /** Get user from db */
+    let user = await db.findUserById(userId)
+      .select('tokenForPasswordResetIsFresh tokenForPasswordReset email');
+    /** Throw error if no user found */
+    if (!user) {
+      throw errors.noUserFound();
+    }
+    /** Throw error if reset password token isn't fresh */
+    if (!user.tokenForPasswordResetIsFresh) {
+      throw new Error('You can only use reset link once.');
+    }
+    /** Throw error if reset password tokens don't match */
+    if (user.tokenForPasswordReset !== token) {
+      throw new Error('Not authorized (mismatched tokens).');
+    }
+    /** Save user with password token spoiled */
+    user.tokenForPasswordResetIsFresh = false;
+    user = await user.save();
+    /** Report view of reset password page */
+    reporter.reportGetResetPassword(user);
+    /** Render reset password page */
+    res.render('reset-password', { token });
+  } catch (err) {
+    /** Render error */
+    res.render('error', { error: err.message || 'Something went wrong :(' });
   }
-  if (!data || !data.userid) {
-    return res.render('error', { error: 'Something went wrong :(' });
-  }
-  const userId = data.userid;
-  db.findUserById(userId)
-    .select('tokenForPasswordResetIsFresh tokenForPasswordReset email')
-    .then((user) => {
-      if (!user) {
-        res.render('error', { error: errors.noUserFound().message });
-      } else if (!user.tokenForPasswordResetIsFresh) {
-        res.render('error', { error: 'You can only use reset link once.' });
-      } else if (user.tokenForPasswordReset !== token) {
-        res.render('error', { error: 'Not authorized (mismatched tokens).' });
-      } else {
-        user.tokenForPasswordResetIsFresh = false;
-        user.save()
-          .then(() => {
-            reporter.reportGetResetPassword(user);
-            res.render('reset-password', { token });
-          })
-          .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
-      }
-    })
-    .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
 });
 
 /** Method to reset password */
-router.post('/resetPassword', validate(validation.postResetPassword), (req, res) => {
-  const password = req.body.password;
-  const token = req.body.token;
-
-  if (password.length < 6 || password.length > 30) {
-    res.render('error', { error: 'Password length should be between 6 and 30 characters' });
-    return;
+router.post('/resetPassword',
+validate(validation.postResetPassword),
+async (req, res) => {
+  try {
+    /** Get req parameters */
+    const password = req.body.password;
+    const token = req.body.token;
+    /** Throw error if password length is wrong */
+    if (password.length < 6 || password.length > 30) {
+      throw new Error('Password length should be between 6 and 30 characters');
+    }
+    /** Try to verify reset password token */
+    const { error, data } = jwt.verify(token);
+    /** Throw error if password reset token is invalid */
+    if (error) {
+      throw error;
+    }
+    /** Throw an error if no data in reset password token */
+    if (!data || !data.userid) {
+      throw new Error();
+    }
+    /** Get user id from reset password token */
+    const userId = data.userid;
+    /** Get user from db */
+    let user = await db.findUserById(userId)
+      .select('tokenForPasswordResetIsFresh tokenForPasswordReset email');
+    /** Throw error if no user found */
+    if (!user) {
+      throw errors.noUserFound();
+    }
+    /** Throw error if reset password tokens don't match */
+    if (user.tokenForPasswordReset !== token) {
+      throw new Error('Wrong token provided.');
+    }
+    /** Hash new password */
+    const hashedPassword = await hash.hashPassword(password);
+    /** Save new password */
+    user.tokenForPasswordReset = null;
+    user.password = hashedPassword;
+    user = await user.save();
+    /** Report password reset */
+    reporter.reportResetPassword(user);
+    /** Render success page */
+    res.render('success', { message: 'Password was updated!' });
+  } catch (err) {
+    /** Render error */
+    res.render('error', { error: err.message || 'Something went wrong :(' });
   }
-
-  const { error, data } = jwt.verify(token);
-  if (error) {
-    return res.render('error', { error: error.message || 'Something went wrong :(' });
-  }
-  if (!data || !data.userid) {
-    return res.render('error', { error: 'Something went wrong :(' });
-  }
-  const userId = data.userid;
-
-  db.findUserById(userId)
-    .select('tokenForPasswordResetIsFresh tokenForPasswordReset email')
-      .then((user) => {
-        if (!user) {
-          res.render('error', { error: errors.noUserFound().message });
-        } else if (user.tokenForPasswordReset !== token) {
-          res.render('error', { error: 'Wrong token provided.' });
-        } else {
-          hash.hashPassword(password)
-            .then((result) => {
-              user.tokenForPasswordReset = null;
-              user.password = result;
-              user.save()
-                .then(() => {
-                  reporter.reportResetPassword(user);
-                  res.render('success', { message: 'Password was updated!' });
-                })
-                .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
-            })
-            .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
-        }
-      })
-      .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
 });
 
 /** Method to return set password web page */
-router.get('/setPassword', validate(validation.getSetPassword), (req, res) => {
-  const token = req.query.token;
-
-  const { error, data } = jwt.verify(token);
-  if (error) {
-    return res.render('error', { error: error.message || 'Something went wrong :(' });
+router.get('/setPassword',
+validate(validation.getSetPassword),
+async (req, res) => {
+  try {
+    /** Get req parameters */
+    const token = req.query.token;
+    /** Try to verify set password token */
+    const { error, data } = jwt.verify(token);
+    /** Throw error if set password token is invalid */
+    if (error) {
+      throw error;
+    }
+    /** Throw error if no data can be fetched from set password token */
+    if (!data || !data.userid) {
+      throw new Error();
+    }
+    /** Get user id from reset password token */
+    const userId = data.userid;
+    /** Get user from db */
+    let user = await db.findUserById(userId)
+      .select('tokenForPasswordResetIsFresh tokenForPasswordReset email');
+    /** Throw error if no user found */
+    if (!user) {
+      throw errors.noUserFound();
+    }
+    /** Throw error if set password token is spoiled */
+    if (!user.tokenForPasswordResetIsFresh) {
+      throw new Error('You can only use set password link once.');
+    }
+    /** Throw error if set password tokens don't match */
+    if (user.tokenForPasswordReset !== token) {
+      throw new Error('Not authorized (mismatched tokens).');
+    }
+    /** Save user and spoil token */
+    user.tokenForPasswordResetIsFresh = false;
+    user = await user.save();
+    /** Report set token page view */
+    reporter.reportGetSetPassword(user);
+    /** Render set password page */
+    res.render('set-password', { token });
+  } catch (err) {
+    /** Render error */
+    res.render('error', { error: err.message || 'Something went wrong :(' });
   }
-  if (!data || !data.userid) {
-    return res.render('error', { error: 'Something went wrong :(' });
-  }
-  const userId = data.userid;
-
-  db.findUserById(userId)
-    .select('tokenForPasswordResetIsFresh tokenForPasswordReset email')
-    .then((user) => {
-      if (!user) {
-        res.render('error', { error: errors.noUserFound().message });
-      } else if (!user.tokenForPasswordResetIsFresh) {
-        res.render('error', { error: 'You can only use set password link once.' });
-      } else if (user.tokenForPasswordReset !== token) {
-        res.render('error', { error: 'Not authorized (mismatched tokens).' });
-      } else {
-        user.tokenForPasswordResetIsFresh = false;
-        user.save()
-          .then(() => {
-            reporter.reportGetSetPassword(user);
-            res.render('set-password', { token });
-          })
-          .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
-      }
-    })
-    .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
 });
 
 /** Method to set password */
-router.post('/setPassword', validate(validation.postSetPassword), (req, res) => {
-  const password = String(req.body.password);
-  const token = req.body.token;
-
-  if (password.length < 6 || password.length > 30) {
-    res.render('error', { error: 'Password length should be between 6 and 30 characters' });
-    return;
+router.post('/setPassword',
+validate(validation.postSetPassword),
+async (req, res) => {
+  try {
+    /** Get req parameters */
+    const password = req.body.password;
+    const token = req.body.token;
+    /** Throw error if password length is wrong */
+    if (password.length < 6 || password.length > 30) {
+      throw new Error('Password length should be between 6 and 30 characters');
+    }
+    /** Try to verify reset password token */
+    const { error, data } = jwt.verify(token);
+    /** Throw error if password reset token is invalid */
+    if (error) {
+      throw error;
+    }
+    /** Throw an error if no data in reset password token */
+    if (!data || !data.userid) {
+      throw new Error();
+    }
+    /** Get user id from reset password token */
+    const userId = data.userid;
+    /** Get user from db */
+    let user = await db.findUserById(userId)
+      .select('tokenForPasswordResetIsFresh tokenForPasswordReset email');
+    /** Throw error if no user found */
+    if (!user) {
+      throw errors.noUserFound();
+    }
+    /** Throw error if reset password tokens don't match */
+    if (user.tokenForPasswordReset !== token) {
+      throw new Error('Wrong token provided.');
+    }
+    /** Hash new password */
+    const hashedPassword = await hash.hashPassword(password);
+    /** Save new password */
+    user.tokenForPasswordReset = null;
+    user.password = hashedPassword;
+    user = await user.save();
+    /** Report password reset */
+    reporter.reportSetPassword(user);
+    /** Render success page */
+    res.render('success', { message: 'Password has been set!' });
+  } catch (err) {
+    res.render('error', { error: err.message || 'Something went wrong :(' });
   }
-  const { error, data } = jwt.verify(token);
-  if (error) {
-    return res.render('error', { error: error.message || 'Something went wrong :(' });
-  }
-  if (!data || !data.userid) {
-    return res.render('error', { error: 'Something went wrong :(' });
-  }
-  const userId = data.userid;
-
-  db.findUserById(userId)
-    .select('tokenForPasswordResetIsFresh tokenForPasswordReset email')
-      .then((user) => {
-        if (!user) {
-          res.render('error', { error: errors.noUserFound().message });
-        } else if (user.tokenForPasswordReset !== token) {
-          res.render('error', { error: 'Wrong token provided.' });
-        } else if (user.password) {
-          res.sender('error', { error: errors.passwordAlreadyExist().message });
-        } else {
-          hash.hashPassword(password)
-            .then((result) => {
-              user.tokenForPasswordReset = null;
-              user.password = result;
-              user.save()
-                .then(() => {
-                  reporter.reportSetPassword(user);
-                  res.render('success', { message: 'Password has been set!' });
-                })
-                .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
-            })
-            .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
-        }
-      })
-      .catch(err => res.render('error', { error: err.message || 'Something went wrong :(' }));
 });
 
 /** Export */
