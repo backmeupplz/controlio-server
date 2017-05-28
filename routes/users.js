@@ -9,7 +9,6 @@ const validation = require('../validation/users');
 const router = require('express').Router();
 const reporter = require('../helpers/reporter');
 const mailer = require('../helpers/mailer');
-const _ = require('lodash');
 const demo = require('../helpers/demo');
 const passport = require('passport');
 const FacebookTokenStrategy = require('passport-facebook-token');
@@ -26,409 +25,373 @@ passport.use(new FacebookTokenStrategy({
 /** Public API */
 
 /** Method to request magic link email */
-router.post('/requestMagicLink', validate(validation.magicLink), (req, res, next) => {
-  const email = req.body.email.toLowerCase();
-
-  db.findUser({ email })
-    /** If user doesn't exist, we create one */
-    .then((user) => {
-      if (user) {
-        return user;
-      }
-      return db.addUser({
+router.post('/requestMagicLink',
+validate(validation.magicLink),
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    const email = req.body.email.toLowerCase();
+    /** Get user from db */
+    let user = await db.findUser({ email });
+    /** Create new user if none found */
+    if (!user) {
+      user = await db.addUser({ email });
+      user.token = jwt.sign({
         email,
-      }).then((dbuser) => {
-        dbuser.token = jwt.sign({
-          email,
-          userid: dbuser._id,
-        });
-        return dbuser.save();
+        userid: user._id,
       });
-    })
-    .then((user) => {
-      user.generateMagicToken(user);
-      reporter.reportMagicLinkRequest(user);
-      mailer.sendMagicLink(user);
-      return user.save()
-        .then(() => res.send({ success: true }));
-    })
-    .catch(err => next(err));
+      user = await user.save();
+    }
+    /** Do some stuff with user */
+    user.generateMagicToken(user);
+    reporter.reportMagicLinkRequest(user);
+    mailer.sendMagicLink(user);
+    /** Save user after that */
+    user = await user.save();
+    /** Send success */
+    res.send({ success: true });
+  } catch (err) {
+    next(err);
+  }
 });
 
 /** Method to try to login with the magic link */
-router.post('/loginMagicLink', validate(validation.loginMagicLink), (req, res, next) => {
-  const token = req.body.token;
-  const iosPushToken = req.body.iosPushToken;
-  const androidPushToken = req.body.androidPushToken;
-  const webPushToken = req.body.webPushToken;
-
-  const { error, data } = jwt.verify(token);
-  if (error) {
-    return next(error);
-  }
-  if (!data || !data.userid) {
-    return next(errors.authTokenFailed());
-  }
-  const userId = data.userid;
-  db.findUserById(userId)
-    .select('email token isDemo isAdmin magicToken iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan name photo')
-    /** Check if user exists */
-    .then((user) => {
-      if (!user) {
-        throw errors.noUserFound();
-      } else {
-        return user;
-      }
-    })
+router.post('/loginMagicLink',
+validate(validation.loginMagicLink),
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    const token = req.body.token;
+    const iosPushToken = req.body.iosPushToken;
+    const androidPushToken = req.body.androidPushToken;
+    const webPushToken = req.body.webPushToken;
+    /** Try to verify auth token */
+    const { error, data } = jwt.verify(token);
+    /** Throw error if failed to verify magic token */
+    if (error) {
+      throw error;
+    }
+    /** Throw error if verification of magic token returned nothing */
+    if (!data || !data.userid) {
+      throw errors.authTokenFailed();
+    }
+    /** Get user id from magic token */
+    const userId = data.userid;
+    /** Get user from db */
+    let user = await db.findUserById(userId)
+      .select('email token isDemo isAdmin magicToken iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan name photo');
+    /** Throw error if no user found */
+    if (!user) {
+      throw errors.noUserFound();
+    }
     /** Check if magic tokens match */
-    .then((user) => {
-      if (!user.magicToken || user.magicToken !== token) {
-        throw errors.magicLinkOnlyOnce();
-      } else {
-        return user;
-      }
-    })
-    /** Add token if missing */
-    .then((user) => {
-      if (!user.token) {
-        user.token = jwt.sign({
-          email: user.email,
-          userid: user._id,
-        });
-      }
-      return user;
-    })
+    if (!user.magicToken || user.magicToken !== token) {
+      throw errors.magicLinkOnlyOnce();
+    }
+    /** Check if user has jwt (if not, create one) */
+    if (!user.token) {
+      user.token = jwt.sign({
+        email: user.email,
+        userid: user._id,
+      });
+    }
     /** Add push tokens if provided */
-    .then((user) => {
-      if (user.isDemo) {
-        return user;
-      }
-      if (iosPushToken) {
-        user.iosPushTokens.push(iosPushToken);
-      }
-      user.iosPushTokens = _.uniq(user.iosPushTokens);
-      if (androidPushToken) {
-        user.androidPushTokens.push(androidPushToken);
-      }
-      user.androidPushTokens = _.uniq(user.androidPushTokens);
-      if (webPushToken) {
-        user.webPushTokens.push(webPushToken);
-      }
-      user.webPushTokens = _.uniq(user.webPushTokens);
-      return user;
-    })
-    /** Login */
-    .then((user) => {
-      user.magicToken = null;
-
-      return user.save()
-        .then((savedUser) => {
-          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId']);
-          res.send(savedUserCopy);
-          reporter.reportMagicLinkLogin(savedUserCopy);
-        });
-    })
-    .catch(err => next(err));
+    user.addPushTokens(iosPushToken, androidPushToken, webPushToken);
+    /** Get final user object preparations and save it */
+    user.magicToken = null;
+    user = await user.save();
+    user = user.filterProps;
+    /** Send response */
+    res.send(user);
+    reporter.reportMagicLinkLogin(user);
+  } catch (err) {
+    next(err);
+  }
 });
 
 /** Method for usual login with email and password */
-router.post('/login', validate(validation.login), (req, res, next) => {
-  const email = req.body.email.toLowerCase();
-  const rawPassword = req.body.password;
-  const iosPushToken = req.body.iosPushToken;
-  const androidPushToken = req.body.androidPushToken;
-  const webPushToken = req.body.webPushToken;
-
-  db.findUser({ email })
-    .select('email password token isDemo isAdmin iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan name photo')
-    /** Check if user exists */
-    .then((user) => {
-      if (!user) {
-        throw errors.authEmailNotRegistered();
-      } else if (!user.password) {
-        user.generateResetPasswordToken(user);
-        user.save();
-        mailer.sendSetPassword(user);
-        throw errors.passwordNotExist();
-      } else {
-        return user;
-      }
-    })
+router.post('/login',
+validate(validation.login),
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    const email = req.body.email.toLowerCase();
+    const rawPassword = req.body.password;
+    const iosPushToken = req.body.iosPushToken;
+    const androidPushToken = req.body.androidPushToken;
+    const webPushToken = req.body.webPushToken;
+    /** Getting user from the db */
+    let user = await db.findUser({ email })
+      .select('email password token isDemo isAdmin iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan name photo');
+    /** Throw an error if no user exist */
+    if (!user) {
+      throw errors.authEmailNotRegistered();
+    }
+    /** Handle the case when user don't have a password set */
+    if (!user.password) {
+      user.generateResetPasswordToken();
+      user.save();
+      mailer.sendSetPassword(user);
+      throw errors.passwordNotExist();
+    }
     /** Check password */
-    .then(user =>
-      hash.checkPassword(user.password, rawPassword)
-        .then((result) => {
-          if (!result) {
-            throw errors.authWrongPassword();
-          } else {
-            return user;
-          }
-        })
-    )
-    /** Add token if missing */
-    .then((user) => {
-      const userCopy = _.clone(user);
-      if (!userCopy.token) {
-        userCopy.token = jwt.sign({
-          email,
-          userid: userCopy._id,
-        });
-      }
-      return userCopy;
-    })
+    const isValidPassword = await hash.checkPassword(user.password, rawPassword);
+    if (!isValidPassword) {
+      throw errors.authWrongPassword();
+    }
+    /** Add jwt if missing */
+    if (!user.token) {
+      user.token = jwt.sign({
+        email,
+        userid: user._id,
+      });
+    }
     /** Add push tokens if provided */
-    .then((user) => {
-      if (user.isDemo) {
-        return user;
-      }
-      if (iosPushToken) {
-        user.iosPushTokens.push(iosPushToken);
-      }
-      user.iosPushTokens = _.uniq(user.iosPushTokens);
-      if (androidPushToken) {
-        user.androidPushTokens.push(androidPushToken);
-      }
-      user.androidPushTokens = _.uniq(user.androidPushTokens);
-      if (webPushToken) {
-        user.webPushTokens.push(webPushToken);
-      }
-      user.webPushTokens = _.uniq(user.webPushTokens);
-      return user;
-    })
+    user.addPushTokens(iosPushToken, androidPushToken, webPushToken);
     /** Save user and return without password */
-    .then(user =>
-      user.save()
-        .then((savedUser) => {
-          const savedUserCopy = _.pick(savedUser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId', 'name', 'photo']);
-          res.send(savedUserCopy);
-        })
-    )
-    .catch(err => next(err));
+    user = await user.save();
+    user = user.filterProps;
+    res.send(user);
+  } catch (err) {
+    next(err);
+  }
 });
 
 /** Method for login with facebook */
 router.post('/loginFacebook',
 validate(validation.loginFacebook),
 passport.authenticate('facebook-token', { session: false }),
-(req, res, next) => {
-  const email = req.user.emails[0].value;
-  const name = req.user.displayName;
-  if (!email) {
-    return next(errors.authEmailNotRegistered());
-  }
-  const iosPushToken = req.body.iosPushToken;
-  const androidPushToken = req.body.androidPushToken;
-  const webPushToken = req.body.webPushToken;
-
-  db.findUser({ email })
-    .select('email token isDemo isAdmin iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan name photo')
-    /** Check if user exists */
-    .then((user) => {
-      if (user) {
-        return user;
-      }
-      const newUser = { email };
-      if (iosPushToken) {
-        newUser.iosPushTokens = [iosPushToken];
-      }
-      if (androidPushToken) {
-        newUser.androidPushTokens = [androidPushToken];
-      }
-      if (webPushToken) {
-        newUser.webPushTokens = [webPushToken];
-      }
-      return db.addUser(newUser);
-    })
-    /** Add token if missing */
-    .then((user) => {
-      // TODO: add photo here as well
-      if (!user.name) {
-        user.name = name;
-        return user.save();
-      }
-      if (!user.token) {
-        user.token = jwt.sign({
-          email,
-          userid: user._id,
-        });
-        return user.save();
-      }
-      return user;
-    })
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    const email = req.user.emails[0].value;
+    const name = req.user.displayName;
+    const iosPushToken = req.body.iosPushToken;
+    const androidPushToken = req.body.androidPushToken;
+    const webPushToken = req.body.webPushToken;
+    /** Check if email is returned from FB */
+    if (!email) {
+      throw errors.authEmailNotRegistered();
+    }
+    /** Get user from db */
+    let user = await db.findUser({ email })
+      .select('email token isDemo isAdmin iosPushTokens androidPushTokens webPushTokens stripeId stripeSubscriptionId plan name photo');
+    /** If no user exists, create one */
+    if (!user) {
+      user = await db.addUser({ email });
+    }
+    /** Add push tokens if provided */
+    user.addPushTokens(iosPushToken, androidPushToken, webPushToken);
+    /** Add jwt if missing */
+    if (!user.token) {
+      user.token = jwt.sign({
+        email,
+        userid: user._id,
+      });
+    }
+    /** Add DB name if possible and required */
+    // TODO: add photo here as well
+    if (!user.name) {
+      user.name = name;
+    }
     /** Save user and return without password */
-    .then((user) => {
-      res.send(_.pick(user, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId', 'name', 'photo']));
-    })
-    .catch(err => next(err));
+    user = await user.save();
+    user = user.filterProps;
+    res.send(user);
+  } catch (err) {
+    next(err);
+  }
 });
 
 /** Method to signup user */
-router.post('/signUp', validate(validation.signup), (req, res, next) => {
-  const email = req.body.email.toLowerCase();
-  const rawPassword = req.body.password;
-  const iosPushToken = req.body.iosPushToken;
-  const androidPushToken = req.body.androidPushToken;
-  const webPushToken = req.body.webPushToken;
-
-  hash.hashPassword(rawPassword)
-    .then((password) => {
-      const user = {
-        email,
-        password,
-      };
-      if (iosPushToken) {
-        user.iosPushTokens = [iosPushToken];
-      }
-      if (androidPushToken) {
-        user.androidPushTokens = [androidPushToken];
-      }
-      if (webPushToken) {
-        user.webPushTokens = [webPushToken];
-      }
-      return db.addUser(user)
-        .then((dbuser) => {
-          dbuser.token = jwt.sign({
-            email: dbuser.email,
-            userid: dbuser._id,
-          });
-          return dbuser.save();
-        })
-        .then((dbuser) => {
-          const dbuserCopy = _.pick(dbuser, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId', 'name', 'photo']);
-          res.send(dbuserCopy);
-          mailer.sendSignup(user.email);
-          reporter.reportSignUp(user);
-        });
-    })
-    .catch(err => next(err));
+router.post('/signUp',
+validate(validation.signup),
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    const email = req.body.email.toLowerCase();
+    const rawPassword = req.body.password;
+    const iosPushToken = req.body.iosPushToken;
+    const androidPushToken = req.body.androidPushToken;
+    const webPushToken = req.body.webPushToken;
+    /** Hash password */
+    const password = await hash.hashPassword(rawPassword);
+    /** Add user to the db */
+    let user = await db.addUser({ email, password });
+    /** Add push tokens if provided */
+    user.addPushTokens(iosPushToken, androidPushToken, webPushToken);
+    /** Add jwt */
+    user.token = jwt.sign({
+      email,
+      userid: user._id,
+    });
+    /** Save user and return without password */
+    user = await user.save();
+    user = user.filterProps;
+    res.send(user);
+    /** Do some marketing stuff */
+    mailer.sendSignup(user.email);
+    reporter.reportSignUp(user);
+  } catch (err) {
+    next(err);
+  }
 });
 
 /** Method to send restore email password */
-router.post('/recoverPassword', validate(validation.resetPassword), (req, res, next) => {
-  const email = req.body.email;
-
-  const p = db.findUser({ email })
-    .select('email')
-    /** Check user existence */
-    .then((user) => {
-      if (!user) {
-        p.cancel();
-        return next(errors.authEmailNotRegistered());
-      }
-      return user;
-    })
+router.post('/recoverPassword',
+validate(validation.resetPassword),
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    const email = req.body.email;
+    /** Getting user from db */
+    let user = await db.findUser({ email }).select('email');
+    /** Throw error if no user found */
+    if (!user) {
+      throw errors.authEmailNotRegistered();
+    }
     /** Save tokens and send email */
-    .then((user) => {
-      user.generateResetPasswordToken(user);
-      reporter.reportPasswordResetRequest(user);
-      mailer.sendResetPassword(user);
-      return user.save()
-        .then(() => res.send({ success: true }));
-    })
-    .catch(err => next(err));
+    user.generateResetPasswordToken();
+    reporter.reportPasswordResetRequest(user);
+    mailer.sendResetPassword(user);
+    /** Save user */
+    user = await user.save();
+    /** Respond with success */
+    res.send({ success: true });
+  } catch (err) {
+    next(err);
+  }
 });
 
 /** Method to reset password */
-router.post('/resetPassword', validate(validation.postResetPassword), (req, res, next) => {
-  const password = req.body.password;
-  const token = req.body.token;
-
-  const { error, data } = jwt.verify(token);
-  if (error) {
-    return next(error);
+router.post('/resetPassword',
+validate(validation.postResetPassword),
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    const password = req.body.password;
+    const token = req.body.token;
+    /** Try to verify reset password token */
+    const { error, data } = jwt.verify(token);
+    /** Throw an error if token is invalid */
+    if (error) {
+      throw error;
+    }
+    /** Throw an error if token had no data */
+    if (!data || !data.userid) {
+      throw errors.authTokenFailed();
+    }
+    /** Get user from db */
+    const userId = data.userid;
+    let user = await db.findUserById(userId)
+      .select('tokenForPasswordResetIsFresh tokenForPasswordReset');
+    /** Throw an error if no user found */
+    if (!user) {
+      throw errors.noUserFound();
+    }
+    /** Throw an error if password reset token is invalid */
+    if (user.tokenForPasswordReset !== token) {
+      throw errors.wrongResetToken();
+    }
+    /** Hash new password */
+    const newPassword = await hash.hashPassword(password);
+    user.tokenForPasswordReset = null;
+    user.password = newPassword;
+    /** Save user */
+    user = await user.save();
+    /** Respond with success */
+    res.send({ success: true });
+  } catch (err) {
+    next(err);
   }
-  if (!data || !data.userid) {
-    return next(errors.authTokenFailed());
-  }
-
-  const userId = data.userid;
-  db.findUserById(userId)
-    .select('tokenForPasswordResetIsFresh tokenForPasswordReset')
-    .then((user) => {
-      if (!user) {
-        throw errors.noUserFound();
-      } else if (user.tokenForPasswordReset !== token) {
-        throw errors.wrongResetToken();
-      } else {
-        return hash.hashPassword(password)
-          .then((result) => {
-            user.tokenForPasswordReset = null;
-            user.password = result;
-            return user.save()
-              .then(() => {
-                reporter.reportResetPassword(user);
-                res.send({ success: true });
-              });
-          });
-      }
-    })
-    .catch(err => next(err));
 });
 
 /** Private API check */
 router.use(auth.checkToken);
 
 /** Method to remove the specified push notifications token */
-router.post('/logout', (req, res, next) => {
-  const iosPushToken = req.body.iosPushToken;
-  const androidPushToken = req.body.androidPushToken;
-  const webPushToken = req.body.webPushToken;
-
-  req.user.iosPushTokens = req.user.iosPushTokens.filter(v => v !== iosPushToken);
-  req.user.androidPushTokens = req.user.androidPushTokens.filter(v => v !== androidPushToken);
-  req.user.webPushTokens = req.user.webPushTokens.filter(v => v !== webPushToken);
-
-  reporter.reportLogout(req.user);
-
-  req.user.save()
-    .then(() => res.send({ success: true }))
-    .catch(err => next(err));
+router.post('/logout',
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    let user = req.user;
+    const iosPushToken = req.body.iosPushToken;
+    const androidPushToken = req.body.androidPushToken;
+    const webPushToken = req.body.webPushToken;
+    /** Remove push tokens if required */
+    user.removePushTokens(iosPushToken, androidPushToken, webPushToken);
+    /** Report logout */
+    reporter.reportLogout(user);
+    /** Save user */
+    user = await user.save();
+    /** Respond with success */
+    res.send({ success: true });
+  } catch (err) {
+    next(err);
+  }
 });
 
-router.post('/changeAndroidToken', (req, res, next) => {
-  const androidPushToken = req.body.androidPushToken;
-  const oldAndroidPushToken = req.body.oldAndroidPushToken;
-
-  req.user.androidPushTokens = req.user.androidPushTokens.filter(v => v !== oldAndroidPushToken);
-  req.user.androidPushTokens.push(androidPushToken);
-
-  req.user.save()
-    .then(() => res.send({ success: true }))
-    .catch(err => next(err));
+router.post('/changeAndroidToken',
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    let user = req.user;
+    const androidPushToken = req.body.androidPushToken;
+    const oldAndroidPushToken = req.body.oldAndroidPushToken;
+    /** Remove old and add new android token */
+    user.removePushTokens(null, oldAndroidPushToken);
+    user.addPushTokens(null, androidPushToken);
+    /** Save user */
+    user = await user.save();
+    /** Respond with success */
+    res.send({ success: true });
+  } catch (err) {
+    next(err);
+  }
 });
 
 /** Method to get user's profile */
-router.get('/profile', (req, res, next) => {
-  const userId = req.query.id || req.user._id;
-
-  db.getProfile(userId)
-    .then(user => res.send(user))
-    .catch(err => next(err));
+router.get('/profile',
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    const userId = req.query.id || req.user._id;
+    /** Fetch profile */
+    const profile = await db.getProfile(userId);
+    /** Respond with profile */
+    res.send(profile);
+  } catch (err) {
+    next(err);
+  }
 });
 
 /** Method to edit user's profile */
-router.post('/profile', validate(validation.editProfile), demo.checkDemo, (req, res, next) => {
-  const userId = req.user._id;
-
-  const name = req.body.name;
-  const phone = req.body.phone;
-  const photo = req.body.photo;
-
-  db.findUserById(userId)
-    .select('token email name phone photo plan stripeId')
-    .then((user) => {
-      const userCopy = _.clone(user);
-      userCopy.name = name;
-      userCopy.phone = phone;
-      userCopy.photo = photo;
-      return userCopy.save()
-        .then((savedUser) => {
-          reporter.reportEditProfile(savedUser);
-
-          res.send(savedUser);
-        });
-    })
-    .catch(err => next(err));
+router.post('/profile',
+validate(validation.editProfile),
+demo.checkDemo,
+async (req, res, next) => {
+  try {
+    /** Get req parameters */
+    const userId = req.user._id;
+    const name = req.body.name;
+    const phone = req.body.phone;
+    const photo = req.body.photo;
+    /** Try to find user */
+    let user = await db.findUserById(userId)
+      .select('token email name phone photo plan stripeId');
+    /** Mofidy user params */
+    user.name = name;
+    user.phone = phone;
+    user.photo = photo;
+    /** Save user */
+    user = await user.save();
+    /** Report change profile */
+    reporter.reportEditProfile(user);
+    /** Respond with modified user */
+    res.send(user);
+  } catch (err) {
+    next(err);
+  }
 });
 
 /** Export */

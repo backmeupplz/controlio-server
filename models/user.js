@@ -4,6 +4,7 @@ const randomToken = require('random-token').create(config.randomTokenSalt);
 const mailer = require('../helpers/mailer');
 const push = require('../helpers/push');
 const jwt = require('../helpers/jwt');
+const _ = require('lodash');
 
 const Schema = mongoose.Schema;
 
@@ -161,6 +162,37 @@ userSchema.methods.maxProjects = function () {
     default:
       return 1;
   }
+};
+
+/** Adds optional push tokens */
+userSchema.methods.addPushTokens = function (iosPushToken, androidPushToken, webPushToken) {
+  if (this.isDemo) {
+    return;
+  }
+  if (iosPushToken) {
+    this.iosPushTokens.push(iosPushToken);
+  }
+  this.iosPushTokens = _.uniq(this.iosPushTokens);
+  if (androidPushToken) {
+    this.androidPushTokens.push(androidPushToken);
+  }
+  this.androidPushTokens = _.uniq(this.androidPushTokens);
+  if (webPushToken) {
+    this.webPushTokens.push(webPushToken);
+  }
+  this.webPushTokens = _.uniq(this.webPushTokens);
+};
+
+/** Removes optional push tokens */
+userSchema.methods.removePushTokens = function (iosPushToken, androidPushToken, webPushToken) {
+  this.iosPushTokens = this.iosPushTokens.filter(v => v !== iosPushToken);
+  this.androidPushTokens = this.androidPushTokens.filter(v => v !== androidPushToken);
+  this.webPushTokens = this.webPushTokens.filter(v => v !== webPushToken);
+};
+
+/** Filters props */
+userSchema.methods.filterProps = function () {
+  return _.pick(this, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId', 'name', 'photo']);
 };
 
 module.exports = mongoose.model('user', userSchema);
