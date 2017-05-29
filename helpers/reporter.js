@@ -8,8 +8,11 @@ const config = require('../config');
 
 const jarvis = new TelegramBot(config.telegramKey, { polling: false });
 
-/** General */
-
+/**
+ * Method to report error to Telegram
+ * @param {Error} err Error that occured
+ * @param {Express:Request} req Request that caused the error
+ */
 function reportError(err, req) {
   const bannedURLs = ['nikita', 'n1kita', 'khoapham', '162.243.76.239', 'maroonpaymentsystems', 'maroonpay', 'healthepaymentservices', '162.243.82.122'];
   const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
@@ -19,6 +22,12 @@ function reportError(err, req) {
   }
 }
 
+/**
+ * Method to check if url is wihtin the list of banned urls
+ * @param {String} fullURL Url to check
+ * @param {[String]]} bannedURLs Banned urls array
+ * @return {Boolean} True if banned, false otherwise
+ */
 function checkIfBanned(fullURL, bannedURLs) {
   let isBannedURL = false;
   bannedURLs.forEach((bannedURL) => {
@@ -127,6 +136,10 @@ function reportRedeemCoupon(user, coupon) {
 
 /** General functions */
 
+/**
+ * Method to send message to telegram bot
+ * @param {Telegram:Msg} msg Message to send
+ */
 function sendMessage(msg) {
   if (config.telegramKey) {
     jarvis.sendMessage(config.telegramLogsId, msg, { parse_mode: 'Markdown' })
