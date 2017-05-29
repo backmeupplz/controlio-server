@@ -16,68 +16,59 @@ const push = require('../push');
  * @param {String} text Text of the post
  * @param {[String]]} attachments A list of attachment urls
  * @param {String} type Type (post or status)
- * @return {Promise(Mongoose:Post)} Resulting post
+ * @throws {NOT_ENOUGH_PROJECTS_ERROR} If more projects on user than allowed by plan
+ * @throws {NOT_AUTHORIZED_ERROR} If not authorized to add new post
+ * @throws {FINISHED_ERROR} If project is finished
+ * @return {Mongoose:Post} Resulting post
  */
-function addPost(userId, projectId, text, attachments, type) {
-  return new Promise((resolve, reject) =>
-    users.findUserById(userId)
-      .then(user =>
-        projects.getProjectsOwned(user._id)
-          .then((count) => {
-            if (count > user.maxProjects()) {
-              throw errors.notEnoughProjectsOnPlan();
-            }
-            return user;
-          }))
-      .then(user =>
-        Project.findById(projectId)
-          .populate('clients managers owner')
-          .then(project => ({ user, project })))
-      /** Check if owner */
-      .then(({ user, project }) => {
-        let authorized = false;
-        if (project.owner.equals(user._id)) {
-          authorized = true;
-        }
-        project.managers.forEach((manager) => {
-          if (manager.equals(user._id)) {
-            authorized = true;
-          }
-        });
-        if (!authorized) {
-          throw errors.notAuthorized();
-        }
-        return { user, project };
-      })
-      /** Check if finished */
-      .then(({ user, project }) => {
-        if (project.isFinished) {
-          throw errors.projectIsFinished();
-        }
-        return { project, user };
-      })
-      .then(({ user, project }) => {
-        const post = new Post({
-          author: user._id,
-          text,
-          attachments,
-          type,
-        });
-        return post.save()
-          .then(dbpost => ({ project, dbpost }));
-      })
-      .then(({ project, dbpost }) => {
-        push.pushNewPostToClients(project, dbpost);
-        project.posts.push(dbpost);
-        if (dbpost.type === 'status') {
-          project.lastStatus = dbpost._id;
-        }
-        project.lastPost = dbpost._id;
-        return project.save()
-          .then(() => resolve(dbpost));
-      })
-      .catch(reject)
-  );
+async function addPost(userId, projectId, text, attachments, type) {
+  /** Get user */
+  const user = await users.findUserById(userId);
+  /** Get max number of projects allowed by plan */
+  const projectsOwned = await projects.getProjectsOwned(user._id);
+  /** Check if enough projects on plan */
+  if (projectsOwned > user.maxProjects()) {
+    throw errors.notEnoughProjectsOnPlan();
+  }
+  /** Get project */
+  const project = Project.findById(projectId)
+    .populate('clients managers owner');
+  /** Check if authorized to create a post */
+  let authorized = false;
+  if (project.owner._id.equals(user._id)) {
+    authorized = true;
+  }
+  project.managers.forEach((manager) => {
+    if (manager._id.equals(user._id)) {
+      authorized = true;
+    }
+  });
+  if (!authorized) {
+    throw errors.notAuthorized();
+  }
+  /** Check if project is finished */
+  if (project.isFinished) {
+    throw errors.projectIsFinished();
+  }
+  /** Create new post */
+  let post = new Post({
+    author: user._id,
+    text,
+    attachments,
+    type,
+  });
+  post = await post.save();
+  /** Push notify clients about new post */
+  push.pushNewPostToClients(project, post);
+  /** Add post to project */
+  project.posts.push(post);
+  if (post.type === 'status') {
+    project.lastStatus = post._id;
+  }
+  project.lastPost = post._id;
+  await project.save();
+  /** Return resulting post */
+  return post;
 }
 
 /**
@@ -86,60 +77,58 @@ function addPost(userId, projectId, text, attachments, type) {
  * @param {Mongoose:ObjectId} projectId Id of the project where to get posts
  * @param {Number} skip Skip of this List
  * @param {Number} limit Limit of this list
- * @return {Promise([Mongoose:Post])} A list of requested posts
+ * @throws {PROJECT_NOT_FOUND_ERROR} If no project found
+ * @throws {NOT_AUTHORIZED_ERROR} If not authorized to get posts
+ * @return {[Mongoose:Post]} A list of requested posts
  */
-function getPosts(userId, projectId, skip, limit) {
-  return new Promise((resolve, reject) =>
-    users.findUserById(userId)
-      .then(user =>
-        Project.findById(projectId)
-          .populate([{
-            path: 'posts',
-            populate: {
-              path: 'author',
-              model: 'user',
-            },
-          },
-          {
-            path: 'invites',
-          }])
-
-          .then(project => ({ user, project }))
-      )
-      .then(({ user, project }) => {
-        if (!project) {
-          throw errors.noProjectFound();
-        }
-        let authorized = false;
-        if (project.owner && project.owner.equals(user._id)) {
-          authorized = true;
-        }
-        project.managers.forEach((manager) => {
-          if (manager.equals(user._id)) {
-            authorized = true;
-          }
-        });
-        project.clients.forEach((client) => {
-          if (client.equals(user._id)) {
-            authorized = true;
-          }
-        });
-        project.invites.forEach((invite) => {
-          if (invite.invitee.equals(user._id)) {
-            authorized = true;
-          }
-        });
-        if (!authorized) {
-          throw errors.notAuthorized();
-        }
-        const sortedPosts = project.posts.sort((a, b) =>
-            b.createdAt - a.createdAt
-        );
-        const slicedPosts = sortedPosts.slice(skip, skip + limit);
-        resolve(slicedPosts);
-      })
-      .catch(reject)
+async function getPosts(userId, projectId, skip, limit) {
+  /** Get user */
+  const user = await users.findUserById(userId);
+  /** Get project */
+  const project = await Project.findById(projectId)
+    .populate([{
+      path: 'posts',
+      populate: {
+        path: 'author',
+        model: 'user',
+      },
+    },
+    { path: 'invites' }]);
+  /** Throw error if no project exist */
+  if (!project) {
+    throw errors.noProjectFound();
+  }
+  /** Check if authorized to get posts */
+  let authorized = false;
+  if (project.owner && project.owner.equals(user._id)) {
+    authorized = true;
+  }
+  project.managers.forEach((manager) => {
+    if (manager.equals(user._id)) {
+      authorized = true;
+    }
+  });
+  project.clients.forEach((client) => {
+    if (client.equals(user._id)) {
+      authorized = true;
+    }
+  });
+  project.invites.forEach((invite) => {
+    if (invite.invitee.equals(user._id)) {
+      authorized = true;
+    }
+  });
+  if (!authorized) {
+    throw errors.notAuthorized();
+  }
+  /** Sort posts */
+  const sortedPosts = project.posts.sort((a, b) =>
+    b.createdAt - a.createdAt
   );
+  /** Slice posts */
+  const slicedPosts = sortedPosts.slice(skip, skip + limit);
+  /** Return posts */
+  return slicedPosts;
 }
 
 /**
@@ -149,70 +138,59 @@ function getPosts(userId, projectId, skip, limit) {
  * @param {Mongoose:ObjectId} postId Id of the post to edit
  * @param {String} text New text
  * @param {[String]} attachments New attachments
- * @return {Promise(Mongoose:Post)} Resulting post
+ * @throws {NOT_ENOUGH_PROJECTS_ERROR} If not enough projects on plan
+ * @throws {PROJECT_NOT_FOUND_ERROR} If no project found
+ * @throws {POST_NOT_FOUND_ERROR} If no post found
+ * @throws {NOT_AUTHORIZED_ERROR} If not authorized to edit post
+ * @throws {FINISHED_ERROR} If project is finished
+ * @return {Mongoose:Post} Resulting post
  */
-function editPost(userId, projectId, postId, text, attachments) {
-  return new Promise((resolve, reject) =>
-    users.findUserById(userId)
-      .then(user =>
-        projects.getProjectsOwned(user._id)
-          .then((count) => {
-            if (count > user.maxProjects()) {
-              throw errors.notEnoughProjectsOnPlan();
-            }
-            return user;
-          }))
-      /** Get user, post, project */
-      .then(user =>
-        Post.findById(postId)
-          .then(post =>
-            Project.findById(projectId)
-              .then(project => ({ user, post, project }))
-          )
-      )
-      /** Verify access */
-      .then(({ user, post, project }) => {
-        if (!project) {
-          throw errors.noProjectFound();
-        }
-        if (!post) {
-          throw errors.noPostFound();
-        }
-        let authorized = false;
-        if (project.owner && project.owner.equals(user._id)) {
-          authorized = true;
-        }
-        project.managers.forEach((manager) => {
-          if (manager.equals(user._id)) {
-            authorized = true;
-          }
-        });
-        if (!authorized) {
-          throw errors.notAuthorized();
-        }
-        return { user, post, project };
-      })
-      /** Check if Finished */
-      .then(({ user, post, project }) => {
-        if (project.isFinished) {
-          throw errors.projectIsFinished();
-        }
-        return { user, post, project };
-      })
-      /** Edit post */
-      .then(({ user, post, project }) => {
-        post.isEdited = true;
-        post.text = text;
-        post.attachments = attachments;
-
-        reporter.reportEditPost(user, post, project);
-
-        return post.save()
-          .then(resolve)
-          .catch(reject);
-      })
-      .catch(reject)
-  );
+async function editPost(userId, projectId, postId, text, attachments) {
+  /** Get user */
+  const user = await users.findUserById(userId);
+  /** Get count of projects owned */
+  const projectsOwned = await projects.getProjectsOwned(user._id);
+  /** Check if projects owned within the limit of plan */
+  if (projectsOwned > user.maxProjects()) {
+    throw errors.notEnoughProjectsOnPlan();
+  }
+  /** Get post */
+  const post = await Post.findById(postId);
+  /** Get project */
+  const project = await Project.findById(projectId);
+  /** Throw error if no project found */
+  if (!project) {
+    throw errors.noProjectFound();
+  }
+  /** Throw error if no post found */
+  if (!post) {
+    throw errors.noPostFound();
+  }
+  /** Check if authorized */
+  let authorized = false;
+  if (project.owner && project.owner.equals(user._id)) {
+    authorized = true;
+  }
+  project.managers.forEach((manager) => {
+    if (manager.equals(user._id)) {
+      authorized = true;
+    }
+  });
+  if (!authorized) {
+    throw errors.notAuthorized();
+  }
+  /** Throw an error if project finished */
+  if (project.isFinished) {
+    throw errors.projectIsFinished();
+  }
+  /** Edit post */
+  post.isEdited = true;
+  post.text = text;
+  post.attachments = attachments;
+  /** Report edit post */
+  reporter.reportEditPost(user, post, project);
+  /** Save and return resulting post */
+  return await post.save();
 }
 
 /**
@@ -220,59 +198,47 @@ function editPost(userId, projectId, postId, text, attachments) {
  * @param {Mongoose:ObjectId} userId Id of deleting user
  * @param {Mongoose:ObjectId} projectId Id of the project where post exists
  * @param {Mongoose:ObjectId} postId Id of the post to delete
+ * @throws {PROJECT_NOT_FOUND_ERROR} If no project found
+ * @throws {POST_NOT_FOUND_ERROR} If no post found
+ * @throws {NOT_AUTHORIZED_ERROR} If not authorized to delete post
  * @return {Promise()} Promise thart's resolved on success
  */
-function deletePost(userId, projectId, postId) {
-  return new Promise((resolve, reject) =>
-    users.findUserById(userId)
-      /** Get user, post, project */
-      .then(user =>
-        Post.findById(postId)
-          .then(post =>
-            Project.findById(projectId)
-              .then(project => ({ user, post, project }))
-          )
-      )
-      /** Verify access */
-      .then(({ user, post, project }) => {
-        if (!project) {
-          throw errors.noProjectFound();
-        }
-        if (!post) {
-          throw errors.noPostFound();
-        }
-        let authorized = false;
-        if (project.owner && project.owner.equals(user._id)) {
-          authorized = true;
-        }
-        project.managers.forEach((manager) => {
-          if (manager.equals(user._id)) {
-            authorized = true;
-          }
-        });
-        if (!authorized) {
-          throw errors.notAuthorized();
-        }
-        return { user, post, project };
-      })
-      /** Delete post */
-      .then(({ user, post, project }) => {
-        project.posts = project.posts.filter(id => !id.equals(post.id));
-        return project.save()
-          .then(() => {
-            post.remove((err) => {
-              if (err) {
-                throw err;
-              } else {
-                reporter.reportDeletePost(user, post, project);
-                resolve();
-              }
-            });
-          })
-          .catch(reject);
-      })
-      .catch(reject)
-  );
+async function deletePost(userId, projectId, postId) {
+  /** Get user */
+  const user = await users.findUserById(userId);
+  /** Get post */
+  const post = await Post.findById(postId);
+  /** Get project */
+  let project = await Project.findById(projectId);
+  /** Throw error if no project found */
+  if (!project) {
+    throw errors.noProjectFound();
+  }
+  /** Throw error if no post found */
+  if (!post) {
+    throw errors.noPostFound();
+  }
+  /** Check if authorized */
+  let authorized = false;
+  if (project.owner && project.owner.equals(user._id)) {
+    authorized = true;
+  }
+  project.managers.forEach((manager) => {
+    if (manager.equals(user._id)) {
+      authorized = true;
+    }
+  });
+  if (!authorized) {
+    throw errors.notAuthorized();
+  }
+  /** Delete post */
+  project.posts = project.posts.filter(id => !id.equals(post.id));
+  /** Save project */
+  project = await project.save();
+  /** Remove post */
+  await post.remove().exec();
+  /** Report post deletion */
+  reporter.reportDeletePost(user, post, project);
 }
 
 module.exports = {
