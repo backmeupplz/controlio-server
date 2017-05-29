@@ -201,7 +201,6 @@ async function editPost(userId, projectId, postId, text, attachments) {
  * @throws {PROJECT_NOT_FOUND_ERROR} If no project found
  * @throws {POST_NOT_FOUND_ERROR} If no post found
  * @throws {NOT_AUTHORIZED_ERROR} If not authorized to delete post
- * @return {Promise()} Promise thart's resolved on success
  */
 async function deletePost(userId, projectId, postId) {
   /** Get user */
