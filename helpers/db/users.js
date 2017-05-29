@@ -10,7 +10,7 @@ const _ = require('lodash');
 /**
  * Function to add a user
  * @param {Object} user User object to create new database user
- * @return {Promise(Mongoose:User)} Promise with the User that should be created
+ * @return User User that should be created
  * @throws {PASSWORD_NOT_FOUND_ERROR} If user is found without password
  * @throws {USER_ALREADY_EXIST_ERROR} If User already exists with password
  */
