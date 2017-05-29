@@ -20,10 +20,10 @@ function verify(token) {
  * Method to create jwt token
  * @param {Object} payload Object that gets saved to jwt token
  * @param {Object} options Various options
- * @return {Promise(String)} Promise with resulting token
+ * @return {String} Promise with resulting token
  */
-function sign(payload, options) {
-  return jwt.sign(payload, secret, options);
+async function sign(payload, options) {
+  return await jwt.sign(payload, secret, options);
 }
 
 /** Exports */
