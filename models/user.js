@@ -195,4 +195,12 @@ userSchema.methods.filterProps = function () {
   return _.pick(this, ['_id', 'token', 'email', 'isDemo', 'isAdmin', 'plan', 'stripeId', 'stripeSubscriptionId', 'name', 'photo']);
 };
 
+/** Generate JWT */
+userSchema.methods.generateJWT = function () {
+  this.token = jwt.sign({
+    email: this.email,
+    userid: this._id,
+  });
+};
+
 module.exports = mongoose.model('user', userSchema);

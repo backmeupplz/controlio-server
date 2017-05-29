@@ -51,9 +51,15 @@ function drop() {
   });
 }
 
-function addUserWithJWT(user) {
-  return db.addUser(user)
-    .then(generateJWT);
+/**
+ * Method to add new user and generate JWT for it
+ * @param {Object} user Object describing user
+ * @return {Mongoose:User} User that was created
+ */
+async function addUserWithJWT(user) {
+  const dbuser = await db.addUser(user);
+  dbuser.generateJWT();
+  return await dbuser.save();
 }
 
 function generateResetPasswordToken(user) {
