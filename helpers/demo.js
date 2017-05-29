@@ -5,10 +5,15 @@ const demoAccounts = ['awesome@controlio.co'];
 
 /** Method to check if user is demo */
 function checkDemo(req, res, next) {
-  if (req.user.isDemo) {
-    next(errors.demoError());
-  } else {
+  try {
+    /** Throw error if user is demo */
+    if (req.user.isDemo) {
+      throw errors.demoError();
+    }
+    /** Continue router execution */
     next();
+  } catch (err) {
+    next(err);
   }
 }
 
