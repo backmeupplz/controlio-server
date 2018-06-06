@@ -6,6 +6,7 @@ Controlio is an extremely simple status report system. It's like twitter but int
 * [Landing](https://github.com/backmeupplz/controlio-landing) — landing front page of the former controlio.co website
 * [Web client](https://github.com/backmeupplz/controlio-web) — frontend of the web app connected to this server
 * [iOS client](https://github.com/backmeupplz/controlio-ios) — iOS client app connected to this server 
+* [Android client](https://github.com/adonixis/controlio-android/) — Android client connected to this server
 * [API documentaion](API.md) — documentation for this API
 
 
